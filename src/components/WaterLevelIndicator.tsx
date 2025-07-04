@@ -8,7 +8,8 @@ interface WaterLevelIndicatorProps {
 
 export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream }) => {
   const currentPercentage = (stream.currentLevel / stream.maxLevel) * 100;
-  const predictedPercentage = (stream.predictedLevel / stream.maxLevel) * 100;
+  const nextPrediction = stream.predictions[0];
+  const predictedPercentage = (nextPrediction.predictedLevel / stream.maxLevel) * 100;
 
   const getBarColor = (percentage: number) => {
     if (percentage >= 80) return 'bg-red-500';
@@ -19,7 +20,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
   return (
     <div className="space-y-3">
       <div className="flex justify-between items-center">
-        <span className="text-sm font-medium text-gray-700">Water Level</span>
+        <span className="text-sm font-medium text-gray-700">Water Level (meters)</span>
         <span className="text-sm text-gray-500">Max: {stream.maxLevel}m</span>
       </div>
       
@@ -27,7 +28,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
       <div className="space-y-2">
         <div className="flex justify-between items-center">
           <span className="text-xs text-blue-600 font-medium">Current</span>
-          <span className="text-xs text-gray-500">{currentPercentage.toFixed(1)}%</span>
+          <span className="text-xs text-gray-500">{stream.currentLevel}m ({currentPercentage.toFixed(1)}%)</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div 
@@ -40,8 +41,10 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
       {/* Predicted Level Bar */}
       <div className="space-y-2">
         <div className="flex justify-between items-center">
-          <span className="text-xs text-purple-600 font-medium">Predicted (24h)</span>
-          <span className="text-xs text-gray-500">{predictedPercentage.toFixed(1)}%</span>
+          <span className="text-xs text-purple-600 font-medium">Tomorrow</span>
+          <span className="text-xs text-gray-500">
+            {nextPrediction.predictedLevel}m ({predictedPercentage.toFixed(1)}%) - {nextPrediction.confidence}% confidence
+          </span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-3">
           <div 

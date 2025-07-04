@@ -1,7 +1,39 @@
 
 import React from 'react';
 import { StreamCard } from './StreamCard';
+import { StreamMap } from './StreamMap';
 import { Stream } from '@/types/stream';
+
+// Generate 7-day predictions for a stream
+const generatePredictions = (baseLevel: number, trend: 'rising' | 'falling' | 'stable') => {
+  const predictions = [];
+  let currentLevel = baseLevel;
+  
+  for (let i = 1; i <= 7; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() + i);
+    
+    // Apply trend with some randomness
+    if (trend === 'rising') {
+      currentLevel += Math.random() * 0.3 + 0.1;
+    } else if (trend === 'falling') {
+      currentLevel -= Math.random() * 0.2 + 0.05;
+    } else {
+      currentLevel += (Math.random() - 0.5) * 0.1;
+    }
+    
+    // Ensure level doesn't go below 0
+    currentLevel = Math.max(0, currentLevel);
+    
+    predictions.push({
+      date,
+      predictedLevel: Math.round(currentLevel * 10) / 10,
+      confidence: Math.floor(Math.random() * 20) + 75 // 75-95% confidence
+    });
+  }
+  
+  return predictions;
+};
 
 const mockStreams: Stream[] = [
   {
@@ -13,11 +45,11 @@ const mockStreams: Stream[] = [
       address: 'Høje Taastrup Hovedgade'
     },
     currentLevel: 1.2,
-    predictedLevel: 1.8,
     maxLevel: 3.0,
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:30:00'),
-    trend: 'rising'
+    trend: 'rising',
+    predictions: generatePredictions(1.2, 'rising')
   },
   {
     id: 'stream-002',
@@ -28,11 +60,11 @@ const mockStreams: Stream[] = [
       address: 'Vestvolden Park'
     },
     currentLevel: 0.8,
-    predictedLevel: 1.1,
     maxLevel: 2.5,
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:25:00'),
-    trend: 'stable'
+    trend: 'stable',
+    predictions: generatePredictions(0.8, 'stable')
   },
   {
     id: 'stream-003',
@@ -43,11 +75,11 @@ const mockStreams: Stream[] = [
       address: 'Hedehusene Centervej'
     },
     currentLevel: 2.1,
-    predictedLevel: 2.7,
     maxLevel: 3.2,
     status: 'warning',
     lastUpdated: new Date('2025-01-04T10:35:00'),
-    trend: 'rising'
+    trend: 'rising',
+    predictions: generatePredictions(2.1, 'rising')
   },
   {
     id: 'stream-004',
@@ -58,11 +90,11 @@ const mockStreams: Stream[] = [
       address: 'Fløng Møllevej'
     },
     currentLevel: 0.6,
-    predictedLevel: 0.9,
     maxLevel: 2.8,
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:20:00'),
-    trend: 'rising'
+    trend: 'rising',
+    predictions: generatePredictions(0.6, 'rising')
   },
   {
     id: 'stream-005',
@@ -73,11 +105,11 @@ const mockStreams: Stream[] = [
       address: 'Taastrup Eng Nature Area'
     },
     currentLevel: 2.8,
-    predictedLevel: 3.1,
     maxLevel: 3.5,
     status: 'danger',
     lastUpdated: new Date('2025-01-04T10:40:00'),
-    trend: 'rising'
+    trend: 'rising',
+    predictions: generatePredictions(2.8, 'rising')
   },
   {
     id: 'stream-006',
@@ -88,20 +120,23 @@ const mockStreams: Stream[] = [
       address: 'Reerslev Bymidte'
     },
     currentLevel: 1.5,
-    predictedLevel: 1.3,
     maxLevel: 3.0,
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:15:00'),
-    trend: 'falling'
+    trend: 'falling',
+    predictions: generatePredictions(1.5, 'falling')
   }
 ];
 
 export const StreamGrid = () => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {mockStreams.map((stream) => (
-        <StreamCard key={stream.id} stream={stream} />
-      ))}
+    <div className="space-y-8">
+      <StreamMap streams={mockStreams} />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {mockStreams.map((stream) => (
+          <StreamCard key={stream.id} stream={stream} />
+        ))}
+      </div>
     </div>
   );
 };

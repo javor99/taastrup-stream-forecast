@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MapPin, Clock, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { Stream } from '@/types/stream';
@@ -9,6 +8,8 @@ interface StreamCardProps {
 }
 
 export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
+  const nextPrediction = stream.predictions[0];
+
   const getStatusIcon = () => {
     switch (stream.status) {
       case 'normal':
@@ -72,11 +73,11 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
       <div className="grid grid-cols-2 gap-4 mt-4">
         <div className="text-center p-3 bg-blue-50 rounded-lg">
           <div className="text-sm font-medium text-blue-700">Current Level</div>
-          <div className="text-xl font-bold text-blue-900">{stream.currentLevel.toFixed(1)}m</div>
+          <div className="text-xl font-bold text-blue-900">{stream.currentLevel}m</div>
         </div>
         <div className="text-center p-3 bg-purple-50 rounded-lg">
-          <div className="text-sm font-medium text-purple-700">Predicted (24h)</div>
-          <div className="text-xl font-bold text-purple-900">{stream.predictedLevel.toFixed(1)}m</div>
+          <div className="text-sm font-medium text-purple-700">Tomorrow</div>
+          <div className="text-xl font-bold text-purple-900">{nextPrediction.predictedLevel}m</div>
         </div>
       </div>
 
