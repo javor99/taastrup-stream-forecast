@@ -11,7 +11,9 @@ interface StreamMapProps {
 
 export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
+  const fullscreenMapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const fullscreenMap = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState('');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
@@ -21,21 +23,17 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
     return date.toLocaleDateString('en-US', { weekday: 'short' });
   };
 
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
-
-    // Initialize map
+  const createMap = (container: HTMLDivElement) => {
     mapboxgl.accessToken = mapboxToken;
     
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
+    const newMap = new mapboxgl.Map({
+      container: container,
       style: 'mapbox://styles/mapbox/streets-v12',
-      center: [12.2725, 55.6493], // Centered on Høje-Taastrup
+      center: [12.2725, 55.6493],
       zoom: 12,
     });
 
-    // Add navigation controls
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+    newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
     // Add markers for each stream
     streams.forEach((stream) => {
@@ -48,9 +46,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
         }
       };
 
-      // Create custom marker element
       const markerElement = document.createElement('div');
-      markerElement.className = 'stream-marker';
       markerElement.style.cssText = `
         width: 20px;
         height: 20px;
@@ -61,7 +57,6 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
         cursor: pointer;
       `;
 
-      // Create popup content with proper formatting
       const nextPrediction = stream.predictions[0];
       const maxPrediction = stream.predictions.reduce((max, pred) => 
         pred.predictedLevel > max.predictedLevel ? pred : max
@@ -78,8 +73,9 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
       }).join('');
 
       const popupContent = `
-        <div style="padding: 12px; min-width: 200px; max-width: 250px;">
-          <h3 style="font-weight: bold; font-size: 16px; margin-bottom: 8px; margin-top: 0;">${stream.name}</h3>
+        <div style="padding: 12px; min-width: 200px; max-width: 220px; position: relative;">
+          <button style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 18px; cursor: pointer; color: #666; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px;" onclick="this.closest('.mapboxgl-popup').remove()">×</button>
+          <h3 style="font-weight: bold; font-size: 16px; margin-bottom: 8px; margin-top: 0; padding-right: 30px;">${stream.name}</h3>
           <p style="font-size: 12px; color: #666; margin-bottom: 12px; margin-top: 0;">${stream.location.address}</p>
           <div style="margin-bottom: 8px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
@@ -105,22 +101,44 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
 
       const popup = new mapboxgl.Popup({ 
         offset: 25,
-        maxWidth: '250px',
-        closeButton: true,
+        maxWidth: '220px',
+        closeButton: false,
         closeOnClick: false
       }).setHTML(popupContent);
 
       new mapboxgl.Marker(markerElement)
         .setLngLat([stream.location.lng, stream.location.lat])
         .setPopup(popup)
-        .addTo(map.current!);
+        .addTo(newMap);
     });
 
-    // Cleanup
+    return newMap;
+  };
+
+  // Main map effect
+  useEffect(() => {
+    if (!mapContainer.current || !mapboxToken) return;
+
+    map.current = createMap(mapContainer.current);
+
     return () => {
       map.current?.remove();
     };
   }, [streams, mapboxToken]);
+
+  // Fullscreen map effect
+  useEffect(() => {
+    if (isFullscreen && fullscreenMapContainer.current && mapboxToken) {
+      fullscreenMap.current = createMap(fullscreenMapContainer.current);
+    }
+
+    return () => {
+      if (fullscreenMap.current) {
+        fullscreenMap.current.remove();
+        fullscreenMap.current = null;
+      }
+    };
+  }, [isFullscreen, streams, mapboxToken]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -185,85 +203,11 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
                 <X className="h-5 w-5 text-gray-600" />
               </button>
             </div>
-            <div className="w-full h-full">
-              <div 
-                className="w-full h-full"
-                ref={(el) => {
-                  if (el && isFullscreen && map.current) {
-                    // Move map to fullscreen container
-                    setTimeout(() => {
-                      map.current?.getContainer().remove();
-                      map.current = new mapboxgl.Map({
-                        container: el,
-                        style: 'mapbox://styles/mapbox/streets-v12',
-                        center: [12.2725, 55.6493],
-                        zoom: 12,
-                      });
-                      
-                      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-                      
-                      // Re-add markers
-                      streams.forEach((stream) => {
-                        const getMarkerColor = (status: string) => {
-                          switch (status) {
-                            case 'normal': return '#22c55e';
-                            case 'warning': return '#f59e0b';
-                            case 'danger': return '#ef4444';
-                            default: return '#6b7280';
-                          }
-                        };
-
-                        const markerElement = document.createElement('div');
-                        markerElement.style.cssText = `
-                          width: 20px;
-                          height: 20px;
-                          border-radius: 50%;
-                          background-color: ${getMarkerColor(stream.status)};
-                          border: 3px solid white;
-                          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                          cursor: pointer;
-                        `;
-
-                        const predictionsHtml = stream.predictions.slice(0, 3).map((pred, index) => {
-                          const dayName = getWeekdayName(index);
-                          return `
-                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px;">
-                              <span>${dayName}:</span>
-                              <span>${pred.predictedLevel}m</span>
-                            </div>
-                          `;
-                        }).join('');
-
-                        const popup = new mapboxgl.Popup({ 
-                          offset: 25,
-                          maxWidth: '250px'
-                        }).setHTML(`
-                          <div style="padding: 12px; min-width: 200px; max-width: 250px;">
-                            <h3 style="font-weight: bold; font-size: 16px; margin-bottom: 8px; margin-top: 0;">${stream.name}</h3>
-                            <p style="font-size: 12px; color: #666; margin-bottom: 12px; margin-top: 0;">${stream.location.address}</p>
-                            <div style="margin-bottom: 8px;">
-                              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
-                                <span style="font-size: 13px; font-weight: 500;">Current:</span>
-                                <span style="font-weight: 600;">${stream.currentLevel}m</span>
-                              </div>
-                            </div>
-                            <div style="border-top: 1px solid #e5e7eb; padding-top: 8px;">
-                              <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">Next 3 Days:</div>
-                              ${predictionsHtml}
-                            </div>
-                          </div>
-                        `);
-
-                        new mapboxgl.Marker(markerElement)
-                          .setLngLat([stream.location.lng, stream.location.lat])
-                          .setPopup(popup)
-                          .addTo(map.current!);
-                      });
-                    }, 100);
-                  }
-                }}
-              />
-            </div>
+            <div 
+              ref={fullscreenMapContainer}
+              className="w-full h-full"
+              style={{ height: 'calc(100% - 80px)' }}
+            />
           </div>
         </div>
       )}
