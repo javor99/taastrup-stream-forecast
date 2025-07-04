@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Stream } from '@/types/stream';
+import { Fullscreen, X } from 'lucide-react';
 
 interface StreamMapProps {
   streams: Stream[];
@@ -12,6 +13,13 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken, setMapboxToken] = useState('');
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  const getWeekdayName = (dayOffset: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + dayOffset + 1);
+    return date.toLocaleDateString('en-US', { weekday: 'short' });
+  };
 
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
@@ -53,49 +61,54 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
         cursor: pointer;
       `;
 
-      // Create popup content with 7-day predictions
+      // Create popup content with proper formatting
       const nextPrediction = stream.predictions[0];
       const maxPrediction = stream.predictions.reduce((max, pred) => 
         pred.predictedLevel > max.predictedLevel ? pred : max
       );
       
       const predictionsHtml = stream.predictions.slice(0, 3).map((pred, index) => {
-        const dayName = index === 0 ? 'Tomorrow' : index === 1 ? 'Day +2' : 'Day +3';
+        const dayName = getWeekdayName(index);
         return `
-          <div class="flex justify-between text-xs">
+          <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px;">
             <span>${dayName}:</span>
-            <span>${pred.predictedLevel}m (${pred.confidence}%)</span>
+            <span>${pred.predictedLevel}m</span>
           </div>
         `;
       }).join('');
 
       const popupContent = `
-        <div class="p-3 min-w-[250px]">
-          <h3 class="font-bold text-lg mb-2">${stream.name}</h3>
-          <p class="text-sm text-gray-600 mb-3">${stream.location.address}</p>
-          <div class="space-y-2">
-            <div class="flex justify-between">
-              <span class="text-sm font-medium">Current Level:</span>
-              <span class="font-semibold">${stream.currentLevel}m</span>
+        <div style="padding: 12px; min-width: 200px; max-width: 250px;">
+          <h3 style="font-weight: bold; font-size: 16px; margin-bottom: 8px; margin-top: 0;">${stream.name}</h3>
+          <p style="font-size: 12px; color: #666; margin-bottom: 12px; margin-top: 0;">${stream.location.address}</p>
+          <div style="margin-bottom: 8px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+              <span style="font-size: 13px; font-weight: 500;">Current:</span>
+              <span style="font-weight: 600;">${stream.currentLevel}m</span>
             </div>
-            <div class="border-t pt-2">
-              <div class="text-sm font-medium mb-1">Predictions:</div>
-              ${predictionsHtml}
-              <div class="text-xs text-gray-500 mt-1">7-day max: ${maxPrediction.predictedLevel}m</div>
-            </div>
-            <div class="flex justify-between border-t pt-2">
-              <span class="text-sm">Status:</span>
-              <span class="px-2 py-1 rounded text-xs ${
-                stream.status === 'normal' ? 'bg-green-100 text-green-800' :
-                stream.status === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                'bg-red-100 text-red-800'
-              }">${stream.status.toUpperCase()}</span>
-            </div>
+          </div>
+          <div style="border-top: 1px solid #e5e7eb; padding-top: 8px; margin-bottom: 8px;">
+            <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">Next 3 Days:</div>
+            ${predictionsHtml}
+            <div style="font-size: 11px; color: #666; margin-top: 4px;">7-day max: ${maxPrediction.predictedLevel}m</div>
+          </div>
+          <div style="display: flex; justify-content: space-between; border-top: 1px solid #e5e7eb; padding-top: 8px;">
+            <span style="font-size: 12px;">Status:</span>
+            <span style="padding: 2px 8px; border-radius: 12px; font-size: 10px; font-weight: 500; ${
+              stream.status === 'normal' ? 'background-color: #dcfce7; color: #166534;' :
+              stream.status === 'warning' ? 'background-color: #fef3c7; color: #92400e;' :
+              'background-color: #fecaca; color: #991b1b;'
+            }">${stream.status.toUpperCase()}</span>
           </div>
         </div>
       `;
 
-      const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(popupContent);
+      const popup = new mapboxgl.Popup({ 
+        offset: 25,
+        maxWidth: '250px',
+        closeButton: true,
+        closeOnClick: false
+      }).setHTML(popupContent);
 
       new mapboxgl.Marker(markerElement)
         .setLngLat([stream.location.lng, stream.location.lat])
@@ -108,6 +121,10 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
       map.current?.remove();
     };
   }, [streams, mapboxToken]);
+
+  const toggleFullscreen = () => {
+    setIsFullscreen(!isFullscreen);
+  };
 
   if (!mapboxToken) {
     return (
@@ -133,12 +150,123 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-      <div className="p-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold">Stream Locations</h3>
-        <p className="text-sm text-gray-600">Click markers for 7-day predictions</p>
+    <>
+      <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+          <div>
+            <h3 className="text-lg font-semibold">Stream Locations</h3>
+            <p className="text-sm text-gray-600">Click markers for predictions</p>
+          </div>
+          <button
+            onClick={toggleFullscreen}
+            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            title="Fullscreen"
+          >
+            <Fullscreen className="h-5 w-5 text-gray-600" />
+          </button>
+        </div>
+        <div ref={mapContainer} className="w-full h-96" />
       </div>
-      <div ref={mapContainer} className="w-full h-96" />
-    </div>
+
+      {/* Fullscreen Modal */}
+      {isFullscreen && (
+        <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full h-full max-w-7xl max-h-full overflow-hidden">
+            <div className="p-4 border-b border-gray-200 flex justify-between items-center">
+              <div>
+                <h3 className="text-lg font-semibold">Stream Locations - Fullscreen</h3>
+                <p className="text-sm text-gray-600">Click markers for detailed predictions</p>
+              </div>
+              <button
+                onClick={toggleFullscreen}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                title="Exit Fullscreen"
+              >
+                <X className="h-5 w-5 text-gray-600" />
+              </button>
+            </div>
+            <div className="w-full h-full">
+              <div 
+                className="w-full h-full"
+                ref={(el) => {
+                  if (el && isFullscreen && map.current) {
+                    // Move map to fullscreen container
+                    setTimeout(() => {
+                      map.current?.getContainer().remove();
+                      map.current = new mapboxgl.Map({
+                        container: el,
+                        style: 'mapbox://styles/mapbox/streets-v12',
+                        center: [12.2725, 55.6493],
+                        zoom: 12,
+                      });
+                      
+                      map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
+                      
+                      // Re-add markers
+                      streams.forEach((stream) => {
+                        const getMarkerColor = (status: string) => {
+                          switch (status) {
+                            case 'normal': return '#22c55e';
+                            case 'warning': return '#f59e0b';
+                            case 'danger': return '#ef4444';
+                            default: return '#6b7280';
+                          }
+                        };
+
+                        const markerElement = document.createElement('div');
+                        markerElement.style.cssText = `
+                          width: 20px;
+                          height: 20px;
+                          border-radius: 50%;
+                          background-color: ${getMarkerColor(stream.status)};
+                          border: 3px solid white;
+                          box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+                          cursor: pointer;
+                        `;
+
+                        const predictionsHtml = stream.predictions.slice(0, 3).map((pred, index) => {
+                          const dayName = getWeekdayName(index);
+                          return `
+                            <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 2px;">
+                              <span>${dayName}:</span>
+                              <span>${pred.predictedLevel}m</span>
+                            </div>
+                          `;
+                        }).join('');
+
+                        const popup = new mapboxgl.Popup({ 
+                          offset: 25,
+                          maxWidth: '250px'
+                        }).setHTML(`
+                          <div style="padding: 12px; min-width: 200px; max-width: 250px;">
+                            <h3 style="font-weight: bold; font-size: 16px; margin-bottom: 8px; margin-top: 0;">${stream.name}</h3>
+                            <p style="font-size: 12px; color: #666; margin-bottom: 12px; margin-top: 0;">${stream.location.address}</p>
+                            <div style="margin-bottom: 8px;">
+                              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                                <span style="font-size: 13px; font-weight: 500;">Current:</span>
+                                <span style="font-weight: 600;">${stream.currentLevel}m</span>
+                              </div>
+                            </div>
+                            <div style="border-top: 1px solid #e5e7eb; padding-top: 8px;">
+                              <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px;">Next 3 Days:</div>
+                              ${predictionsHtml}
+                            </div>
+                          </div>
+                        `);
+
+                        new mapboxgl.Marker(markerElement)
+                          .setLngLat([stream.location.lng, stream.location.lat])
+                          .setPopup(popup)
+                          .addTo(map.current!);
+                      });
+                    }, 100);
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

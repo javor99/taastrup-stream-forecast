@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { MapPin, Clock, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { Stream } from '@/types/stream';
@@ -13,6 +12,12 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
   const maxPrediction = stream.predictions.reduce((max, pred) => 
     pred.predictedLevel > max.predictedLevel ? pred : max
   );
+
+  const getTomorrowName = () => {
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toLocaleDateString('en-US', { weekday: 'long' });
+  };
 
   const getStatusIcon = () => {
     switch (stream.status) {
@@ -80,7 +85,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
           <div className="text-lg font-bold text-blue-900">{stream.currentLevel}m</div>
         </div>
         <div className="text-center p-3 bg-purple-50 rounded-lg">
-          <div className="text-xs font-medium text-purple-700">Tomorrow</div>
+          <div className="text-xs font-medium text-purple-700">{getTomorrowName()}</div>
           <div className="text-lg font-bold text-purple-900">{nextPrediction.predictedLevel}m</div>
         </div>
         <div className="text-center p-3 bg-orange-50 rounded-lg">

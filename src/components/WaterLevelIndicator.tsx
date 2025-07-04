@@ -15,6 +15,12 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
     return 'bg-green-500';
   };
 
+  const getWeekdayName = (dayOffset: number) => {
+    const date = new Date();
+    date.setDate(date.getDate() + dayOffset + 1); // +1 because predictions start from tomorrow
+    return date.toLocaleDateString('en-US', { weekday: 'long' });
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -42,9 +48,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
         <div className="space-y-2">
           {stream.predictions.map((prediction, index) => {
             const predictedPercentage = (prediction.predictedLevel / stream.maxLevel) * 100;
-            const dayName = index === 0 ? 'Tomorrow' : 
-                          index === 1 ? 'Day +2' : 
-                          `Day +${index + 1}`;
+            const dayName = getWeekdayName(index);
             
             return (
               <div key={index} className="space-y-1">
