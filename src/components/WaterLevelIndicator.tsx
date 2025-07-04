@@ -8,8 +8,6 @@ interface WaterLevelIndicatorProps {
 
 export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream }) => {
   const currentPercentage = (stream.currentLevel / stream.maxLevel) * 100;
-  const nextPrediction = stream.predictions[0];
-  const predictedPercentage = (nextPrediction.predictedLevel / stream.maxLevel) * 100;
 
   const getBarColor = (percentage: number) => {
     if (percentage >= 80) return 'bg-red-500';
@@ -18,7 +16,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       <div className="flex justify-between items-center">
         <span className="text-sm font-medium text-gray-700">Water Level (meters)</span>
         <span className="text-sm text-gray-500">Max: {stream.maxLevel}m</span>
@@ -38,19 +36,33 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
         </div>
       </div>
 
-      {/* Predicted Level Bar */}
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-xs text-purple-600 font-medium">Tomorrow</span>
-          <span className="text-xs text-gray-500">
-            {nextPrediction.predictedLevel}m ({predictedPercentage.toFixed(1)}%) - {nextPrediction.confidence}% confidence
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
-          <div 
-            className={`h-3 rounded-full transition-all duration-500 opacity-70 ${getBarColor(predictedPercentage)}`}
-            style={{ width: `${Math.min(predictedPercentage, 100)}%` }}
-          />
+      {/* 7-Day Predictions */}
+      <div className="space-y-3">
+        <h4 className="text-sm font-medium text-gray-700">7-Day Forecast</h4>
+        <div className="space-y-2">
+          {stream.predictions.map((prediction, index) => {
+            const predictedPercentage = (prediction.predictedLevel / stream.maxLevel) * 100;
+            const dayName = index === 0 ? 'Tomorrow' : 
+                          index === 1 ? 'Day +2' : 
+                          `Day +${index + 1}`;
+            
+            return (
+              <div key={index} className="space-y-1">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-purple-600 font-medium">{dayName}</span>
+                  <span className="text-xs text-gray-500">
+                    {prediction.predictedLevel}m ({predictedPercentage.toFixed(1)}%) - {prediction.confidence}% confidence
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className={`h-2 rounded-full transition-all duration-500 opacity-70 ${getBarColor(predictedPercentage)}`}
+                    style={{ width: `${Math.min(predictedPercentage, 100)}%` }}
+                  />
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

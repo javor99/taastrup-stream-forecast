@@ -53,22 +53,37 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
         cursor: pointer;
       `;
 
-      // Create popup content
+      // Create popup content with 7-day predictions
       const nextPrediction = stream.predictions[0];
+      const maxPrediction = stream.predictions.reduce((max, pred) => 
+        pred.predictedLevel > max.predictedLevel ? pred : max
+      );
+      
+      const predictionsHtml = stream.predictions.slice(0, 3).map((pred, index) => {
+        const dayName = index === 0 ? 'Tomorrow' : index === 1 ? 'Day +2' : 'Day +3';
+        return `
+          <div class="flex justify-between text-xs">
+            <span>${dayName}:</span>
+            <span>${pred.predictedLevel}m (${pred.confidence}%)</span>
+          </div>
+        `;
+      }).join('');
+
       const popupContent = `
-        <div class="p-3">
+        <div class="p-3 min-w-[250px]">
           <h3 class="font-bold text-lg mb-2">${stream.name}</h3>
-          <p class="text-sm text-gray-600 mb-2">${stream.location.address}</p>
-          <div class="space-y-1">
+          <p class="text-sm text-gray-600 mb-3">${stream.location.address}</p>
+          <div class="space-y-2">
             <div class="flex justify-between">
-              <span class="text-sm">Current Level:</span>
+              <span class="text-sm font-medium">Current Level:</span>
               <span class="font-semibold">${stream.currentLevel}m</span>
             </div>
-            <div class="flex justify-between">
-              <span class="text-sm">Tomorrow:</span>
-              <span class="font-semibold">${nextPrediction.predictedLevel}m</span>
+            <div class="border-t pt-2">
+              <div class="text-sm font-medium mb-1">Predictions:</div>
+              ${predictionsHtml}
+              <div class="text-xs text-gray-500 mt-1">7-day max: ${maxPrediction.predictedLevel}m</div>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between border-t pt-2">
               <span class="text-sm">Status:</span>
               <span class="px-2 py-1 rounded text-xs ${
                 stream.status === 'normal' ? 'bg-green-100 text-green-800' :
@@ -121,7 +136,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
     <div className="bg-white rounded-xl shadow-lg overflow-hidden">
       <div className="p-4 border-b border-gray-200">
         <h3 className="text-lg font-semibold">Stream Locations</h3>
-        <p className="text-sm text-gray-600">Click markers for details</p>
+        <p className="text-sm text-gray-600">Click markers for 7-day predictions</p>
       </div>
       <div ref={mapContainer} className="w-full h-96" />
     </div>

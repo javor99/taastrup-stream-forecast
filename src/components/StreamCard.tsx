@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { MapPin, Clock, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { Stream } from '@/types/stream';
@@ -9,6 +10,9 @@ interface StreamCardProps {
 
 export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
   const nextPrediction = stream.predictions[0];
+  const maxPrediction = stream.predictions.reduce((max, pred) => 
+    pred.predictedLevel > max.predictedLevel ? pred : max
+  );
 
   const getStatusIcon = () => {
     switch (stream.status) {
@@ -70,14 +74,18 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
 
       <WaterLevelIndicator stream={stream} />
 
-      <div className="grid grid-cols-2 gap-4 mt-4">
+      <div className="grid grid-cols-3 gap-3 mt-4">
         <div className="text-center p-3 bg-blue-50 rounded-lg">
-          <div className="text-sm font-medium text-blue-700">Current Level</div>
-          <div className="text-xl font-bold text-blue-900">{stream.currentLevel}m</div>
+          <div className="text-xs font-medium text-blue-700">Current</div>
+          <div className="text-lg font-bold text-blue-900">{stream.currentLevel}m</div>
         </div>
         <div className="text-center p-3 bg-purple-50 rounded-lg">
-          <div className="text-sm font-medium text-purple-700">Tomorrow</div>
-          <div className="text-xl font-bold text-purple-900">{nextPrediction.predictedLevel}m</div>
+          <div className="text-xs font-medium text-purple-700">Tomorrow</div>
+          <div className="text-lg font-bold text-purple-900">{nextPrediction.predictedLevel}m</div>
+        </div>
+        <div className="text-center p-3 bg-orange-50 rounded-lg">
+          <div className="text-xs font-medium text-orange-700">7-Day Max</div>
+          <div className="text-lg font-bold text-orange-900">{maxPrediction.predictedLevel}m</div>
         </div>
       </div>
 
