@@ -60,15 +60,15 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
   };
 
   return (
-    <div className={`bg-white/90 backdrop-blur-sm rounded-xl shadow-lg border-2 ${getStatusColor()} p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:bg-white`}>
+    <div className={`bg-card/90 backdrop-blur-sm rounded-xl shadow-lg border-2 ${getStatusColor()} p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:bg-card/95 hover:scale-105 animate-fade-in`}>
       <div className="flex items-start justify-between mb-4">
         <div>
-          <h3 className="text-xl font-display font-bold text-gray-900 mb-1 tracking-tight">{stream.name}</h3>
-          <div className="flex items-center text-sm text-gray-600 mb-2 font-medium">
+          <h3 className="text-xl font-display font-bold text-foreground mb-1 tracking-tight">{stream.name}</h3>
+          <div className="flex items-center text-sm text-muted-foreground mb-2 font-medium">
             <MapPin className="h-4 w-4 mr-1" />
             <span>{stream.location.address}</span>
           </div>
-          <div className="text-xs text-gray-500 font-mono">
+          <div className="text-xs text-muted-foreground/70 font-mono">
             GPS: {stream.location.lat.toFixed(4)}, {stream.location.lng.toFixed(4)}
           </div>
         </div>
@@ -95,8 +95,8 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
-        <div className="flex items-center text-xs text-gray-500 font-medium">
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+        <div className="flex items-center text-xs text-muted-foreground font-medium">
           <Clock className="h-3 w-3 mr-1" />
           Updated {stream.lastUpdated.toLocaleTimeString('da-DK', { 
             hour: '2-digit', 

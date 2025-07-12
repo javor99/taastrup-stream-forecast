@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { StreamGrid } from '@/components/StreamGrid';
+import { StreamGrid } from '@/components/StreamGridWithLoading';
 import { Header } from '@/components/Header';
 
 const Index = () => {
