@@ -23,39 +23,39 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
   const getStatusIcon = () => {
     switch (stream.status) {
       case 'normal':
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <CheckCircle className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />;
       case 'warning':
-        return <AlertTriangle className="h-5 w-5 text-yellow-500" />;
+        return <AlertTriangle className="h-5 w-5 text-amber-500 dark:text-amber-400" />;
       case 'danger':
-        return <XCircle className="h-5 w-5 text-red-500" />;
+        return <XCircle className="h-5 w-5 text-rose-500 dark:text-rose-400" />;
       default:
-        return <CheckCircle className="h-5 w-5 text-gray-400" />;
+        return <CheckCircle className="h-5 w-5 text-muted-foreground" />;
     }
   };
 
   const getTrendIcon = () => {
     switch (stream.trend) {
       case 'rising':
-        return <TrendingUp className="h-4 w-4 text-red-500" />;
+        return <TrendingUp className="h-4 w-4 text-rose-500 dark:text-rose-400" />;
       case 'falling':
-        return <TrendingDown className="h-4 w-4 text-green-500" />;
+        return <TrendingDown className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />;
       case 'stable':
-        return <Minus className="h-4 w-4 text-gray-500" />;
+        return <Minus className="h-4 w-4 text-muted-foreground" />;
       default:
-        return <Minus className="h-4 w-4 text-gray-400" />;
+        return <Minus className="h-4 w-4 text-muted-foreground" />;
     }
   };
 
   const getStatusColor = () => {
     switch (stream.status) {
       case 'normal':
-        return 'border-green-200 bg-gradient-to-br from-green-50 to-emerald-50';
+        return 'border-emerald-200 dark:border-emerald-800 bg-emerald-50/50 dark:bg-emerald-950/30';
       case 'warning':
-        return 'border-yellow-200 bg-gradient-to-br from-yellow-50 to-amber-50';
+        return 'border-amber-200 dark:border-amber-800 bg-amber-50/50 dark:bg-amber-950/30';
       case 'danger':
-        return 'border-red-200 bg-gradient-to-br from-red-50 to-rose-50';
+        return 'border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30';
       default:
-        return 'border-gray-200 bg-gradient-to-br from-gray-50 to-slate-50';
+        return 'border-border bg-muted/20';
     }
   };
 
@@ -81,17 +81,17 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
       <WaterLevelIndicator stream={stream} />
 
       <div className="grid grid-cols-3 gap-3 mt-4">
-        <div className="text-center p-3 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg border border-blue-100">
-          <div className="text-xs font-semibold text-blue-700 font-display">Current</div>
-          <div className="text-lg font-bold text-blue-900 font-display">{stream.currentLevel}m</div>
+        <div className="text-center p-3 bg-primary/10 dark:bg-primary/20 rounded-lg border border-primary/20 dark:border-primary/30">
+          <div className="text-xs font-semibold text-primary dark:text-primary-foreground font-display">Current</div>
+          <div className="text-lg font-bold text-foreground font-display">{stream.currentLevel}m</div>
         </div>
-        <div className="text-center p-3 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg border border-purple-100">
-          <div className="text-xs font-semibold text-purple-700 font-display">{getTomorrowName()}</div>
-          <div className="text-lg font-bold text-purple-900 font-display">{nextPrediction.predictedLevel}m</div>
+        <div className="text-center p-3 bg-purple-100/50 dark:bg-purple-900/30 rounded-lg border border-purple-200/50 dark:border-purple-700/50">
+          <div className="text-xs font-semibold text-purple-700 dark:text-purple-300 font-display">{getTomorrowName()}</div>
+          <div className="text-lg font-bold text-foreground font-display">{nextPrediction.predictedLevel}m</div>
         </div>
-        <div className="text-center p-3 bg-gradient-to-br from-orange-50 to-red-50 rounded-lg border border-orange-100">
-          <div className="text-xs font-semibold text-orange-700 font-display">7-Day Max</div>
-          <div className="text-lg font-bold text-orange-900 font-display">{maxPrediction.predictedLevel}m</div>
+        <div className="text-center p-3 bg-orange-100/50 dark:bg-orange-900/30 rounded-lg border border-orange-200/50 dark:border-orange-700/50">
+          <div className="text-xs font-semibold text-orange-700 dark:text-orange-300 font-display">7-Day Max</div>
+          <div className="text-lg font-bold text-foreground font-display">{maxPrediction.predictedLevel}m</div>
         </div>
       </div>
 
@@ -104,9 +104,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
           })}
         </div>
         <div className={`px-3 py-1 rounded-full text-xs font-bold font-display tracking-wide ${
-          stream.status === 'normal' ? 'bg-green-100 text-green-800' :
-          stream.status === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-          'bg-red-100 text-red-800'
+          stream.status === 'normal' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200' :
+          stream.status === 'warning' ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200' :
+          'bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-200'
         }`}>
           {stream.status.toUpperCase()}
         </div>
