@@ -82,7 +82,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
 
       <div className="grid grid-cols-3 gap-3 mt-4">
         <div className="text-center p-3 bg-primary/10 dark:bg-primary/20 rounded-lg border border-primary/20 dark:border-primary/30">
-          <div className="text-xs font-semibold text-primary dark:text-primary-foreground font-display">Current</div>
+          <div className="text-xs font-semibold text-primary dark:text-blue-300 font-display">Current</div>
           <div className="text-lg font-bold text-foreground font-display">{stream.currentLevel}m</div>
         </div>
         <div className="text-center p-3 bg-purple-100/50 dark:bg-purple-900/30 rounded-lg border border-purple-200/50 dark:border-purple-700/50">
