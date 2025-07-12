@@ -115,7 +115,8 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
         offset: 25,
         maxWidth: '220px',
         closeButton: false,
-        closeOnClick: false
+        closeOnClick: false,
+        className: 'custom-popup'
       }).setHTML(popupContent);
 
       new mapboxgl.Marker(markerElement)

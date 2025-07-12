@@ -107,4 +107,15 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+
+  /* Custom mapbox popup styling */
+  .mapboxgl-popup-content {
+    border: none !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+  }
+  
+  .custom-popup .mapboxgl-popup-content {
+    padding: 0 !important;
+    border-radius: 8px !important;
+  }
 }
