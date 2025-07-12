@@ -24,17 +24,17 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <span className="text-sm font-medium text-gray-700">Water Level (meters)</span>
-        <span className="text-sm text-gray-500">Max: {stream.maxLevel}m</span>
+        <span className="text-sm font-medium text-foreground">Water Level (meters)</span>
+        <span className="text-sm text-muted-foreground">Max: {stream.maxLevel}m</span>
       </div>
       
       {/* Current Level Bar */}
       <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-xs text-blue-600 font-medium">Current</span>
-          <span className="text-xs text-gray-500">{stream.currentLevel}m ({currentPercentage.toFixed(1)}%)</span>
+         <div className="flex justify-between items-center">
+          <span className="text-xs text-primary font-medium">Current</span>
+          <span className="text-xs text-muted-foreground">{stream.currentLevel}m ({currentPercentage.toFixed(1)}%)</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-3">
+        <div className="w-full bg-muted rounded-full h-3">
           <div 
             className={`h-3 rounded-full transition-all duration-500 ${getBarColor(currentPercentage)}`}
             style={{ width: `${Math.min(currentPercentage, 100)}%` }}
@@ -44,7 +44,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
 
       {/* 7-Day Predictions */}
       <div className="space-y-3">
-        <h4 className="text-sm font-medium text-gray-700">7-Day Forecast</h4>
+        <h4 className="text-sm font-medium text-foreground">7-Day Forecast</h4>
         <div className="space-y-2">
           {stream.predictions.map((prediction, index) => {
             const predictedPercentage = (prediction.predictedLevel / stream.maxLevel) * 100;
@@ -53,12 +53,13 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
             return (
               <div key={index} className="space-y-1">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-purple-600 font-medium">{dayName}</span>
-                  <span className="text-xs text-gray-500">
-                    {prediction.predictedLevel}m ({predictedPercentage.toFixed(1)}%) - {prediction.confidence}% confidence
+                  <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">{dayName}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {prediction.predictedLevel}m ({predictedPercentage.toFixed(1)}%) - 
+                    <span className="text-emerald-600 dark:text-emerald-400 font-medium"> {prediction.confidence}% confidence</span>
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className="w-full bg-muted rounded-full h-2">
                   <div 
                     className={`h-2 rounded-full transition-all duration-500 opacity-70 ${getBarColor(predictedPercentage)}`}
                     style={{ width: `${Math.min(predictedPercentage, 100)}%` }}
