@@ -5,11 +5,11 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 
 export const Header = () => {
   return (
-    <header className="bg-background/80 backdrop-blur-sm shadow-sm border-b border-border/50 sticky top-0 z-50">
+    <header className="bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50 sticky top-0 z-50 transition-all duration-300">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-br from-blue-600 to-cyan-600 p-2 rounded-lg shadow-lg">
+            <div className="bg-gradient-to-br from-primary to-blue-600 p-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <Waves className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -18,8 +18,8 @@ export const Header = () => {
             </div>
           </div>
           <div className="flex items-center space-x-4">
-            <div className="flex items-center space-x-2 text-muted-foreground bg-muted/50 px-3 py-2 rounded-lg backdrop-blur-sm">
-              <MapPin className="h-4 w-4" />
+            <div className="flex items-center space-x-2 text-muted-foreground bg-muted/60 px-4 py-2.5 rounded-xl backdrop-blur-sm border border-border/30 hover:bg-muted/80 transition-all duration-300">
+              <MapPin className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Høje-Taastrup, Denmark</span>
             </div>
             <ThemeToggle />

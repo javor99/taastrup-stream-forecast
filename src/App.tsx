@@ -11,7 +11,7 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="aquamonitor-ui-theme">
+    <ThemeProvider defaultTheme="light" storageKey="aquamonitor-ui-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
