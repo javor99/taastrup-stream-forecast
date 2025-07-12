@@ -14,7 +14,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
   const fullscreenMapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const fullscreenMap = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken, setMapboxToken] = useState('');
+  const [mapboxToken] = useState('pk.eyJ1IjoiamF2b3I5OSIsImEiOiJjbWNwNG1nOHowMnNjMmpzM3RjbXY5aTcwIn0.dRpur8lSFnUtR9JHaJ-N2Q');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const getWeekdayName = (dayOffset: number) => {
@@ -144,28 +144,6 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
     setIsFullscreen(!isFullscreen);
   };
 
-  if (!mapboxToken) {
-    return (
-      <div className="bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-lg font-semibold mb-4">Stream Locations Map</h3>
-        <div className="space-y-4">
-          <p className="text-gray-600">To display the map, please enter your Mapbox public token:</p>
-          <input
-            type="text"
-            placeholder="Enter your Mapbox public token"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            onChange={(e) => setMapboxToken(e.target.value)}
-          />
-          <p className="text-sm text-gray-500">
-            Get your token at{' '}
-            <a href="https://mapbox.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-              mapbox.com
-            </a>
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <>
