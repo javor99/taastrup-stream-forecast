@@ -118,4 +118,14 @@ All colors MUST be HSL.
     padding: 0 !important;
     border-radius: 8px !important;
   }
+
+  /* Shimmer animation for skeleton loading */
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
+  }
 }
