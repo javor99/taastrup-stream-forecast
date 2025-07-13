@@ -1,5 +1,6 @@
 import React from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Loader } from 'lucide-react';
 
 export const StreamCardSkeleton = () => {
   return (
@@ -67,6 +68,14 @@ export const StreamMapSkeleton = () => {
 export const StreamGridSkeleton = () => {
   return (
     <div className="space-y-8 animate-fade-in">
+      {/* Loading Indicator */}
+      <div className="flex items-center justify-center py-8">
+        <div className="flex items-center space-x-3 text-muted-foreground">
+          <Loader className="h-6 w-6 animate-spin" />
+          <span className="text-lg font-medium">Loading stream data...</span>
+        </div>
+      </div>
+      
       <StreamMapSkeleton />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {[...Array(6)].map((_, i) => (
