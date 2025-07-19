@@ -37,12 +37,12 @@ const generatePredictions = (baseLevel: number, trend: 'rising' | 'falling' | 's
 
 const mockStreams: Stream[] = [
   {
-    id: 'stream-001',
-    name: 'Høje Taastrup Å',
+    id: '70000864',
+    name: 'Hove å, Tostholm bro',
     location: {
-      lat: 55.6493,
-      lng: 12.2725,
-      address: 'Høje Taastrup Hovedgade'
+      lat: 55.680989,
+      lng: 12.219433,
+      address: 'Tostholm bro'
     },
     currentLevel: 1.2,
     maxLevel: 3.0,
@@ -52,12 +52,12 @@ const mockStreams: Stream[] = [
     predictions: generatePredictions(1.2, 'rising')
   },
   {
-    id: 'stream-002',
-    name: 'Vestvolden Bæk',
+    id: '70000927',
+    name: 'Hakkemosegrøften, Ole Rømers Vej',
     location: {
-      lat: 55.6421,
-      lng: 12.2891,
-      address: 'Vestvolden Park'
+      lat: 55.681673,
+      lng: 12.281167,
+      address: 'Ole Rømers Vej'
     },
     currentLevel: 0.8,
     maxLevel: 2.5,
@@ -67,12 +67,12 @@ const mockStreams: Stream[] = [
     predictions: generatePredictions(0.8, 'stable')
   },
   {
-    id: 'stream-003',
-    name: 'Hedehusene Kanal',
+    id: '70000865',
+    name: 'Sengeløse å, Sengeløse mose',
     location: {
-      lat: 55.6571,
-      lng: 12.2456,
-      address: 'Hedehusene Centervej'
+      lat: 55.689824,
+      lng: 12.267812,
+      address: 'Sengeløse mose'
     },
     currentLevel: 2.1,
     maxLevel: 3.2,
@@ -82,12 +82,12 @@ const mockStreams: Stream[] = [
     predictions: generatePredictions(2.1, 'rising')
   },
   {
-    id: 'stream-004',
-    name: 'Fløng Møllebæk',
+    id: '70000926',
+    name: 'Nybølle Å, Ledøje Plantage',
     location: {
-      lat: 55.6325,
-      lng: 12.2612,
-      address: 'Fløng Møllevej'
+      lat: 55.693957,
+      lng: 12.309862,
+      address: 'Ledøje Plantage'
     },
     currentLevel: 0.6,
     maxLevel: 2.8,
@@ -97,12 +97,12 @@ const mockStreams: Stream[] = [
     predictions: generatePredictions(0.6, 'rising')
   },
   {
-    id: 'stream-005',
-    name: 'Taastrup Eng Vandløb',
+    id: '70000925',
+    name: 'Spangå, Ågesholmvej',
     location: {
-      lat: 55.6678,
-      lng: 12.2834,
-      address: 'Taastrup Eng Nature Area'
+      lat: 55.676561,
+      lng: 12.239100,
+      address: 'Ågesholmvej'
     },
     currentLevel: 2.8,
     maxLevel: 3.5,
@@ -112,12 +112,12 @@ const mockStreams: Stream[] = [
     predictions: generatePredictions(2.8, 'rising')
   },
   {
-    id: 'stream-006',
-    name: 'Reerslev Bæk',
+    id: '70000923',
+    name: 'Enghave Å, Rolandsvej 3',
     location: {
-      lat: 55.6402,
-      lng: 12.2123,
-      address: 'Reerslev Bymidte'
+      lat: 55.687870,
+      lng: 12.201108,
+      address: 'Rolandsvej 3'
     },
     currentLevel: 1.5,
     maxLevel: 3.0,
@@ -125,6 +125,21 @@ const mockStreams: Stream[] = [
     lastUpdated: new Date('2025-01-04T10:15:00'),
     trend: 'falling',
     predictions: generatePredictions(1.5, 'falling')
+  },
+  {
+    id: '70000924',
+    name: 'Ll. Vejleå, Lille Solhøjvej 42',
+    location: {
+      lat: 55.636369,
+      lng: 12.212559,
+      address: 'Lille Solhøjvej 42'
+    },
+    currentLevel: 1.1,
+    maxLevel: 2.7,
+    status: 'normal',
+    lastUpdated: new Date('2025-01-04T10:10:00'),
+    trend: 'stable',
+    predictions: generatePredictions(1.1, 'stable')
   }
 ];
 
