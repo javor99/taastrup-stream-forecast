@@ -22,9 +22,6 @@ export const Header = () => {
               <MapPin className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Høje-Taastrup, Denmark</span>
             </div>
-            <div className="md:hidden flex items-center text-muted-foreground bg-muted/60 p-2 rounded-lg backdrop-blur-sm border border-border/30">
-              <MapPin className="h-4 w-4 text-primary" />
-            </div>
             <ThemeToggle />
           </div>
         </div>

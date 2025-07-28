@@ -35,7 +35,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
     const newMap = new mapboxgl.Map({
       container: container,
       style: mapStyle,
-      center: [12.2725, 55.6493],
+      center: [12.247292, 55.678177], // Average of all stream locations
       zoom: 12,
     });
 
