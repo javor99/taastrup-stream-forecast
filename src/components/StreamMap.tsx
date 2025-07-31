@@ -42,6 +42,49 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
+    // Add Danish stream data as WMS layer
+    newMap.on('load', () => {
+      // Add WMS source for Danish streams
+      newMap.addSource('danish-streams', {
+        type: 'raster',
+        tiles: [
+          'https://services.datafordeler.dk/GeoDanmarkVektor/GeoDanmark_60_NOHIST/1.0.0/WMS?service=WMS&version=1.1.1&request=GetMap&layers=vandloebsmidte&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true&username=UFZLDDPIJS&password=DAIdatafordel123'
+        ],
+        tileSize: 256
+      });
+
+      // Add the layer with blue styling
+      newMap.addLayer({
+        id: 'danish-streams-layer',
+        type: 'raster',
+        source: 'danish-streams',
+        paint: {
+          'raster-opacity': 0.8
+        }
+      });
+
+      // Add a custom vector layer for better blue styling
+      newMap.addSource('custom-streams', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: []
+        }
+      });
+
+      // Add blue line layer for streams
+      newMap.addLayer({
+        id: 'streams-blue',
+        type: 'line',
+        source: 'custom-streams',
+        paint: {
+          'line-color': '#3b82f6',
+          'line-width': 2,
+          'line-opacity': 0.8
+        }
+      });
+    });
+
     // Function to check which streams are visible in current viewport
     const updateVisibleStreams = () => {
       console.log('updateVisibleStreams called');
