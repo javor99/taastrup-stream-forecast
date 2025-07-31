@@ -41,44 +41,32 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Add Danish streams WMS layer with thicker styling
+    // Make water features thicker and more visible
     newMap.on('load', () => {
-      newMap.addSource('danish-streams', {
-        type: 'raster',
-        tiles: [
-          `https://mst.dk/service/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=VANDLOEBSMIDTE&STYLES=&FORMAT=image/png&TRANSPARENT=true&SLD_BODY=${encodeURIComponent(`
-            <?xml version="1.0" encoding="UTF-8"?>
-            <StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld">
-              <NamedLayer>
-                <Name>VANDLOEBSMIDTE</Name>
-                <UserStyle>
-                  <FeatureTypeStyle>
-                    <Rule>
-                      <LineSymbolizer>
-                        <Stroke>
-                          <CssParameter name="stroke">#0066CC</CssParameter>
-                          <CssParameter name="stroke-width">5</CssParameter>
-                          <CssParameter name="stroke-opacity">0.9</CssParameter>
-                        </Stroke>
-                      </LineSymbolizer>
-                    </Rule>
-                  </FeatureTypeStyle>
-                </UserStyle>
-              </NamedLayer>
-            </StyledLayerDescriptor>
-          `)}`
-        ],
-        tileSize: 256
-      });
-
-      newMap.addLayer({
-        id: 'danish-streams-layer',
-        type: 'raster',
-        source: 'danish-streams',
-        paint: {
-          'raster-opacity': 0.95
-        }
-      });
+      // Enhance water line width for better visibility at lower zoom levels
+      newMap.setPaintProperty('waterway-river-canal', 'line-width', [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        8, 3,
+        10, 6,
+        14, 12,
+        18, 24
+      ]);
+      
+      newMap.setPaintProperty('waterway-small', 'line-width', [
+        'interpolate',
+        ['linear'],
+        ['zoom'],
+        8, 2,
+        10, 4,
+        14, 8,
+        18, 16
+      ]);
+      
+      // Make water more opaque
+      newMap.setPaintProperty('waterway-river-canal', 'line-opacity', 0.9);
+      newMap.setPaintProperty('waterway-small', 'line-opacity', 0.8);
     });
 
     // Function to check which streams are visible in current viewport
