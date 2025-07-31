@@ -44,22 +44,29 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     // Add Danish stream data as WMS layer
     newMap.on('load', () => {
-      // Add WMS source for Danish streams
+      // Add WMS source for Danish streams with correct layer name
       newMap.addSource('danish-streams', {
         type: 'raster',
         tiles: [
-          'https://services.datafordeler.dk/GeoDanmarkVektor/GeoDanmark_60_NOHIST/1.0.0/WMS?service=WMS&version=1.1.1&request=GetMap&layers=vandloebsmidte&bbox={bbox-epsg-3857}&width=256&height=256&srs=EPSG:3857&format=image/png&transparent=true&username=UFZLDDPIJS&password=DAIdatafordel123'
+          'https://services.datafordeler.dk/GeoDanmarkVektor/GeoDanmark_60_NOHIST/1.0.0/WMS?service=WMS&version=1.3.0&request=GetMap&layers=VANDLOEBSMIDTE&bbox={bbox-epsg-3857}&width=256&height=256&crs=EPSG:3857&format=image/png&transparent=true&styles=&username=UFZLDDPIJS&password=DAIdatafordel123'
         ],
         tileSize: 256
       });
 
-      // Add the layer with blue styling
+      // Add the layer with blue styling and color filter
       newMap.addLayer({
         id: 'danish-streams-layer',
         type: 'raster',
         source: 'danish-streams',
         paint: {
-          'raster-opacity': 0.8
+          'raster-opacity': 0.9,
+          'raster-hue-rotate': 0,
+          'raster-brightness-min': 0,
+          'raster-brightness-max': 1,
+          'raster-contrast': 0,
+          'raster-fade-duration': 0,
+          'raster-resampling': 'linear',
+          'raster-saturation': 0
         }
       });
 
