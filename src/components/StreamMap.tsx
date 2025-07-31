@@ -41,6 +41,126 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
+    // Add stream lines when map loads
+    newMap.on('load', () => {
+      // Add stream lines source
+      newMap.addSource('streams', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: [
+            // Hove å stream line
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [12.210, 55.685],
+                  [12.219433, 55.680989], // Hove å sensor
+                  [12.230, 55.675]
+                ]
+              }
+            },
+            // Sengeløse å stream line
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [12.250, 55.695],
+                  [12.267812, 55.689824], // Sengeløse å sensor
+                  [12.285, 55.685]
+                ]
+              }
+            },
+            // Nybølle Å stream line
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [12.295, 55.700],
+                  [12.309862, 55.693957], // Nybølle Å sensor
+                  [12.325, 55.690]
+                ]
+              }
+            },
+            // Spangå stream line
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [12.225, 55.680],
+                  [12.239100, 55.676561], // Spangå sensor
+                  [12.255, 55.672]
+                ]
+              }
+            },
+            // Enghave Å stream line
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [12.185, 55.692],
+                  [12.201108, 55.687870], // Enghave Å sensor
+                  [12.215, 55.683]
+                ]
+              }
+            },
+            // Ll. Vejleå stream line
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [12.200, 55.640],
+                  [12.212559, 55.636369], // Ll. Vejleå sensor
+                  [12.225, 55.632]
+                ]
+              }
+            },
+            // Hakkemosegrøften stream line
+            {
+              type: 'Feature',
+              properties: {},
+              geometry: {
+                type: 'LineString',
+                coordinates: [
+                  [12.270, 55.685],
+                  [12.281167, 55.681673], // Hakkemosegrøften sensor
+                  [12.295, 55.678]
+                ]
+              }
+            }
+          ]
+        }
+      });
+
+      // Add stream lines layer
+      newMap.addLayer({
+        id: 'stream-lines',
+        type: 'line',
+        source: 'streams',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#3b82f6', // Blue color for streams
+          'line-width': 3,
+          'line-opacity': 0.8
+        }
+      });
+    });
+
     // Add markers for each stream
     streams.forEach((stream) => {
       const getMarkerColor = (status: string) => {
