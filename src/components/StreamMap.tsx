@@ -1,3 +1,4 @@
+
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -40,34 +41,6 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
     });
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
-
-    // Make water features thicker and more visible
-    newMap.on('load', () => {
-      // Enhance water line width for better visibility at lower zoom levels
-      newMap.setPaintProperty('waterway-river-canal', 'line-width', [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        8, 3,
-        10, 6,
-        14, 12,
-        18, 24
-      ]);
-      
-      newMap.setPaintProperty('waterway-small', 'line-width', [
-        'interpolate',
-        ['linear'],
-        ['zoom'],
-        8, 2,
-        10, 4,
-        14, 8,
-        18, 16
-      ]);
-      
-      // Make water more opaque
-      newMap.setPaintProperty('waterway-river-canal', 'line-opacity', 0.9);
-      newMap.setPaintProperty('waterway-small', 'line-opacity', 0.8);
-    });
 
     // Function to check which streams are visible in current viewport
     const updateVisibleStreams = () => {
