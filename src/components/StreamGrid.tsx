@@ -146,14 +146,16 @@ const mockStreams: Stream[] = [
 export const StreamGrid = () => {
   const [visibleStreams, setVisibleStreams] = useState<Stream[]>(mockStreams);
 
-  const handleVisibleStreamsChange = (streams: Stream[]) => {
+  const handleVisibleStreamsChange = React.useCallback((streams: Stream[]) => {
     console.log('Visible streams updated:', streams.length, streams.map(s => s.name));
     setVisibleStreams(streams);
-  };
+  }, []);
 
   return (
     <div className="space-y-8">
-      <StreamMap streams={mockStreams} onVisibleStreamsChange={handleVisibleStreamsChange} />
+      <div className="mb-8">
+        <StreamMap streams={mockStreams} onVisibleStreamsChange={handleVisibleStreamsChange} />
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {visibleStreams.map((stream) => (
           <StreamCard key={stream.id} stream={stream} />
