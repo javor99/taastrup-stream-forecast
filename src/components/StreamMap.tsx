@@ -53,12 +53,15 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
       onVisibleStreamsChange(visibleStreams);
     };
 
-    // Update visible streams on map move/zoom
+    // Update visible streams on map events
     newMap.on('moveend', updateVisibleStreams);
     newMap.on('zoomend', updateVisibleStreams);
+    newMap.on('sourcedata', updateVisibleStreams);
     
-    // Initial check for visible streams
-    newMap.on('load', updateVisibleStreams);
+    // Initial check for visible streams when map is ready
+    newMap.on('idle', () => {
+      updateVisibleStreams();
+    });
 
     // Add markers for each stream
     streams.forEach((stream) => {
@@ -156,7 +159,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
     return () => {
       map.current?.remove();
     };
-  }, [streams, mapboxToken, theme]);
+  }, [streams, mapboxToken, theme, onVisibleStreamsChange]);
 
   // Fullscreen map effect
   useEffect(() => {
@@ -170,7 +173,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
         fullscreenMap.current = null;
       }
     };
-  }, [isFullscreen, streams, mapboxToken, theme]);
+  }, [isFullscreen, streams, mapboxToken, theme, onVisibleStreamsChange]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
