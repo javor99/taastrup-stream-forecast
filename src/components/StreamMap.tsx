@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
@@ -41,6 +40,46 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
     });
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    // Add Danish streams WMS layer with thicker styling
+    newMap.on('load', () => {
+      newMap.addSource('danish-streams', {
+        type: 'raster',
+        tiles: [
+          `https://mst.dk/service/wms?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=VANDLOEBSMIDTE&STYLES=&FORMAT=image/png&TRANSPARENT=true&SLD_BODY=${encodeURIComponent(`
+            <?xml version="1.0" encoding="UTF-8"?>
+            <StyledLayerDescriptor version="1.0.0" xmlns="http://www.opengis.net/sld">
+              <NamedLayer>
+                <Name>VANDLOEBSMIDTE</Name>
+                <UserStyle>
+                  <FeatureTypeStyle>
+                    <Rule>
+                      <LineSymbolizer>
+                        <Stroke>
+                          <CssParameter name="stroke">#0066CC</CssParameter>
+                          <CssParameter name="stroke-width">5</CssParameter>
+                          <CssParameter name="stroke-opacity">0.9</CssParameter>
+                        </Stroke>
+                      </LineSymbolizer>
+                    </Rule>
+                  </FeatureTypeStyle>
+                </UserStyle>
+              </NamedLayer>
+            </StyledLayerDescriptor>
+          `)}`
+        ],
+        tileSize: 256
+      });
+
+      newMap.addLayer({
+        id: 'danish-streams-layer',
+        type: 'raster',
+        source: 'danish-streams',
+        paint: {
+          'raster-opacity': 0.95
+        }
+      });
+    });
 
     // Function to check which streams are visible in current viewport
     const updateVisibleStreams = () => {
