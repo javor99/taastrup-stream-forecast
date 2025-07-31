@@ -147,6 +147,7 @@ export const StreamGrid = () => {
   const [visibleStreams, setVisibleStreams] = useState<Stream[]>(mockStreams);
 
   const handleVisibleStreamsChange = (streams: Stream[]) => {
+    console.log('Visible streams updated:', streams.length, streams.map(s => s.name));
     setVisibleStreams(streams);
   };
 
