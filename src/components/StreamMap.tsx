@@ -41,6 +41,77 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
+    // Add stream lines to make waterways more visible
+    newMap.on('load', () => {
+      // Create stream paths for better visibility
+      const streamPaths = streams.map(stream => {
+        // Create a longer stream path extending from each sensor location
+        const lat = stream.location.lat;
+        const lng = stream.location.lng;
+        
+        // Create a stream line extending in both directions from the sensor
+        return {
+          type: 'Feature' as const,
+          properties: {
+            name: stream.name,
+            status: stream.status
+          },
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: [
+              [lng - 0.01, lat - 0.005],
+              [lng - 0.005, lat - 0.003],
+              [lng, lat],
+              [lng + 0.005, lat + 0.003],
+              [lng + 0.01, lat + 0.005]
+            ]
+          }
+        };
+      });
+
+      // Add stream source
+      newMap.addSource('streams', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: streamPaths
+        }
+      });
+
+      // Add stream layer with blue styling
+      newMap.addLayer({
+        id: 'stream-lines',
+        type: 'line',
+        source: 'streams',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#3b82f6',
+          'line-width': 4,
+          'line-opacity': 0.8
+        }
+      });
+
+      // Add a subtle glow effect
+      newMap.addLayer({
+        id: 'stream-glow',
+        type: 'line',
+        source: 'streams',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': '#3b82f6',
+          'line-width': 8,
+          'line-opacity': 0.3,
+          'line-blur': 2
+        }
+      }, 'stream-lines');
+    });
+
     // Add markers for each stream
     streams.forEach((stream) => {
       const getMarkerColor = (status: string) => {
