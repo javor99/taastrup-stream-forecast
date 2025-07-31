@@ -8,9 +8,10 @@ import { useTheme } from '@/components/ThemeProvider';
 
 interface StreamMapProps {
   streams: Stream[];
+  onVisibleStreamsChange?: (streams: Stream[]) => void;
 }
 
-export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
+export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsChange }) => {
   const { theme } = useTheme();
   const mapContainer = useRef<HTMLDivElement>(null);
   const fullscreenMapContainer = useRef<HTMLDivElement>(null);
@@ -40,6 +41,24 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
     });
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
+
+    // Function to check which streams are visible in current viewport
+    const updateVisibleStreams = () => {
+      if (!onVisibleStreamsChange) return;
+      
+      const bounds = newMap.getBounds();
+      const visibleStreams = streams.filter(stream => 
+        bounds.contains([stream.location.lng, stream.location.lat])
+      );
+      onVisibleStreamsChange(visibleStreams);
+    };
+
+    // Update visible streams on map move/zoom
+    newMap.on('moveend', updateVisibleStreams);
+    newMap.on('zoomend', updateVisibleStreams);
+    
+    // Initial check for visible streams
+    newMap.on('load', updateVisibleStreams);
 
     // Add markers for each stream
     streams.forEach((stream) => {

@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { StreamCard } from './StreamCard';
 import { StreamMap } from './StreamMap';
 import { Stream } from '@/types/stream';
@@ -144,11 +144,17 @@ const mockStreams: Stream[] = [
 ];
 
 export const StreamGrid = () => {
+  const [visibleStreams, setVisibleStreams] = useState<Stream[]>(mockStreams);
+
+  const handleVisibleStreamsChange = (streams: Stream[]) => {
+    setVisibleStreams(streams);
+  };
+
   return (
     <div className="space-y-8">
-      <StreamMap streams={mockStreams} />
+      <StreamMap streams={mockStreams} onVisibleStreamsChange={handleVisibleStreamsChange} />
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {mockStreams.map((stream) => (
+        {visibleStreams.map((stream) => (
           <StreamCard key={stream.id} stream={stream} />
         ))}
       </div>
