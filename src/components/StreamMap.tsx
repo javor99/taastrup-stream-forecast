@@ -49,94 +49,127 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams }) => {
         data: {
           type: 'FeatureCollection',
           features: [
-            // Hove å stream line
+            // Hove å - full stream path
             {
               type: 'Feature',
               properties: {},
               geometry: {
                 type: 'LineString',
                 coordinates: [
+                  [12.180, 55.695],
+                  [12.190, 55.690],
+                  [12.200, 55.687],
                   [12.210, 55.685],
-                  [12.219433, 55.680989], // Hove å sensor
-                  [12.230, 55.675]
+                  [12.219433, 55.680989], // Sensor location
+                  [12.230, 55.675],
+                  [12.245, 55.670],
+                  [12.260, 55.665]
                 ]
               }
             },
-            // Sengeløse å stream line
+            // Sengeløse å - full stream path
             {
               type: 'Feature',
               properties: {},
               geometry: {
                 type: 'LineString',
                 coordinates: [
-                  [12.250, 55.695],
-                  [12.267812, 55.689824], // Sengeløse å sensor
-                  [12.285, 55.685]
+                  [12.240, 55.705],
+                  [12.250, 55.700],
+                  [12.255, 55.695],
+                  [12.267812, 55.689824], // Sensor location
+                  [12.275, 55.685],
+                  [12.285, 55.680],
+                  [12.295, 55.675],
+                  [12.310, 55.670]
                 ]
               }
             },
-            // Nybølle Å stream line
+            // Nybølle Å - full stream path
             {
               type: 'Feature',
               properties: {},
               geometry: {
                 type: 'LineString',
                 coordinates: [
-                  [12.295, 55.700],
-                  [12.309862, 55.693957], // Nybølle Å sensor
-                  [12.325, 55.690]
+                  [12.280, 55.710],
+                  [12.290, 55.705],
+                  [12.300, 55.700],
+                  [12.309862, 55.693957], // Sensor location
+                  [12.315, 55.690],
+                  [12.325, 55.685],
+                  [12.335, 55.680],
+                  [12.350, 55.675]
                 ]
               }
             },
-            // Spangå stream line
+            // Spangå - full stream path
             {
               type: 'Feature',
               properties: {},
               geometry: {
                 type: 'LineString',
                 coordinates: [
-                  [12.225, 55.680],
-                  [12.239100, 55.676561], // Spangå sensor
-                  [12.255, 55.672]
+                  [12.210, 55.690],
+                  [12.220, 55.685],
+                  [12.230, 55.680],
+                  [12.239100, 55.676561], // Sensor location
+                  [12.250, 55.672],
+                  [12.265, 55.668],
+                  [12.280, 55.665]
                 ]
               }
             },
-            // Enghave Å stream line
+            // Enghave Å - full stream path
             {
               type: 'Feature',
               properties: {},
               geometry: {
                 type: 'LineString',
                 coordinates: [
+                  [12.160, 55.700],
+                  [12.175, 55.695],
                   [12.185, 55.692],
-                  [12.201108, 55.687870], // Enghave Å sensor
-                  [12.215, 55.683]
+                  [12.201108, 55.687870], // Sensor location
+                  [12.210, 55.685],
+                  [12.220, 55.682],
+                  [12.235, 55.678],
+                  [12.250, 55.675]
                 ]
               }
             },
-            // Ll. Vejleå stream line
+            // Ll. Vejleå - full stream path
             {
               type: 'Feature',
               properties: {},
               geometry: {
                 type: 'LineString',
                 coordinates: [
+                  [12.180, 55.650],
+                  [12.190, 55.645],
                   [12.200, 55.640],
-                  [12.212559, 55.636369], // Ll. Vejleå sensor
-                  [12.225, 55.632]
+                  [12.212559, 55.636369], // Sensor location
+                  [12.225, 55.632],
+                  [12.240, 55.628],
+                  [12.255, 55.625],
+                  [12.270, 55.622]
                 ]
               }
             },
-            // Hakkemosegrøften stream line
+            // Hakkemosegrøften - full stream path
             {
               type: 'Feature',
               properties: {},
               geometry: {
                 type: 'LineString',
                 coordinates: [
+                  [12.260, 55.690],
                   [12.270, 55.685],
-                  [12.281167, 55.681673], // Hakkemosegrøften sensor
-                  [12.295, 55.678]
+                  [12.281167, 55.681673], // Sensor location
+                  [12.290, 55.678],
+                  [12.300, 55.675],
+                  [12.315, 55.672],
+                  [12.330, 55.670]
                 ]
               }
             }
