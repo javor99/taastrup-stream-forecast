@@ -42,49 +42,69 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Add WFS layer for stream buffer zones
-    newMap.on('load', () => {
-      console.log('Map loaded, fetching WFS data...');
-      fetch("https://geodata.fvm.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=Braemmer_2-metersbraemme_2025&outputFormat=application/json&SRSNAME=EPSG:4326")
-        .then(response => {
-          console.log('WFS response status:', response.status);
-          return response.json();
-        })
-        .then(data => {
-          console.log('WFS data received:', data);
-          console.log('Number of features:', data.features?.length || 0);
-          
-          newMap.addSource('braemmer', {
-            type: 'geojson',
-            data: data
-          });
+    // Chunked fetching function to prevent page slowdown
+    const fetchAllChunks = async () => {
+      let allFeatures = [];
+      let startIndex = 0;
+      const chunkSize = 1000;
+      let hasMore = true;
 
-          newMap.addLayer({
-            id: 'braemmer-layer',
-            type: 'fill',
-            source: 'braemmer',
-            paint: {
-              'fill-color': '#0000FF',
-              'fill-opacity': 0.6
-            }
-          });
+      while (hasMore) {
+        const url = `https://geodata.fvm.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=Braemmer_2-metersbraemme_2025&outputFormat=application/json&SRSNAME=EPSG:4326&count=${chunkSize}&startIndex=${startIndex}`;
 
-          newMap.addLayer({
-            id: 'braemmer-outline',
-            type: 'line',
-            source: 'braemmer',
-            paint: {
-              'line-color': '#0000FF',
-              'line-width': 2
-            }
-          });
-          
-          console.log('WFS layers added successfully');
-        })
-        .catch(error => {
-          console.error('Error loading stream buffer zones:', error);
-          console.error('Full error details:', error.message, error.stack);
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.features.length > 0) {
+          allFeatures.push(...data.features);
+          startIndex += chunkSize;
+        } else {
+          hasMore = false;
+        }
+      }
+
+      return {
+        type: "FeatureCollection" as const,
+        features: allFeatures
+      };
+    };
+
+    // Add WFS layer for stream buffer zones with chunked loading
+    newMap.on('load', async () => {
+      console.log('Map loaded, fetching WFS data in chunks...');
+      try {
+        const geojson = await fetchAllChunks();
+        console.log('All chunks loaded, total features:', geojson.features.length);
+
+        newMap.addSource('braemmer', {
+          type: 'geojson',
+          data: geojson
         });
+
+        newMap.addLayer({
+          id: 'braemmer-fill',
+          type: 'fill',
+          source: 'braemmer',
+          paint: {
+            'fill-color': '#0000FF',
+            'fill-opacity': 0.5
+          }
+        });
+
+        newMap.addLayer({
+          id: 'braemmer-outline',
+          type: 'line',
+          source: 'braemmer',
+          paint: {
+            'fill-color': '#0000FF',
+            'line-width': 1
+          }
+        });
+
+        console.log('WFS layers added successfully');
+      } catch (error) {
+        console.error('Error loading stream buffer zones:', error);
+      }
     });
 
     // Function to check which streams are visible in current viewport
