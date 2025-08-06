@@ -48,38 +48,46 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
       fetch("https://geodata.fvm.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=Braemmer_2-metersbraemme_2025&outputFormat=application/json&SRSNAME=EPSG:4326")
         .then(response => {
           console.log('WFS response status:', response.status);
-          return response.json();
+          console.log('WFS response headers:', response.headers.get('content-type'));
+          return response.text(); // Get as text first to see what we're getting
         })
-        .then(data => {
-          console.log('WFS data received:', data);
-          console.log('Number of features:', data.features?.length || 0);
+        .then(text => {
+          console.log('WFS raw response:', text.substring(0, 500) + '...'); // First 500 chars
+          try {
+            const data = JSON.parse(text);
+            console.log('WFS data received:', data);
+            console.log('Number of features:', data.features?.length || 0);
           
-          newMap.addSource('braemmer', {
-            type: 'geojson',
-            data: data
-          });
+            newMap.addSource('braemmer', {
+              type: 'geojson',
+              data: data
+            });
 
-          newMap.addLayer({
-            id: 'braemmer-layer',
-            type: 'fill',
-            source: 'braemmer',
-            paint: {
-              'fill-color': '#0000FF',
-              'fill-opacity': 0.6
-            }
-          });
+            newMap.addLayer({
+              id: 'braemmer-layer',
+              type: 'fill',
+              source: 'braemmer',
+              paint: {
+                'fill-color': '#0000FF',
+                'fill-opacity': 0.6
+              }
+            });
 
-          newMap.addLayer({
-            id: 'braemmer-outline',
-            type: 'line',
-            source: 'braemmer',
-            paint: {
-              'line-color': '#0000FF',
-              'line-width': 2
-            }
-          });
-          
-          console.log('WFS layers added successfully');
+            newMap.addLayer({
+              id: 'braemmer-outline',
+              type: 'line',
+              source: 'braemmer',
+              paint: {
+                'line-color': '#0000FF',
+                'line-width': 2
+              }
+            });
+            
+            console.log('WFS layers added successfully');
+          } catch (parseError) {
+            console.error('Error parsing WFS response as JSON:', parseError);
+            console.log('Response might not be JSON format');
+          }
         })
         .catch(error => {
           console.error('Error loading stream buffer zones:', error);
