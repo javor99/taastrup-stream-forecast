@@ -43,50 +43,52 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Add WFS layer for stream buffer zones via Edge Function
-    newMap.on('load', async () => {
-      console.log('Map loaded, fetching cached stream buffer data...');
-      try {
-        const { data, error } = await supabase.functions.invoke('fetch-stream-buffers');
-        console.log('Stream buffers response:', { data, error });
-        if (error) {
-          console.error('Edge Function error:', error);
-          throw new Error(`Failed to fetch stream buffers: ${error.message}`);
-        }
-        
-        console.log('Stream buffer data received:', data);
-        console.log('Number of features:', data.features?.length || 0);
-        
-        newMap.addSource('braemmer', {
-          type: 'geojson',
-          data: data
-        });
+    // Fetch stream buffer zones directly from Danish geodata WFS
+    newMap.on('load', () => {
+        const wfsUrl = "https://geodata.fvm.dk/geoserver/ows" +
+            "?service=WFS" +
+            "&version=2.0.0" +
+            "&request=GetFeature" +
+            "&typeName=vandloeb_bufferzone_samlet" +
+            "&outputFormat=application/json" +
+            "&SRSNAME=EPSG:4326" +
+            "&bbox=11.9,55.55,12.75,55.95,EPSG:4326"; // Greater Copenhagen bbox
 
-        newMap.addLayer({
-          id: 'braemmer-layer',
-          type: 'fill',
-          source: 'braemmer',
-          paint: {
-            'fill-color': '#3b82f6',
-            'fill-opacity': 0.3
-          }
-        });
+        fetch(wfsUrl)
+            .then(response => response.json())
+            .then(data => {
+                console.log("Stream buffers response: WFS data loaded successfully", data);
 
-        newMap.addLayer({
-          id: 'braemmer-outline',
-          type: 'line',
-          source: 'braemmer',
-          paint: {
-            'line-color': '#3b82f6',
-            'line-width': 1
-          }
-        });
-        
-        console.log('Stream buffer layers added successfully');
-      } catch (error) {
-        console.error('Error loading stream buffer zones:', error);
-        console.error('Full error details:', error.message, error.stack);
-      }
+                newMap.addSource('stream-buffers', {
+                    type: 'geojson',
+                    data: data
+                });
+
+                // Blue fill for stream buffers
+                newMap.addLayer({
+                    id: 'stream-buffers-fill',
+                    type: 'fill',
+                    source: 'stream-buffers',
+                    paint: {
+                        'fill-color': '#3b82f6',
+                        'fill-opacity': 0.2
+                    }
+                });
+
+                // Blue outline for stream buffers
+                newMap.addLayer({
+                    id: 'stream-buffers-outline',
+                    type: 'line',
+                    source: 'stream-buffers',
+                    paint: {
+                        'line-color': '#3b82f6',
+                        'line-width': 1
+                    }
+                });
+            })
+            .catch(err => {
+                console.error("Stream buffers response:", { data: null, error: err });
+            });
     });
 
     // Function to check which streams are visible in current viewport
