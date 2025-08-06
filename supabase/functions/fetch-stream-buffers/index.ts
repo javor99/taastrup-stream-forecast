@@ -18,10 +18,12 @@ serve(async (req) => {
     )
 
     // Check if we have cached data (less than 1 hour old)
-    const { data: cachedData } = await supabase
+    const { data: cachedData, error: cacheError } = await supabase
       .from('stream_buffer_cache')
       .select('*')
-      .single()
+      .maybeSingle()
+    
+    console.log('Cache query result:', { cachedData, cacheError })
 
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
     
