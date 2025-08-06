@@ -5,7 +5,6 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Stream } from '@/types/stream';
 import { Fullscreen, X } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
-import { supabase } from '@/integrations/supabase/client';
 
 interface StreamMapProps {
   streams: Stream[];
@@ -43,52 +42,49 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Fetch stream buffer zones directly from Danish geodata WFS
+    // Add WFS layer for stream buffer zones
     newMap.on('load', () => {
-        const wfsUrl = "https://geodata.fvm.dk/geoserver/ows" +
-            "?service=WFS" +
-            "&version=2.0.0" +
-            "&request=GetFeature" +
-            "&typeName=vandloeb_bufferzone_samlet" +
-            "&outputFormat=application/json" +
-            "&SRSNAME=EPSG:4326" +
-            "&bbox=11.9,55.55,12.75,55.95,EPSG:4326"; // Greater Copenhagen bbox
+      console.log('Map loaded, fetching WFS data...');
+      fetch("https://geodata.fvm.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=Braemmer_2-metersbraemme_2025&outputFormat=application/json&SRSNAME=EPSG:4326")
+        .then(response => {
+          console.log('WFS response status:', response.status);
+          return response.json();
+        })
+        .then(data => {
+          console.log('WFS data received:', data);
+          console.log('Number of features:', data.features?.length || 0);
+          
+          newMap.addSource('braemmer', {
+            type: 'geojson',
+            data: data
+          });
 
-        fetch(wfsUrl)
-            .then(response => response.json())
-            .then(data => {
-                console.log("Stream buffers response: WFS data loaded successfully", data);
+          newMap.addLayer({
+            id: 'braemmer-layer',
+            type: 'fill',
+            source: 'braemmer',
+            paint: {
+              'fill-color': '#0000FF',
+              'fill-opacity': 0.6
+            }
+          });
 
-                newMap.addSource('stream-buffers', {
-                    type: 'geojson',
-                    data: data
-                });
-
-                // Blue fill for stream buffers
-                newMap.addLayer({
-                    id: 'stream-buffers-fill',
-                    type: 'fill',
-                    source: 'stream-buffers',
-                    paint: {
-                        'fill-color': '#3b82f6',
-                        'fill-opacity': 0.2
-                    }
-                });
-
-                // Blue outline for stream buffers
-                newMap.addLayer({
-                    id: 'stream-buffers-outline',
-                    type: 'line',
-                    source: 'stream-buffers',
-                    paint: {
-                        'line-color': '#3b82f6',
-                        'line-width': 1
-                    }
-                });
-            })
-            .catch(err => {
-                console.error("Stream buffers response:", { data: null, error: err });
-            });
+          newMap.addLayer({
+            id: 'braemmer-outline',
+            type: 'line',
+            source: 'braemmer',
+            paint: {
+              'line-color': '#0000FF',
+              'line-width': 2
+            }
+          });
+          
+          console.log('WFS layers added successfully');
+        })
+        .catch(error => {
+          console.error('Error loading stream buffer zones:', error);
+          console.error('Full error details:', error.message, error.stack);
+        });
     });
 
     // Function to check which streams are visible in current viewport
