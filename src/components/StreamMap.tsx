@@ -44,9 +44,16 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     // Add WFS layer for stream buffer zones
     newMap.on('load', () => {
+      console.log('Map loaded, fetching WFS data...');
       fetch("https://geodata.fvm.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=Braemmer_2-metersbraemme_2025&outputFormat=application/json&SRSNAME=EPSG:4326")
-        .then(response => response.json())
+        .then(response => {
+          console.log('WFS response status:', response.status);
+          return response.json();
+        })
         .then(data => {
+          console.log('WFS data received:', data);
+          console.log('Number of features:', data.features?.length || 0);
+          
           newMap.addSource('braemmer', {
             type: 'geojson',
             data: data
@@ -58,7 +65,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
             source: 'braemmer',
             paint: {
               'fill-color': '#0000FF',
-              'fill-opacity': 0.5
+              'fill-opacity': 0.6
             }
           });
 
@@ -68,11 +75,16 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
             source: 'braemmer',
             paint: {
               'line-color': '#0000FF',
-              'line-width': 1
+              'line-width': 2
             }
           });
+          
+          console.log('WFS layers added successfully');
         })
-        .catch(error => console.error('Error loading stream buffer zones:', error));
+        .catch(error => {
+          console.error('Error loading stream buffer zones:', error);
+          console.error('Full error details:', error.message, error.stack);
+        });
     });
 
     // Function to check which streams are visible in current viewport
