@@ -42,6 +42,39 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
+    // Add WFS layer for stream buffer zones
+    newMap.on('load', () => {
+      fetch("https://geodata.fvm.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=Braemmer_2-metersbraemme_2025&outputFormat=application/json&SRSNAME=EPSG:4326")
+        .then(response => response.json())
+        .then(data => {
+          newMap.addSource('braemmer', {
+            type: 'geojson',
+            data: data
+          });
+
+          newMap.addLayer({
+            id: 'braemmer-layer',
+            type: 'fill',
+            source: 'braemmer',
+            paint: {
+              'fill-color': '#0000FF',
+              'fill-opacity': 0.5
+            }
+          });
+
+          newMap.addLayer({
+            id: 'braemmer-outline',
+            type: 'line',
+            source: 'braemmer',
+            paint: {
+              'line-color': '#0000FF',
+              'line-width': 1
+            }
+          });
+        })
+        .catch(error => console.error('Error loading stream buffer zones:', error));
+    });
+
     // Function to check which streams are visible in current viewport
     const updateVisibleStreams = () => {
       console.log('updateVisibleStreams called');
