@@ -68,8 +68,8 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
               type: 'fill',
               source: 'braemmer',
               paint: {
-                'fill-color': '#0000FF',
-                'fill-opacity': 0.6
+                'fill-color': '#ff6b00',  // Bright orange for visibility
+                'fill-opacity': 0.4
               }
             });
 
@@ -78,10 +78,29 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
               type: 'line',
               source: 'braemmer',
               paint: {
-                'line-color': '#0000FF',
-                'line-width': 2
+                'line-color': '#ff6b00',  // Bright orange
+                'line-width': 3
               }
             });
+            
+            // Fit map to show the WFS data
+            if (data.features && data.features.length > 0) {
+              const bounds = new mapboxgl.LngLatBounds();
+              data.features.forEach((feature: any) => {
+                if (feature.geometry.type === 'Polygon') {
+                  feature.geometry.coordinates[0].forEach((coord: number[]) => {
+                    bounds.extend([coord[0], coord[1]]);
+                  });
+                } else if (feature.geometry.type === 'MultiPolygon') {
+                  feature.geometry.coordinates.forEach((polygon: number[][][]) => {
+                    polygon[0].forEach((coord: number[]) => {
+                      bounds.extend([coord[0], coord[1]]);
+                    });
+                  });
+                }
+              });
+              newMap.fitBounds(bounds, { padding: 50 });
+            }
             
             console.log('WFS layers added successfully');
           } catch (parseError) {
