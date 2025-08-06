@@ -5,6 +5,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { Stream } from '@/types/stream';
 import { Fullscreen, X } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import { supabase } from '@/integrations/supabase/client';
 
 interface StreamMapProps {
   streams: Stream[];
@@ -43,48 +44,48 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
     // Add WFS layer for stream buffer zones via Edge Function
-    newMap.on('load', () => {
+    newMap.on('load', async () => {
       console.log('Map loaded, fetching cached stream buffer data...');
-      fetch('/api/fetch-stream-buffers')
-        .then(response => {
-          console.log('Stream buffers response status:', response.status);
-          return response.json();
-        })
-        .then(data => {
-          console.log('Stream buffer data received:', data);
-          console.log('Number of features:', data.features?.length || 0);
-          
-          newMap.addSource('braemmer', {
-            type: 'geojson',
-            data: data
-          });
-
-          newMap.addLayer({
-            id: 'braemmer-layer',
-            type: 'fill',
-            source: 'braemmer',
-            paint: {
-              'fill-color': '#3b82f6',
-              'fill-opacity': 0.3
-            }
-          });
-
-          newMap.addLayer({
-            id: 'braemmer-outline',
-            type: 'line',
-            source: 'braemmer',
-            paint: {
-              'line-color': '#3b82f6',
-              'line-width': 1
-            }
-          });
-          
-          console.log('Stream buffer layers added successfully');
-        })
-        .catch(error => {
-          console.error('Error loading stream buffer zones:', error);
-          console.error('Full error details:', error.message, error.stack);
+      try {
+        const { data, error } = await supabase.functions.invoke('fetch-stream-buffers');
+        console.log('Stream buffers response:', { data, error });
+        if (error) {
+          throw new Error(error.message);
+        }
+        
+        console.log('Stream buffer data received:', data);
+        console.log('Number of features:', data.features?.length || 0);
+        
+        newMap.addSource('braemmer', {
+          type: 'geojson',
+          data: data
         });
+
+        newMap.addLayer({
+          id: 'braemmer-layer',
+          type: 'fill',
+          source: 'braemmer',
+          paint: {
+            'fill-color': '#3b82f6',
+            'fill-opacity': 0.3
+          }
+        });
+
+        newMap.addLayer({
+          id: 'braemmer-outline',
+          type: 'line',
+          source: 'braemmer',
+          paint: {
+            'line-color': '#3b82f6',
+            'line-width': 1
+          }
+        });
+        
+        console.log('Stream buffer layers added successfully');
+      } catch (error) {
+        console.error('Error loading stream buffer zones:', error);
+        console.error('Full error details:', error.message, error.stack);
+      }
     });
 
     // Function to check which streams are visible in current viewport
