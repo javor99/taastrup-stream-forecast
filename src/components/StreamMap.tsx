@@ -47,10 +47,15 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
     newMap.on('load', async () => {
       console.log('Map loaded, fetching cached stream buffer data...');
       try {
-        const { data, error } = await supabase.functions.invoke('fetch-stream-buffers');
+        const { data, error } = await supabase.functions.invoke('fetch-stream-buffers', {
+          method: 'POST'
+        });
         console.log('Stream buffers response:', { data, error });
         if (error) {
-          throw new Error(error.message);
+          console.error('Error details:', error);
+          console.error('Error message:', error.message);
+          console.error('Error details:', JSON.stringify(error, null, 2));
+          throw new Error(`Failed to fetch stream buffers: ${error.message}`);
         }
         
         console.log('Stream buffer data received:', data);
