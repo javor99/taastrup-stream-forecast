@@ -48,65 +48,38 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
       fetch("https://geodata.fvm.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=Braemmer_2-metersbraemme_2025&outputFormat=application/json&SRSNAME=EPSG:4326")
         .then(response => {
           console.log('WFS response status:', response.status);
-          console.log('WFS response headers:', response.headers.get('content-type'));
-          return response.text(); // Get as text first to see what we're getting
+          return response.json();
         })
-        .then(text => {
-          console.log('WFS raw response:', text.substring(0, 500) + '...'); // First 500 chars
-          try {
-            const data = JSON.parse(text);
-            console.log('WFS data received:', data);
-            console.log('Number of features:', data.features?.length || 0);
+        .then(data => {
+          console.log('WFS data received:', data);
+          console.log('Number of features:', data.features?.length || 0);
           
-            newMap.addSource('braemmer', {
-              type: 'geojson',
-              data: data
-            });
+          newMap.addSource('braemmer', {
+            type: 'geojson',
+            data: data
+          });
 
-            newMap.addLayer({
-              id: 'braemmer-layer',
-              type: 'fill',
-              source: 'braemmer',
-              paint: {
-                'fill-color': '#ff6b00',  // Bright orange for visibility
-                'fill-opacity': 0.4
-              }
-            });
-
-            newMap.addLayer({
-              id: 'braemmer-outline',
-              type: 'line',
-              source: 'braemmer',
-              paint: {
-                'line-color': '#ff6b00',  // Bright orange
-                'line-width': 3
-              }
-            });
-            
-            // Fit map to show the WFS data
-            if (data.features && data.features.length > 0) {
-              const bounds = new mapboxgl.LngLatBounds();
-              data.features.forEach((feature: any) => {
-                if (feature.geometry.type === 'Polygon') {
-                  feature.geometry.coordinates[0].forEach((coord: number[]) => {
-                    bounds.extend([coord[0], coord[1]]);
-                  });
-                } else if (feature.geometry.type === 'MultiPolygon') {
-                  feature.geometry.coordinates.forEach((polygon: number[][][]) => {
-                    polygon[0].forEach((coord: number[]) => {
-                      bounds.extend([coord[0], coord[1]]);
-                    });
-                  });
-                }
-              });
-              newMap.fitBounds(bounds, { padding: 50 });
+          newMap.addLayer({
+            id: 'braemmer-layer',
+            type: 'fill',
+            source: 'braemmer',
+            paint: {
+              'fill-color': '#0000FF',
+              'fill-opacity': 0.6
             }
-            
-            console.log('WFS layers added successfully');
-          } catch (parseError) {
-            console.error('Error parsing WFS response as JSON:', parseError);
-            console.log('Response might not be JSON format');
-          }
+          });
+
+          newMap.addLayer({
+            id: 'braemmer-outline',
+            type: 'line',
+            source: 'braemmer',
+            paint: {
+              'line-color': '#0000FF',
+              'line-width': 2
+            }
+          });
+          
+          console.log('WFS layers added successfully');
         })
         .catch(error => {
           console.error('Error loading stream buffer zones:', error);
