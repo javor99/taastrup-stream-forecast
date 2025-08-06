@@ -29,9 +29,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
   const createMap = (container: HTMLDivElement) => {
     mapboxgl.accessToken = mapboxToken;
     
-    const mapStyle = theme === 'dark' 
-      ? 'mapbox://styles/mapbox/outdoors-v12' 
-      : 'mapbox://styles/mapbox/outdoors-v12';
+    const mapStyle = 'mapbox://styles/javor99/cmdzty06m00vk01qs18v31qz0';
     
     const newMap = new mapboxgl.Map({
       container: container,
