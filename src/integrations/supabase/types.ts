@@ -14,7 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      stream_buffer_cache: {
+        Row: {
+          geojson_data: Json
+          id: number
+          updated_at: string | null
+        }
+        Insert: {
+          geojson_data: Json
+          id?: number
+          updated_at?: string | null
+        }
+        Update: {
+          geojson_data?: Json
+          id?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
