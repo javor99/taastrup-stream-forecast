@@ -7,11 +7,14 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
+    console.log('Starting fetch-stream-buffers function...')
+    
     const supabase = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -53,7 +56,7 @@ serve(async (req) => {
     const geojsonData = await response.json()
     console.log(`Fetched ${geojsonData.features?.length || 0} features`)
     
-    // Simplify the geometry to reduce size (keep every 10th coordinate)
+    // Simplify the geometry to reduce size (keep every 5th coordinate)
     const simplifiedData = {
       ...geojsonData,
       features: geojsonData.features?.map((feature: any) => ({
@@ -67,16 +70,28 @@ serve(async (req) => {
       })) || []
     }
     
-    // Cache the data
-    await supabase
-      .from('stream_buffer_cache')
-      .upsert({
-        id: 1,
-        geojson_data: simplifiedData,
-        updated_at: new Date().toISOString()
-      })
+    console.log('Simplified data created, caching...')
     
-    console.log('Cached simplified stream buffer data')
+    // Cache the data in background
+    const backgroundCache = async () => {
+      try {
+        await supabase
+          .from('stream_buffer_cache')
+          .upsert({
+            id: 1,
+            geojson_data: simplifiedData,
+            updated_at: new Date().toISOString()
+          })
+        console.log('Successfully cached stream buffer data')
+      } catch (error) {
+        console.error('Failed to cache data:', error)
+      }
+    }
+    
+    // Start background caching
+    EdgeRuntime.waitUntil(backgroundCache())
+    
+    console.log('Returning fresh stream buffer data')
     
     return new Response(
       JSON.stringify(simplifiedData),

@@ -43,40 +43,23 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Add WFS layer for stream buffer zones directly
+    // Add WFS layer for stream buffer zones via Edge Function
     newMap.on('load', async () => {
-      console.log('Map loaded, fetching stream buffer data...');
+      console.log('Map loaded, fetching cached stream buffer data...');
       try {
-        // Fetch WFS data directly with simplified geometry
-        const wfsUrl = "https://geodata.fvm.dk/geoserver/ows?service=WFS&version=2.0.0&request=GetFeature&typeName=Braemmer_2-metersbraemme_2025&outputFormat=application/json&SRSNAME=EPSG:4326";
-        
-        const response = await fetch(wfsUrl);
-        if (!response.ok) {
-          throw new Error(`WFS request failed: ${response.status}`);
+        const { data, error } = await supabase.functions.invoke('fetch-stream-buffers');
+        console.log('Stream buffers response:', { data, error });
+        if (error) {
+          console.error('Edge Function error:', error);
+          throw new Error(`Failed to fetch stream buffers: ${error.message}`);
         }
         
-        const geojsonData = await response.json();
-        console.log('WFS data received, features:', geojsonData.features?.length || 0);
-        
-        // Simplify the geometry to reduce rendering load (keep every 10th coordinate)
-        const simplifiedData = {
-          ...geojsonData,
-          features: geojsonData.features?.map((feature: any) => ({
-            ...feature,
-            geometry: {
-              ...feature.geometry,
-              coordinates: feature.geometry.coordinates?.map((ring: any) => 
-                ring.filter((_: any, index: number) => index % 10 === 0)
-              )
-            }
-          })) || []
-        };
-        
-        console.log('Simplified data, features:', simplifiedData.features?.length || 0);
+        console.log('Stream buffer data received:', data);
+        console.log('Number of features:', data.features?.length || 0);
         
         newMap.addSource('braemmer', {
           type: 'geojson',
-          data: simplifiedData
+          data: data
         });
 
         newMap.addLayer({
