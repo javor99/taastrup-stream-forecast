@@ -2,8 +2,80 @@
 import React from 'react';
 import { StreamGrid } from '@/components/StreamGrid';
 import { Header } from '@/components/Header';
+import { AdminLogin } from '@/components/AdminLogin';
+import { AdminDashboard } from '@/components/AdminDashboard';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { Shield } from 'lucide-react';
 
 const Index = () => {
+  const { isAdmin, isAuthenticated, isLoading } = useAuth();
+  const [showAdminLogin, setShowAdminLogin] = React.useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = React.useState(false);
+
+  // Auto-close admin login when authenticated
+  React.useEffect(() => {
+    if (isAuthenticated && showAdminLogin) {
+      setShowAdminLogin(false);
+    }
+  }, [isAuthenticated, showAdminLogin]);
+
+  // Auto-close admin dashboard with escape key
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowAdminDashboard(false);
+      }
+    };
+    
+    if (showAdminDashboard) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showAdminDashboard]);
+
+  // Mock streams data - in real app this would come from props or API
+  const mockStreams = [
+    {
+      id: '70000864',
+      name: 'Hove å, Tostholm bro',
+      location: { lat: 55.680989, lng: 12.219433, address: 'Tostholm bro' },
+      currentLevel: 1.2, maxLevel: 3.0, status: 'normal' as const,
+      lastUpdated: new Date('2025-01-04T10:30:00'), trend: 'rising' as const,
+      predictions: []
+    },
+    {
+      id: '70000927',
+      name: 'Hakkemosegrøften, Ole Rømers Vej',
+      location: { lat: 55.681673, lng: 12.281167, address: 'Ole Rømers Vej' },
+      currentLevel: 0.8, maxLevel: 2.5, status: 'normal' as const,
+      lastUpdated: new Date('2025-01-04T10:25:00'), trend: 'stable' as const,
+      predictions: []
+    },
+    {
+      id: '70000865',
+      name: 'Sengeløse å, Sengeløse mose',
+      location: { lat: 55.689824, lng: 12.267812, address: 'Sengeløse mose' },
+      currentLevel: 2.1, maxLevel: 3.2, status: 'warning' as const,
+      lastUpdated: new Date('2025-01-04T10:35:00'), trend: 'rising' as const,
+      predictions: []
+    },
+    {
+      id: '70000925',
+      name: 'Spangå, Ågesholmvej',
+      location: { lat: 55.676561, lng: 12.239100, address: 'Ågesholmvej' },
+      currentLevel: 2.8, maxLevel: 3.5, status: 'danger' as const,
+      lastUpdated: new Date('2025-01-04T10:40:00'), trend: 'rising' as const,
+      predictions: []
+    }
+  ];
+
+  if (isLoading) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-lg">Loading...</div>
+    </div>;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-accent/10 dark:from-background dark:via-card/20 dark:to-accent/5 relative overflow-hidden transition-all duration-500">
       {/* Background Pattern */}
@@ -27,10 +99,45 @@ const Index = () => {
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
               Real-time monitoring and predictions for six GPS-tagged streams across the municipality
             </p>
+            
+            {!isAuthenticated && (
+              <div className="mt-8">
+                <Button 
+                  onClick={() => setShowAdminLogin(true)}
+                  variant="outline" 
+                  className="gap-2"
+                >
+                  <Shield className="h-4 w-4" />
+                  Admin Access
+                </Button>
+              </div>
+            )}
+
+            {isAuthenticated && isAdmin && (
+              <div className="mt-8">
+                <Button 
+                  onClick={() => setShowAdminDashboard(true)}
+                  className="gap-2"
+                >
+                  <Shield className="h-4 w-4" />
+                  Open Admin Dashboard
+                </Button>
+              </div>
+            )}
           </div>
           <StreamGrid />
         </main>
       </div>
+
+      {showAdminLogin && !isAuthenticated && (
+        <AdminLogin />
+      )}
+
+      {showAdminDashboard && isAuthenticated && isAdmin && (
+        <AdminDashboard 
+          streams={mockStreams} 
+        />
+      )}
     </div>
   );
 };

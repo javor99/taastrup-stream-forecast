@@ -1,9 +1,13 @@
 
 import React from 'react';
-import { Waves, MapPin } from 'lucide-react';
+import { Waves, MapPin, Shield } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
 
 export const Header = () => {
+  const { isAuthenticated, isAdmin } = useAuth();
+
   return (
     <header className="bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50 sticky top-0 z-50 transition-all duration-300">
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
@@ -22,6 +26,12 @@ export const Header = () => {
               <MapPin className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Høje-Taastrup, Denmark</span>
             </div>
+            {isAuthenticated && isAdmin && (
+              <div className="flex items-center space-x-2 text-muted-foreground bg-primary/10 px-3 py-2 rounded-lg border border-primary/20">
+                <Shield className="h-4 w-4 text-primary" />
+                <span className="text-sm font-medium text-primary">Admin Mode</span>
+              </div>
+            )}
             <ThemeToggle />
           </div>
         </div>
