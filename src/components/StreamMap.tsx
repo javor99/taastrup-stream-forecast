@@ -17,7 +17,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
   const fullscreenMapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const fullscreenMap = useRef<mapboxgl.Map | null>(null);
-  const [mapboxToken] = useState(() => localStorage.getItem('mapbox_token') || 'pk.eyJ1IjoiamF2b3I5OSIsImEiOiJjbWNwNG1nOHowMnNjMmpzM3RjbXY5aTcwIn0.dRpur8lSFnUtR9JHaJ-N2Q');
+  const [mapboxToken] = useState('pk.eyJ1IjoiamF2b3I5OSIsImEiOiJjbWNwNG1nOHowMnNjMmpzM3RjbXY5aTcwIn0.dRpur8lSFnUtR9JHaJ-N2Q');
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const getWeekdayName = (dayOffset: number) => {
@@ -29,7 +29,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
   const createMap = (container: HTMLDivElement) => {
     mapboxgl.accessToken = mapboxToken;
     
-    const mapStyle = 'mapbox://styles/mapbox/light-v11';
+    const mapStyle = 'mapbox://styles/javor99/cmdzty06m00vk01qs18v31qz0';
     
     const newMap = new mapboxgl.Map({
       container: container,
@@ -40,10 +40,6 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
 
-    // Surface mapbox errors to console to aid debugging
-    newMap.on('error', (e) => {
-      console.error('Mapbox map error:', (e as any)?.error || e);
-    });
     // Function to check which streams are visible in current viewport
     const updateVisibleStreams = () => {
       console.log('updateVisibleStreams called');
