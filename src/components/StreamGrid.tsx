@@ -1,9 +1,8 @@
 
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { StreamCard } from './StreamCard';
 import { StreamMap } from './StreamMap';
 import { Stream } from '@/types/stream';
-import { useStationManager } from '@/hooks/useStationManager';
 
 // Generate 7-day predictions for a stream
 const generatePredictions = (baseLevel: number, trend: 'rising' | 'falling' | 'stable') => {
@@ -145,32 +144,7 @@ const mockStreams: Stream[] = [
 ];
 
 export const StreamGrid = () => {
-  const { getActiveStations } = useStationManager();
-  
-  // Convert admin stations to stream format and combine with mock data
-  const allStreams = useMemo(() => {
-    const activeStations = getActiveStations();
-    const adminStreams: Stream[] = activeStations.map(station => ({
-      id: station.id,
-      name: station.name,
-      location: station.location,
-      currentLevel: station.currentLevel || 0,
-      maxLevel: station.maxLevel || 3,
-      status: station.waterLevelStatus || 'normal',
-      lastUpdated: station.lastUpdated || new Date(),
-      trend: station.trend || 'stable',
-      predictions: generatePredictions(station.currentLevel || 0, station.trend || 'stable')
-    }));
-    
-    return [...mockStreams, ...adminStreams];
-  }, [getActiveStations]);
-
-  const [visibleStreams, setVisibleStreams] = useState<Stream[]>(allStreams);
-
-  // Update visible streams when all streams change
-  React.useEffect(() => {
-    setVisibleStreams(allStreams);
-  }, [allStreams]);
+  const [visibleStreams, setVisibleStreams] = useState<Stream[]>(mockStreams);
 
   const handleVisibleStreamsChange = React.useCallback((streams: Stream[]) => {
     console.log('Visible streams updated:', streams.length, streams.map(s => s.name));
@@ -180,7 +154,7 @@ export const StreamGrid = () => {
   return (
     <div className="space-y-8">
       <div className="mb-8">
-        <StreamMap streams={allStreams} onVisibleStreamsChange={handleVisibleStreamsChange} />
+        <StreamMap streams={mockStreams} onVisibleStreamsChange={handleVisibleStreamsChange} />
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {visibleStreams.map((stream) => (
