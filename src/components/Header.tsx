@@ -7,8 +7,43 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 
 export const Header = () => {
-  const { isAuthenticated, isAdmin, logout } = useAuth();
+  console.log('Header component rendering, useAuth available:', typeof useAuth);
   
+  let authState;
+  try {
+    authState = useAuth();
+    console.log('useAuth successful:', authState);
+  } catch (error) {
+    console.error('useAuth error:', error);
+    // Fallback values if useAuth fails
+    authState = { isAuthenticated: false, isAdmin: false, isLoading: false, logout: () => {} };
+  }
+  
+  const { isAuthenticated, isAdmin, isLoading, logout } = authState;
+  
+  // Show loading state if auth is still initializing
+  if (isLoading) {
+    return (
+      <header className="bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50 sticky top-0 z-50 transition-all duration-300">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2 sm:space-x-3">
+              <div className="bg-gradient-to-br from-primary to-blue-600 p-2 sm:p-2.5 rounded-xl shadow-lg">
+                <Waves className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-display font-bold text-foreground tracking-tight truncate">AquaMonitor</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium hidden sm:block">Stream Monitoring System</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </header>
+    );
+  }
   return (
     <header className="bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50 sticky top-0 z-50 transition-all duration-300">
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
