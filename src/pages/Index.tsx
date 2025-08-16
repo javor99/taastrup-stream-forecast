@@ -111,6 +111,22 @@ const Index = () => {
         { date: new Date('2025-01-10'), predictedLevel: 0.6, confidence: 92 },
         { date: new Date('2025-01-11'), predictedLevel: 0.4, confidence: 82 }
       ]
+    },
+    {
+      id: '70000942',
+      name: 'Ll. Vejleå, Lille Solhøjvej 42',
+      location: { lat: 55.6823, lng: 12.2156, address: 'Lille Solhøjvej 42' },
+      currentLevel: 0.9, maxLevel: 2.2, status: 'normal' as const,
+      lastUpdated: new Date('2025-01-04T10:10:00'), trend: 'stable' as const,
+      predictions: [
+        { date: new Date('2025-01-05'), predictedLevel: 0.9, confidence: 88 },
+        { date: new Date('2025-01-06'), predictedLevel: 0.9, confidence: 85 },
+        { date: new Date('2025-01-07'), predictedLevel: 1.0, confidence: 82 },
+        { date: new Date('2025-01-08'), predictedLevel: 1.1, confidence: 79 },
+        { date: new Date('2025-01-09'), predictedLevel: 1.2, confidence: 83 },
+        { date: new Date('2025-01-10'), predictedLevel: 1.3, confidence: 81 },
+        { date: new Date('2025-01-11'), predictedLevel: 1.4, confidence: 78 }
+      ]
     }
   ]);
 
