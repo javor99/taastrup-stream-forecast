@@ -1,9 +1,14 @@
 
 import React from 'react';
-import { Waves, MapPin } from 'lucide-react';
+import { Waves, MapPin, Settings, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAuth } from '@/hooks/useAuth';
+import { Button } from '@/components/ui/button';
+import { Link } from 'react-router-dom';
 
 export const Header = () => {
+  const { isAuthenticated, isAdmin, logout } = useAuth();
+  
   return (
     <header className="bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50 sticky top-0 z-50 transition-all duration-300">
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
@@ -22,6 +27,42 @@ export const Header = () => {
               <MapPin className="h-4 w-4 text-primary" />
               <span className="text-sm font-medium">Høje-Taastrup, Denmark</span>
             </div>
+            
+            {!isAuthenticated ? (
+              <Link to="/admin">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center space-x-2"
+                >
+                  <Settings className="h-4 w-4" />
+                  <span className="hidden sm:inline">Admin</span>
+                </Button>
+              </Link>
+            ) : isAdmin ? (
+              <div className="flex items-center space-x-2">
+                <Link to="/admin">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center space-x-2"
+                  >
+                    <Settings className="h-4 w-4" />
+                    <span className="hidden sm:inline">Dashboard</span>
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={logout}
+                  className="flex items-center space-x-2"
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span className="hidden sm:inline">Logout</span>
+                </Button>
+              </div>
+            ) : null}
+            
             <ThemeToggle />
           </div>
         </div>
