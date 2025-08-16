@@ -29,13 +29,25 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
   const createMap = (container: HTMLDivElement) => {
     mapboxgl.accessToken = mapboxToken;
     
-    const mapStyle = 'mapbox://styles/javor99/cmdzty06m00vk01qs18v31qz0';
+    const mapStyle = 'mapbox://styles/mapbox/streets-v12';
     
     const newMap = new mapboxgl.Map({
       container: container,
       style: mapStyle,
-      center: [12.247292, 55.678177], // Average of all stream locations
+      center: [12.247292, 55.678177],
       zoom: 12,
+      preserveDrawingBuffer: true,
+      antialias: false,
+      failIfMajorPerformanceCaveat: false
+    });
+
+    // Add WebGL context recovery
+    newMap.on('webglcontextlost', () => {
+      console.log('WebGL context lost, attempting recovery...');
+    });
+
+    newMap.on('webglcontextrestored', () => {
+      console.log('WebGL context restored successfully');
     });
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -79,7 +91,41 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
       updateVisibleStreams();
     });
 
-    // Add markers for each stream
+    // Markers will be added separately to avoid recreating the map
+
+    return newMap;
+  };
+
+  // Main map effect - only recreate when absolutely necessary
+  useEffect(() => {
+    if (!mapContainer.current || !mapboxToken) return;
+
+    // Clean up existing map first
+    if (map.current) {
+      map.current.remove();
+      map.current = null;
+    }
+
+    map.current = createMap(mapContainer.current);
+
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+    };
+  }, [mapboxToken]); // Only recreate when token changes
+
+  // Update markers when streams or theme change without recreating the map
+  useEffect(() => {
+    if (!map.current || !streams.length) return;
+
+    // Clear existing markers by removing and recreating them
+    // This is more efficient than recreating the entire map
+    const existingMarkers = document.querySelectorAll('.mapboxgl-marker');
+    existingMarkers.forEach(marker => marker.remove());
+
+    // Add new markers
     streams.forEach((stream) => {
       const getMarkerColor = (status: string) => {
         switch (status) {
@@ -160,22 +206,9 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
       new mapboxgl.Marker(markerElement)
         .setLngLat([stream.location.lng, stream.location.lat])
         .setPopup(popup)
-        .addTo(newMap);
+        .addTo(map.current!);
     });
-
-    return newMap;
-  };
-
-  // Main map effect
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
-
-    map.current = createMap(mapContainer.current);
-
-    return () => {
-      map.current?.remove();
-    };
-  }, [streams, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [streams, theme]);
 
   // Fullscreen map effect
   useEffect(() => {
@@ -189,7 +222,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
         fullscreenMap.current = null;
       }
     };
-  }, [isFullscreen, streams, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [isFullscreen, mapboxToken]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
