@@ -7,16 +7,20 @@ import { useAuth } from '@/hooks/useAuth';
 interface HeaderProps {
   onShowAdminLogin?: () => void;
   onShowAdminDashboard?: () => void;
+  isInDashboard?: boolean;
 }
 
-export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDashboard }) => {
+export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDashboard, isInDashboard }) => {
   const { isAuthenticated, isAdmin, logout } = useAuth();
 
   return (
     <header className="bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50 sticky top-0 z-50 transition-all duration-300">
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          <div 
+            className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+            onClick={isInDashboard ? onShowAdminDashboard : undefined}
+          >
             <div className="bg-gradient-to-br from-primary to-blue-600 p-2 sm:p-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
               <Waves className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
             </div>
@@ -58,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
                     className="gap-2"
                   >
                     <Shield className="h-4 w-4" />
-                    Dashboard
+                    {isInDashboard ? 'Home' : 'Dashboard'}
                   </Button>
                 )}
                 

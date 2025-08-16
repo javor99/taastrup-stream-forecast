@@ -73,7 +73,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddSt
   };
   return (
     <div className="fixed inset-0 bg-background z-50 overflow-auto">
-      <Header onShowAdminDashboard={onClose} />
+      <Header onShowAdminDashboard={onClose} isInDashboard={true} />
       <div className="container mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
