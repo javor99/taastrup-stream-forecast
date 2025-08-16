@@ -224,6 +224,7 @@ const Index = () => {
         <AdminDashboard 
           streams={streams}
           onAddStation={addNewStation}
+          onClose={() => setShowAdminDashboard(false)}
         />
       )}
     </div>

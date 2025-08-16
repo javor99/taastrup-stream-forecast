@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Header } from '@/components/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { Stream } from '@/types/stream';
 import { LogOut, RefreshCw, MapPin, Waves, Clock, Plus } from 'lucide-react';
@@ -12,9 +13,10 @@ import { useToast } from '@/hooks/use-toast';
 interface AdminDashboardProps {
   streams: Stream[];
   onAddStation: (id: string) => void;
+  onClose: () => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddStation }) => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddStation, onClose }) => {
   const { logout } = useAuth();
   const { toast } = useToast();
   const [retrainingStations, setRetrainingStations] = useState<Set<string>>(new Set());
@@ -70,7 +72,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddSt
     }
   };
   return (
-    <div className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 overflow-auto">
+    <div className="fixed inset-0 bg-background z-50 overflow-auto">
+      <Header onShowAdminDashboard={onClose} />
       <div className="container mx-auto p-6">
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
