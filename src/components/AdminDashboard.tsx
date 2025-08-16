@@ -2,19 +2,23 @@ import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { useAuth } from '@/hooks/useAuth';
 import { Stream } from '@/types/stream';
-import { LogOut, RefreshCw, MapPin, Waves, Clock } from 'lucide-react';
+import { LogOut, RefreshCw, MapPin, Waves, Clock, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminDashboardProps {
   streams: Stream[];
+  onAddStation: (id: string) => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams }) => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddStation }) => {
   const { logout } = useAuth();
   const { toast } = useToast();
   const [retrainingStations, setRetrainingStations] = useState<Set<string>>(new Set());
+  const [newStationId, setNewStationId] = useState('');
 
   const handleRetrain = (streamId: string, streamName: string) => {
     setRetrainingStations(prev => new Set([...prev, streamId]));
@@ -33,6 +37,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams }) => {
         return newSet;
       });
     }, 3000);
+  };
+
+  const handleAddStation = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newStationId.trim()) {
+      // Check if station already exists
+      if (streams.some(stream => stream.id === newStationId.trim())) {
+        toast({
+          title: "Station Already Exists",
+          description: `Station ID ${newStationId.trim()} is already in the system.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      onAddStation(newStationId.trim());
+      setNewStationId('');
+      toast({
+        title: "Station Added",
+        description: `New monitoring station ${newStationId.trim()} has been added with dummy data.`,
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {
@@ -57,6 +83,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams }) => {
             Logout
           </Button>
         </div>
+
+        {/* Add New Station Form */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Plus className="h-5 w-5" />
+              Add New Monitoring Station
+            </CardTitle>
+            <CardDescription>
+              Enter a station ID to create a new monitoring station with dummy GPS and water level data
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleAddStation} className="flex gap-4">
+              <div className="flex-1">
+                <Label htmlFor="stationId" className="sr-only">Station ID</Label>
+                <Input
+                  id="stationId"
+                  placeholder="Enter station ID (e.g., 70000999)"
+                  value={newStationId}
+                  onChange={(e) => setNewStationId(e.target.value)}
+                />
+              </div>
+              <Button type="submit" className="gap-2">
+                <Plus className="h-4 w-4" />
+                Add Station
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {streams.map((stream) => {

@@ -7,35 +7,15 @@ import { AdminDashboard } from '@/components/AdminDashboard';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Shield } from 'lucide-react';
+import { Stream } from '@/types/stream';
 
 const Index = () => {
   const { isAdmin, isAuthenticated, isLoading } = useAuth();
   const [showAdminLogin, setShowAdminLogin] = React.useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = React.useState(false);
 
-  // Auto-close admin login when authenticated
-  React.useEffect(() => {
-    if (isAuthenticated && showAdminLogin) {
-      setShowAdminLogin(false);
-    }
-  }, [isAuthenticated, showAdminLogin]);
-
-  // Auto-close admin dashboard with escape key
-  React.useEffect(() => {
-    const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setShowAdminDashboard(false);
-      }
-    };
-    
-    if (showAdminDashboard) {
-      document.addEventListener('keydown', handleEscape);
-      return () => document.removeEventListener('keydown', handleEscape);
-    }
-  }, [showAdminDashboard]);
-
-  // Mock streams data - in real app this would come from props or API
-  const mockStreams = [
+  // Stateful streams data 
+  const [streams, setStreams] = React.useState<Stream[]>([
     {
       id: '70000864',
       name: 'Hove å, Tostholm bro',
@@ -68,7 +48,74 @@ const Index = () => {
       lastUpdated: new Date('2025-01-04T10:40:00'), trend: 'rising' as const,
       predictions: []
     }
-  ];
+  ]);
+
+  // Auto-close admin login when authenticated
+  React.useEffect(() => {
+    if (isAuthenticated && showAdminLogin) {
+      setShowAdminLogin(false);
+    }
+  }, [isAuthenticated, showAdminLogin]);
+
+  // Auto-close admin dashboard with escape key
+  React.useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowAdminDashboard(false);
+      }
+    };
+    
+    if (showAdminDashboard) {
+      document.addEventListener('keydown', handleEscape);
+      return () => document.removeEventListener('keydown', handleEscape);
+    }
+  }, [showAdminDashboard]);
+
+  const generateDummyStation = (id: string): Stream => {
+    const locations = [
+      { lat: 55.680989, lng: 12.219433, name: 'Bro' },
+      { lat: 55.681673, lng: 12.281167, name: 'Vej' },
+      { lat: 55.689824, lng: 12.267812, name: 'Mose' },
+      { lat: 55.676561, lng: 12.239100, name: 'Holmvej' },
+      { lat: 55.675000, lng: 12.230000, name: 'Park' },
+      { lat: 55.690000, lng: 12.250000, name: 'Station' }
+    ];
+    
+    const waterNames = ['å', 'grøft', 'kanal', 'strøm', 'vandløb'];
+    const locationNames = ['bro', 'vej', 'mose', 'park', 'station', 'skov'];
+    const statuses: Array<'normal' | 'warning' | 'danger'> = ['normal', 'warning', 'danger'];
+    const trends: Array<'rising' | 'falling' | 'stable'> = ['rising', 'falling', 'stable'];
+    
+    const randomLocation = locations[Math.floor(Math.random() * locations.length)];
+    const randomWaterName = waterNames[Math.floor(Math.random() * waterNames.length)];
+    const randomLocationName = locationNames[Math.floor(Math.random() * locationNames.length)];
+    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+    const randomTrend = trends[Math.floor(Math.random() * trends.length)];
+    
+    const maxLevel = 2 + Math.random() * 3; // 2-5m
+    const currentLevel = 0.5 + Math.random() * (maxLevel - 0.5); // 0.5 to maxLevel
+    
+    return {
+      id,
+      name: `${randomWaterName.charAt(0).toUpperCase() + randomWaterName.slice(1)}, ${randomLocationName}`,
+      location: { 
+        lat: randomLocation.lat + (Math.random() - 0.5) * 0.01, 
+        lng: randomLocation.lng + (Math.random() - 0.5) * 0.01, 
+        address: `${randomLocationName} ${Math.floor(Math.random() * 100) + 1}` 
+      },
+      currentLevel: Math.round(currentLevel * 10) / 10,
+      maxLevel: Math.round(maxLevel * 10) / 10,
+      status: randomStatus,
+      lastUpdated: new Date(),
+      trend: randomTrend,
+      predictions: []
+    };
+  };
+
+  const addNewStation = (id: string) => {
+    const newStation = generateDummyStation(id);
+    setStreams(prev => [...prev, newStation]);
+  };
 
   if (isLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">
@@ -135,7 +182,8 @@ const Index = () => {
 
       {showAdminDashboard && isAuthenticated && isAdmin && (
         <AdminDashboard 
-          streams={mockStreams} 
+          streams={streams}
+          onAddStation={addNewStation}
         />
       )}
     </div>
