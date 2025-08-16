@@ -233,7 +233,7 @@ const Index = () => {
       </div>
 
       {showAdminLogin && !isAuthenticated && (
-        <AdminLogin />
+        <AdminLogin onClose={() => setShowAdminLogin(false)} />
       )}
 
       {showAdminDashboard && isAuthenticated && isAdmin && (

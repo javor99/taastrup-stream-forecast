@@ -4,9 +4,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/hooks/useAuth';
-import { Lock } from 'lucide-react';
+import { Lock, X } from 'lucide-react';
 
-export const AdminLogin = () => {
+interface AdminLoginProps {
+  onClose: () => void;
+}
+
+export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -24,7 +28,15 @@ export const AdminLogin = () => {
 
   return (
     <div className="fixed inset-0 bg-background/90 backdrop-blur-md z-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md relative">
+        <Button
+          onClick={onClose}
+          variant="ghost"
+          size="sm"
+          className="absolute top-4 right-4 h-8 w-8 p-0"
+        >
+          <X className="h-4 w-4" />
+        </Button>
         <CardHeader className="text-center">
           <div className="mx-auto bg-primary/10 p-3 rounded-full w-fit mb-4">
             <Lock className="h-6 w-6 text-primary" />
