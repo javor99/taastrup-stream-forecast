@@ -207,9 +207,6 @@ const Index = () => {
             <h2 className="text-3xl font-display font-semibold text-primary mb-3 tracking-wide">
               Stream Water Level Monitoring
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-medium leading-relaxed">
-              Real-time monitoring and predictions for six GPS-tagged streams across the municipality
-            </p>
             
             {!isAuthenticated && (
               <div className="mt-8">
