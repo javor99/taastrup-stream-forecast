@@ -156,10 +156,18 @@ export const StreamGrid = () => {
       <div className="mb-8">
         <StreamMap streams={mockStreams} onVisibleStreamsChange={handleVisibleStreamsChange} />
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {visibleStreams.map((stream) => (
-          <StreamCard key={stream.id} stream={stream} />
-        ))}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-2xl font-bold">Stream Monitoring Stations</h2>
+          <div className="text-sm text-muted-foreground">
+            Showing {visibleStreams.length} of {mockStreams.length} stations
+          </div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {visibleStreams.map((stream) => (
+            <StreamCard key={stream.id} stream={stream} />
+          ))}
+        </div>
       </div>
     </div>
   );
