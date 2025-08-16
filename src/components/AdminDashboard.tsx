@@ -69,19 +69,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddSt
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
-
   return (
     <div className="fixed inset-0 bg-background/95 backdrop-blur-md z-50 overflow-auto">
       <div className="container mx-auto p-6">
-        <div className="flex justify-between items-center mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage all active monitoring stations</p>
-          </div>
-          <Button onClick={logout} variant="outline" className="gap-2">
-            <LogOut className="h-4 w-4" />
-            Logout
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage all active monitoring stations</p>
         </div>
 
         {/* Add New Station Form */}

@@ -198,7 +198,10 @@ const Index = () => {
       <div className="absolute -bottom-8 left-20 w-72 h-72 bg-gradient-to-br from-indigo-400/20 to-purple-500/20 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-pulse animation-delay-4000 dark:from-indigo-400/10 dark:to-purple-500/10"></div>
       
       <div className="relative z-10">
-        <Header />
+        <Header 
+          onShowAdminLogin={() => setShowAdminLogin(true)}
+          onShowAdminDashboard={() => setShowAdminDashboard(true)}
+        />
         <main className="container mx-auto px-4 py-8">
           <div className="text-center mb-12">
             <h1 className="text-5xl font-display font-bold text-foreground mb-4 tracking-tight">
@@ -208,30 +211,6 @@ const Index = () => {
               Stream Water Level Monitoring
             </h2>
             
-            {!isAuthenticated && (
-              <div className="mt-8">
-                <Button 
-                  onClick={() => setShowAdminLogin(true)}
-                  variant="outline" 
-                  className="gap-2"
-                >
-                  <Shield className="h-4 w-4" />
-                  Admin Access
-                </Button>
-              </div>
-            )}
-
-            {isAuthenticated && isAdmin && (
-              <div className="mt-8">
-                <Button 
-                  onClick={() => setShowAdminDashboard(true)}
-                  className="gap-2"
-                >
-                  <Shield className="h-4 w-4" />
-                  Open Admin Dashboard
-                </Button>
-              </div>
-            )}
           </div>
           <StreamGrid />
         </main>
