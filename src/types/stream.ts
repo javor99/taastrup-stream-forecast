@@ -2,7 +2,7 @@
 export interface DailyPrediction {
   date: Date;
   predictedLevel: number; // in meters
-  confidence: number; // percentage 0-100
+  confidence?: number; // percentage 0-100 (optional)
 }
 
 export interface Stream {
