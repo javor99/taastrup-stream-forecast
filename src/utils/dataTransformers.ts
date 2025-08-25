@@ -45,12 +45,12 @@ export function transformApiDataToStreams(
     // Convert predictions to our format
     const transformedPredictions: DailyPrediction[] = stationPredictions.map(pred => ({
       date: new Date(pred.date),
-      predictedLevel: mmToMeters(pred.predicted_level)
+      predictedLevel: Number(mmToMeters(pred.predicted_level).toFixed(3))
     }));
 
     // Get current level (using average from stats, converted to meters)
-    const currentLevel = mmToMeters(station.water_level_stats.average);
-    const maxLevel = mmToMeters(station.water_level_stats.max * 2.5); // Estimate max capacity
+    const currentLevel = Number(mmToMeters(station.water_level_stats.average).toFixed(3));
+    const maxLevel = Number((currentLevel + 1).toFixed(3)); // Max threshold is 1m above current
 
     return {
       id: station.station_id,
