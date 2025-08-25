@@ -55,8 +55,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-purple-600 dark:text-purple-400 font-medium">{dayName}</span>
                   <span className="text-xs text-muted-foreground">
-                    {prediction.predictedLevel}m ({predictedPercentage.toFixed(1)}%) - 
-                    <span className="text-emerald-600 dark:text-emerald-400 font-medium"> {prediction.confidence}% confidence</span>
+                    {prediction.predictedLevel}m ({predictedPercentage.toFixed(1)}%)
                   </span>
                 </div>
                 <div className="w-full bg-muted rounded-full h-2">
