@@ -12,12 +12,15 @@ function cmToMeters(cm: number): number {
   return Number((cm / 100).toFixed(3));
 }
 
-// Determine status based on current level vs max level
-function determineStatus(current: number, max: number): 'normal' | 'warning' | 'danger' {
-  const percentage = (current / max) * 100;
-  if (percentage >= 80) return 'danger';
-  if (percentage >= 60) return 'warning';
-  return 'normal';
+// Determine status based on current level within the min-max range
+function determineStatus(current: number, min: number, max: number): 'normal' | 'warning' | 'danger' {
+  const range = max - min;
+  const position = current - min;
+  const percentage = (position / range) * 100;
+  
+  if (percentage >= 85) return 'danger';   // Near 5-year maximum
+  if (percentage >= 65) return 'warning';  // Upper portion of range
+  return 'normal';                         // Lower portion of range
 }
 
 // Generate 7-day predictions from summary data
@@ -44,15 +47,16 @@ function generatePredictionsFromSummary(station: ApiSummaryStation): DailyPredic
   return predictions;
 }
 
-// Determine trend based on prediction summary
+// Determine trend based on prediction summary vs current level
 function determineTrendFromSummary(station: ApiSummaryStation): 'rising' | 'falling' | 'stable' {
-  const current_cm = station.current_water_level_cm;
-  const avg_prediction_cm = station.prediction_summary.avg_prediction_cm;
-  const change = avg_prediction_cm - current_cm;
+  const current_m = station.current_water_level_m;
+  const avg_prediction_m = station.prediction_summary.avg_prediction_cm / 100; // Convert to meters
+  const change_m = avg_prediction_m - current_m;
   
-  if (change > 50) return 'rising';
-  if (change < -50) return 'falling';
-  return 'stable';
+  // Use smaller thresholds for more sensitive trend detection
+  if (change_m > 0.1) return 'rising';     // Rising if avg prediction is 10cm+ higher
+  if (change_m < -0.1) return 'falling';   // Falling if avg prediction is 10cm+ lower
+  return 'stable';                         // Stable if change is within ±10cm
 }
 
 export function transformApiDataToStreams(
@@ -78,7 +82,7 @@ export function transformApiDataToStreams(
       currentLevel,
       minLevel,
       maxLevel,
-      status: determineStatus(currentLevel, maxLevel),
+      status: determineStatus(currentLevel, minLevel, maxLevel),
       lastUpdated: new Date(station.current_measurement_date),
       trend: determineTrendFromSummary(station),
       predictions: transformedPredictions
