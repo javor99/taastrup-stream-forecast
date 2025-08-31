@@ -21,6 +21,7 @@ export const StreamGrid = () => {
         setError(null);
         
         const { summary, lastUpdated } = await fetchSummary();
+        console.log('API Response lastUpdated:', lastUpdated);
         
         const transformedStreams = transformApiDataToStreams(summary);
         setAllStreams(transformedStreams);
@@ -73,7 +74,14 @@ export const StreamGrid = () => {
           <div className="text-sm text-muted-foreground space-y-1">
             <div>Showing {visibleStreams.length} of {allStreams.length} stations</div>
             {lastUpdated && (
-              <div>Last updated: {new Date(lastUpdated).toLocaleString()}</div>
+              <div>Last updated: {new Date(lastUpdated).toLocaleString('en-DK', { 
+                timeZone: 'Europe/Copenhagen',
+                year: 'numeric',
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}</div>
             )}
           </div>
         </div>
