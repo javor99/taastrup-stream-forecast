@@ -47,16 +47,29 @@ function generatePredictionsFromSummary(station: ApiSummaryStation): DailyPredic
   return predictions;
 }
 
-// Determine trend based on prediction summary vs current level
+// Determine trend based on prediction vs current, station-specific
 function determineTrendFromSummary(station: ApiSummaryStation): 'rising' | 'falling' | 'stable' {
   const current_m = station.current_water_level_m;
   const avg_prediction_m = station.prediction_summary.avg_prediction_cm / 100; // Convert to meters
+  const min_m = station.min_level_m;
+  const max_m = station.danger_level_m;
+  
+  // Calculate station-specific threshold as percentage of range
+  const range_m = max_m - min_m;
+  const threshold = Math.max(0.02, range_m * 0.02); // Minimum 2cm or 2% of station range
+  
   const change_m = avg_prediction_m - current_m;
   
-  // Use smaller thresholds for more sensitive trend detection
-  if (change_m > 0.1) return 'rising';     // Rising if avg prediction is 10cm+ higher
-  if (change_m < -0.1) return 'falling';   // Falling if avg prediction is 10cm+ lower
-  return 'stable';                         // Stable if change is within ±10cm
+  // Always provide a clear trend direction
+  if (Math.abs(change_m) < threshold) {
+    // For very small changes, look at the direction trend
+    if (change_m > 0) return 'rising';
+    if (change_m < 0) return 'falling';
+    return 'stable';
+  }
+  
+  // Clear directional trends
+  return change_m > 0 ? 'rising' : 'falling';
 }
 
 export function transformApiDataToStreams(
