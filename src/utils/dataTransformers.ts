@@ -83,7 +83,7 @@ export function transformApiDataToStreams(
 
     return {
       id: station.station_id,
-      name: station.name,
+      name: station.name.split(',')[0].trim(),
       location: {
         lat: station.latitude,
         lng: station.longitude,
