@@ -50,7 +50,8 @@ const mockStreams: Stream[] = [
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:30:00'),
     trend: 'rising',
-    predictions: generatePredictions(1.2, 'rising')
+    predictions: generatePredictions(1.2, 'rising'),
+    last30DaysRange: { min_cm: 50, max_cm: 180, min_m: 0.5, max_m: 1.8 }
   },
   {
     id: '70000927',
@@ -66,7 +67,8 @@ const mockStreams: Stream[] = [
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:25:00'),
     trend: 'stable',
-    predictions: generatePredictions(0.8, 'stable')
+    predictions: generatePredictions(0.8, 'stable'),
+    last30DaysRange: { min_cm: 40, max_cm: 120, min_m: 0.4, max_m: 1.2 }
   },
   {
     id: '70000865',
@@ -82,7 +84,8 @@ const mockStreams: Stream[] = [
     status: 'warning',
     lastUpdated: new Date('2025-01-04T10:35:00'),
     trend: 'rising',
-    predictions: generatePredictions(2.1, 'rising')
+    predictions: generatePredictions(2.1, 'rising'),
+    last30DaysRange: { min_cm: 150, max_cm: 280, min_m: 1.5, max_m: 2.8 }
   },
   {
     id: '70000926',
@@ -98,7 +101,8 @@ const mockStreams: Stream[] = [
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:20:00'),
     trend: 'rising',
-    predictions: generatePredictions(0.6, 'rising')
+    predictions: generatePredictions(0.6, 'rising'),
+    last30DaysRange: { min_cm: 30, max_cm: 90, min_m: 0.3, max_m: 0.9 }
   },
   {
     id: '70000925',
@@ -114,7 +118,8 @@ const mockStreams: Stream[] = [
     status: 'danger',
     lastUpdated: new Date('2025-01-04T10:40:00'),
     trend: 'rising',
-    predictions: generatePredictions(2.8, 'rising')
+    predictions: generatePredictions(2.8, 'rising'),
+    last30DaysRange: { min_cm: 220, max_cm: 320, min_m: 2.2, max_m: 3.2 }
   },
   {
     id: '70000923',
@@ -130,7 +135,8 @@ const mockStreams: Stream[] = [
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:15:00'),
     trend: 'falling',
-    predictions: generatePredictions(1.5, 'falling')
+    predictions: generatePredictions(1.5, 'falling'),
+    last30DaysRange: { min_cm: 100, max_cm: 200, min_m: 1.0, max_m: 2.0 }
   },
   {
     id: '70000924',
@@ -146,7 +152,8 @@ const mockStreams: Stream[] = [
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:10:00'),
     trend: 'stable',
-    predictions: generatePredictions(1.1, 'stable')
+    predictions: generatePredictions(1.1, 'stable'),
+    last30DaysRange: { min_cm: 60, max_cm: 150, min_m: 0.6, max_m: 1.5 }
   }
 ];
 

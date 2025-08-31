@@ -20,4 +20,10 @@ export interface Stream {
   lastUpdated: Date;
   trend: 'rising' | 'falling' | 'stable';
   predictions: DailyPrediction[]; // 7 days of predictions
+  last30DaysRange: {
+    min_cm: number;
+    max_cm: number;
+    min_m: number;
+    max_m: number;
+  };
 }

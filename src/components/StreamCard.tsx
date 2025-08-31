@@ -80,7 +80,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
 
       <WaterLevelIndicator stream={stream} />
 
-      <div className="grid grid-cols-3 gap-3 mt-4">
+      <div className="grid grid-cols-4 gap-3 mt-4">
         <div className="text-center p-3 bg-primary/10 dark:bg-primary/20 rounded-lg border border-primary/20 dark:border-primary/30">
           <div className="text-xs font-semibold text-primary dark:text-blue-300 font-display">Current</div>
           <div className="text-lg font-bold text-foreground font-display">{stream.currentLevel}m</div>
@@ -92,6 +92,10 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
         <div className="text-center p-3 bg-orange-100/50 dark:bg-orange-900/30 rounded-lg border border-orange-200/50 dark:border-orange-700/50">
           <div className="text-xs font-semibold text-orange-700 dark:text-orange-300 font-display">7-Day Max</div>
           <div className="text-lg font-bold text-foreground font-display">{maxPrediction.predictedLevel}m</div>
+        </div>
+        <div className="text-center p-3 bg-cyan-100/50 dark:bg-cyan-900/30 rounded-lg border border-cyan-200/50 dark:border-cyan-700/50">
+          <div className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 font-display">30-Day Range</div>
+          <div className="text-sm font-bold text-foreground font-display">{stream.last30DaysRange.min_m}m - {stream.last30DaysRange.max_m}m</div>
         </div>
       </div>
 
