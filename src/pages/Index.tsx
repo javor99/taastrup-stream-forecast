@@ -244,9 +244,6 @@ const Index = () => {
 
       {showAdminDashboard && isAuthenticated && isAdmin && (
         <AdminDashboard 
-          streams={streams}
-          onAddStation={addNewStation}
-          onRemoveStation={removeStation}
           onClose={() => setShowAdminDashboard(false)}
         />
       )}

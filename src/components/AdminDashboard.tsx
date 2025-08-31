@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,50 +7,74 @@ import { Label } from '@/components/ui/label';
 import { Header } from '@/components/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { Stream } from '@/types/stream';
-import { LogOut, Trash2, MapPin, Waves, Clock, Plus } from 'lucide-react';
+import { LogOut, Trash2, MapPin, Waves, Clock, Plus, RefreshCw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { fetchSummary } from '@/services/api';
+import { transformApiDataToStreams } from '@/utils/dataTransformers';
 
 interface AdminDashboardProps {
-  streams: Stream[];
-  onAddStation: (id: string) => void;
-  onRemoveStation: (id: string) => void;
   onClose: () => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddStation, onRemoveStation, onClose }) => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const { logout } = useAuth();
   const { toast } = useToast();
+  const [streams, setStreams] = useState<Stream[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [newStationId, setNewStationId] = useState('');
 
-  const handleRemoveStation = (streamId: string, streamName: string) => {
-    onRemoveStation(streamId);
+  useEffect(() => {
+    loadStreams();
+  }, []);
+
+  const loadStreams = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const { summary, lastUpdated } = await fetchSummary();
+      const transformedStreams = transformApiDataToStreams(summary);
+      
+      setStreams(transformedStreams);
+      setLastUpdated(lastUpdated);
+    } catch (err) {
+      console.error('Failed to load stream data:', err);
+      setError('Failed to load stream data');
+      toast({
+        title: "Error",
+        description: "Failed to load station data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRefresh = () => {
+    loadStreams();
     toast({
-      title: "Station Removed",
-      description: `Monitoring station ${streamName} has been removed from the system.`,
+      title: "Refreshed",
+      description: "Station data has been refreshed.",
+    });
+  };
+
+  const handleRemoveStation = (streamId: string, streamName: string) => {
+    toast({
+      title: "Not Available",
+      description: "Station removal is not available in the current API.",
       variant: "destructive",
     });
   };
 
   const handleAddStation = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newStationId.trim()) {
-      // Check if station already exists
-      if (streams.some(stream => stream.id === newStationId.trim())) {
-        toast({
-          title: "Station Already Exists",
-          description: `Station ID ${newStationId.trim()} is already in the system.`,
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      onAddStation(newStationId.trim());
-      setNewStationId('');
-      toast({
-        title: "Station Added",
-        description: `New monitoring station ${newStationId.trim()} has been added with dummy data.`,
-      });
-    }
+    toast({
+      title: "Not Available",
+      description: "Adding new stations is not available in the current API.",
+      variant: "destructive",
+    });
   };
 
   const getStatusColor = (status: string) => {
@@ -65,20 +89,38 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddSt
     <div className="fixed inset-0 bg-background z-50 overflow-auto">
       <Header onShowAdminDashboard={onClose} isInDashboard={true} />
       <div className="container mx-auto p-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage all active monitoring stations</p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+            <p className="text-muted-foreground">Manage all active monitoring stations</p>
+            {lastUpdated && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Last updated: {new Date(lastUpdated).toLocaleString('en-DK', { 
+                  timeZone: 'Europe/Copenhagen',
+                  year: 'numeric',
+                  month: '2-digit', 
+                  day: '2-digit',
+                  hour: '2-digit',
+                  minute: '2-digit'
+                })}
+              </p>
+            )}
+          </div>
+          <Button onClick={handleRefresh} disabled={isLoading} className="gap-2">
+            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
         </div>
 
         {/* Add New Station Form */}
-        <Card className="mb-8">
+        <Card className="mb-8 opacity-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Plus className="h-5 w-5" />
               Add New Monitoring Station
             </CardTitle>
             <CardDescription>
-              Enter a station ID to create a new monitoring station with dummy GPS and water level data
+              This feature is not available with the current API
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -87,12 +129,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddSt
                 <Label htmlFor="stationId" className="sr-only">Station ID</Label>
                 <Input
                   id="stationId"
-                  placeholder="Enter station ID (e.g., 70000999)"
+                  placeholder="Feature not available"
                   value={newStationId}
                   onChange={(e) => setNewStationId(e.target.value)}
+                  disabled
                 />
               </div>
-              <Button type="submit" className="gap-2">
+              <Button type="submit" className="gap-2" disabled>
                 <Plus className="h-4 w-4" />
                 Add Station
               </Button>
@@ -100,8 +143,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddSt
           </CardContent>
         </Card>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {streams.map((stream) => {
+        {isLoading && (
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
+              <p className="text-muted-foreground">Loading station data...</p>
+            </div>
+          </div>
+        )}
+
+        {error && (
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <p className="text-destructive mb-2">Error loading station data</p>
+              <Button onClick={loadStreams} variant="outline">
+                Try again
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {!isLoading && !error && (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {streams.map((stream) => {
             return (
               <Card key={stream.id} className="relative">
                 <CardHeader className="pb-3">
@@ -145,21 +209,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddSt
                     </div>
                   </div>
                   
-                  <div className="pt-2 border-t">
-                    <Button 
-                      onClick={() => handleRemoveStation(stream.id, stream.name)}
-                      className="w-full gap-2"
-                      variant="destructive"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      Remove Station
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
+                   <div className="pt-2 border-t">
+                     <Button 
+                       onClick={() => handleRemoveStation(stream.id, stream.name)}
+                       className="w-full gap-2"
+                       variant="destructive"
+                       disabled
+                     >
+                       <Trash2 className="h-4 w-4" />
+                       Remove Station (Not Available)
+                     </Button>
+                   </div>
+                 </CardContent>
+               </Card>
+             );
+           })}
+           </div>
+        )}
 
         <div className="mt-8 p-4 bg-muted/50 rounded-lg">
           <h3 className="font-semibold mb-2">Station Overview</h3>
