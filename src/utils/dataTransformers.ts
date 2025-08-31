@@ -98,8 +98,7 @@ export function transformApiDataToStreams(
       status: determineStatus(currentLevel, minLevel, maxLevel),
       lastUpdated: new Date(station.current_measurement_date),
       trend: determineTrendFromSummary(station),
-      predictions: transformedPredictions,
-      last_30_days_range: station.last_30_days_range
-    } as any;
+      predictions: transformedPredictions
+    };
   });
 }

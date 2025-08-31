@@ -56,12 +56,6 @@ export interface ApiSummaryStation {
   min_level_cm: number;
   min_level_m: number;
   current_measurement_date: string;
-  last_30_days_range: {
-    min_cm: number;
-    max_cm: number;
-    min_m: number;
-    max_m: number;
-  };
   prediction_summary: {
     min_prediction_cm: number;
     max_prediction_cm: number;
