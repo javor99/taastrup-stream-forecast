@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-const BASE_URL = 'https://8abd0c42d63c.ngrok-free.app';
+const BASE_URL = 'https://9efa4460259e.ngrok-free.app';
 
 // deno-lint-ignore no-explicit-any
 function jsonResponse(body: any, status = 200) {
