@@ -53,6 +53,8 @@ export interface ApiSummaryStation {
   current_water_level_m: number;
   danger_level_cm: number;
   danger_level_m: number;
+  min_level_cm: number;
+  min_level_m: number;
   current_measurement_date: string;
   prediction_summary: {
     min_prediction_cm: number;

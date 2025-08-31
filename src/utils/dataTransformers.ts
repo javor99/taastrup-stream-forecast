@@ -62,8 +62,9 @@ export function transformApiDataToStreams(
     // Generate predictions from summary data
     const transformedPredictions = generatePredictionsFromSummary(station);
 
-    // Get current level and danger level (already in meters from summary)
+    // Get current level, min level, and danger level (already in meters from summary)
     const currentLevel = Number(station.current_water_level_m.toFixed(3));
+    const minLevel = Number(station.min_level_m.toFixed(3));
     const maxLevel = Number(station.danger_level_m.toFixed(3));
 
     return {
@@ -75,6 +76,7 @@ export function transformApiDataToStreams(
         address: getLocationFromName(station.name)
       },
       currentLevel,
+      minLevel,
       maxLevel,
       status: determineStatus(currentLevel, maxLevel),
       lastUpdated: new Date(station.current_measurement_date),

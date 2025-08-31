@@ -20,7 +20,7 @@ const Index = () => {
       id: '70000864',
       name: 'Hove å, Tostholm bro',
       location: { lat: 55.6810, lng: 12.2194, address: 'Tostholm bro' },
-      currentLevel: 1.2, maxLevel: 3.0, status: 'normal' as const,
+      currentLevel: 1.2, minLevel: 0.5, maxLevel: 3.0, status: 'normal' as const,
       lastUpdated: new Date('2025-01-04T10:30:00'), trend: 'rising' as const,
       predictions: [
         { date: new Date('2025-01-05'), predictedLevel: 1.6, confidence: 93 },
@@ -36,7 +36,7 @@ const Index = () => {
       id: '70000927',
       name: 'Hakkemosegrøften, Ole Rømers Vej',
       location: { lat: 55.6817, lng: 12.2812, address: 'Ole Rømers Vej' },
-      currentLevel: 0.8, maxLevel: 2.5, status: 'normal' as const,
+      currentLevel: 0.8, minLevel: 0.3, maxLevel: 2.5, status: 'normal' as const,
       lastUpdated: new Date('2025-01-04T10:25:00'), trend: 'stable' as const,
       predictions: [
         { date: new Date('2025-01-05'), predictedLevel: 0.8, confidence: 94 },
@@ -52,7 +52,7 @@ const Index = () => {
       id: '70000865',
       name: 'Sengeløse å, Sengeløse mose',
       location: { lat: 55.6898, lng: 12.2678, address: 'Sengeløse mose' },
-      currentLevel: 2.1, maxLevel: 3.2, status: 'warning' as const,
+      currentLevel: 2.1, minLevel: 1.0, maxLevel: 3.2, status: 'warning' as const,
       lastUpdated: new Date('2025-01-04T10:35:00'), trend: 'rising' as const,
       predictions: [
         { date: new Date('2025-01-05'), predictedLevel: 2.4, confidence: 80 },
@@ -68,7 +68,7 @@ const Index = () => {
       id: '70000940',
       name: 'Nybølle Å, Ledøje Plantage',
       location: { lat: 55.6940, lng: 12.3099, address: 'Ledøje Plantage' },
-      currentLevel: 0.6, maxLevel: 2.8, status: 'normal' as const,
+      currentLevel: 0.6, minLevel: 0.2, maxLevel: 2.8, status: 'normal' as const,
       lastUpdated: new Date('2025-01-04T10:20:00'), trend: 'rising' as const,
       predictions: [
         { date: new Date('2025-01-05'), predictedLevel: 0.8, confidence: 75 },
@@ -84,7 +84,7 @@ const Index = () => {
       id: '70000925',
       name: 'Spangå, Ågesholmvej',
       location: { lat: 55.6766, lng: 12.2391, address: 'Ågesholmvej' },
-      currentLevel: 2.8, maxLevel: 3.5, status: 'danger' as const,
+      currentLevel: 2.8, minLevel: 1.5, maxLevel: 3.5, status: 'danger' as const,
       lastUpdated: new Date('2025-01-04T10:40:00'), trend: 'rising' as const,
       predictions: [
         { date: new Date('2025-01-05'), predictedLevel: 3.0, confidence: 86 },
@@ -100,7 +100,7 @@ const Index = () => {
       id: '70000879',
       name: 'Enghave Å, Rolandsvej 3',
       location: { lat: 55.6879, lng: 12.2011, address: 'Rolandsvej 3' },
-      currentLevel: 1.5, maxLevel: 3.0, status: 'normal' as const,
+      currentLevel: 1.5, minLevel: 0.8, maxLevel: 3.0, status: 'normal' as const,
       lastUpdated: new Date('2025-01-04T10:15:00'), trend: 'falling' as const,
       predictions: [
         { date: new Date('2025-01-05'), predictedLevel: 1.3, confidence: 92 },
@@ -116,7 +116,7 @@ const Index = () => {
       id: '70000942',
       name: 'Ll. Vejleå, Lille Solhøjvej 42',
       location: { lat: 55.6823, lng: 12.2156, address: 'Lille Solhøjvej 42' },
-      currentLevel: 0.9, maxLevel: 2.2, status: 'normal' as const,
+      currentLevel: 0.9, minLevel: 0.4, maxLevel: 2.2, status: 'normal' as const,
       lastUpdated: new Date('2025-01-04T10:10:00'), trend: 'stable' as const,
       predictions: [
         { date: new Date('2025-01-05'), predictedLevel: 0.9, confidence: 88 },
@@ -173,7 +173,8 @@ const Index = () => {
     const randomTrend = trends[Math.floor(Math.random() * trends.length)];
     
     const maxLevel = 2 + Math.random() * 3; // 2-5m
-    const currentLevel = 0.5 + Math.random() * (maxLevel - 0.5); // 0.5 to maxLevel
+    const minLevel = 0.2 + Math.random() * 1; // 0.2-1.2m
+    const currentLevel = minLevel + Math.random() * (maxLevel - minLevel); // between min and max
     
     return {
       id,
@@ -184,6 +185,7 @@ const Index = () => {
         address: `${randomLocationName} ${Math.floor(Math.random() * 100) + 1}` 
       },
       currentLevel: Math.round(currentLevel * 10) / 10,
+      minLevel: Math.round(minLevel * 10) / 10,
       maxLevel: Math.round(maxLevel * 10) / 10,
       status: randomStatus,
       lastUpdated: new Date(),

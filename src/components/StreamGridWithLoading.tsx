@@ -45,6 +45,7 @@ const mockStreams: Stream[] = [
       address: 'Tostholm bro'
     },
     currentLevel: 1.2,
+    minLevel: 0.5,
     maxLevel: 3.0,
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:30:00'),
@@ -60,6 +61,7 @@ const mockStreams: Stream[] = [
       address: 'Ole Rømers Vej'
     },
     currentLevel: 0.8,
+    minLevel: 0.3,
     maxLevel: 2.5,
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:25:00'),
@@ -75,6 +77,7 @@ const mockStreams: Stream[] = [
       address: 'Sengeløse mose'
     },
     currentLevel: 2.1,
+    minLevel: 1.0,
     maxLevel: 3.2,
     status: 'warning',
     lastUpdated: new Date('2025-01-04T10:35:00'),
@@ -90,6 +93,7 @@ const mockStreams: Stream[] = [
       address: 'Ledøje Plantage'
     },
     currentLevel: 0.6,
+    minLevel: 0.2,
     maxLevel: 2.8,
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:20:00'),
@@ -105,6 +109,7 @@ const mockStreams: Stream[] = [
       address: 'Ågesholmvej'
     },
     currentLevel: 2.8,
+    minLevel: 1.5,
     maxLevel: 3.5,
     status: 'danger',
     lastUpdated: new Date('2025-01-04T10:40:00'),
@@ -120,6 +125,7 @@ const mockStreams: Stream[] = [
       address: 'Rolandsvej 3'
     },
     currentLevel: 1.5,
+    minLevel: 0.8,
     maxLevel: 3.0,
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:15:00'),
@@ -135,6 +141,7 @@ const mockStreams: Stream[] = [
       address: 'Lille Solhøjvej 42'
     },
     currentLevel: 1.1,
+    minLevel: 0.4,
     maxLevel: 2.7,
     status: 'normal',
     lastUpdated: new Date('2025-01-04T10:10:00'),

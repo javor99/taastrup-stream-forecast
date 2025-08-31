@@ -14,7 +14,8 @@ export interface Stream {
     address: string;
   };
   currentLevel: number; // in meters
-  maxLevel: number; // in meters
+  minLevel: number; // in meters (5-year minimum)
+  maxLevel: number; // in meters (5-year maximum / danger level)
   status: 'normal' | 'warning' | 'danger';
   lastUpdated: Date;
   trend: 'rising' | 'falling' | 'stable';
