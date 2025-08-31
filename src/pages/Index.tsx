@@ -197,6 +197,10 @@ const Index = () => {
     setStreams(prev => [...prev, newStation]);
   };
 
+  const removeStation = (id: string) => {
+    setStreams(prev => prev.filter(stream => stream.id !== id));
+  };
+
   if (isLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-lg">Loading...</div>
@@ -240,6 +244,7 @@ const Index = () => {
         <AdminDashboard 
           streams={streams}
           onAddStation={addNewStation}
+          onRemoveStation={removeStation}
           onClose={() => setShowAdminDashboard(false)}
         />
       )}

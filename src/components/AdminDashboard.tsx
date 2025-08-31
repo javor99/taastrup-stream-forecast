@@ -7,38 +7,28 @@ import { Label } from '@/components/ui/label';
 import { Header } from '@/components/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { Stream } from '@/types/stream';
-import { LogOut, RefreshCw, MapPin, Waves, Clock, Plus } from 'lucide-react';
+import { LogOut, Trash2, MapPin, Waves, Clock, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface AdminDashboardProps {
   streams: Stream[];
   onAddStation: (id: string) => void;
+  onRemoveStation: (id: string) => void;
   onClose: () => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddStation, onClose }) => {
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddStation, onRemoveStation, onClose }) => {
   const { logout } = useAuth();
   const { toast } = useToast();
-  const [retrainingStations, setRetrainingStations] = useState<Set<string>>(new Set());
   const [newStationId, setNewStationId] = useState('');
 
-  const handleRetrain = (streamId: string, streamName: string) => {
-    setRetrainingStations(prev => new Set([...prev, streamId]));
-    
+  const handleRemoveStation = (streamId: string, streamName: string) => {
+    onRemoveStation(streamId);
     toast({
-      title: "Retraining Scheduled",
-      description: `New model for ${streamName} will be public in 5 hours!`,
-      duration: 5000,
+      title: "Station Removed",
+      description: `Monitoring station ${streamName} has been removed from the system.`,
+      variant: "destructive",
     });
-
-    // Remove from retraining set after 3 seconds to simulate processing
-    setTimeout(() => {
-      setRetrainingStations(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(streamId);
-        return newSet;
-      });
-    }, 3000);
   };
 
   const handleAddStation = (e: React.FormEvent) => {
@@ -112,7 +102,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddSt
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {streams.map((stream) => {
-            const isRetraining = retrainingStations.has(stream.id);
             return (
               <Card key={stream.id} className="relative">
                 <CardHeader className="pb-3">
@@ -158,13 +147,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ streams, onAddSt
                   
                   <div className="pt-2 border-t">
                     <Button 
-                      onClick={() => handleRetrain(stream.id, stream.name)}
-                      disabled={isRetraining}
+                      onClick={() => handleRemoveStation(stream.id, stream.name)}
                       className="w-full gap-2"
-                      variant={isRetraining ? "secondary" : "default"}
+                      variant="destructive"
                     >
-                      <RefreshCw className={`h-4 w-4 ${isRetraining ? 'animate-spin' : ''}`} />
-                      {isRetraining ? 'Scheduling...' : 'Schedule Retraining'}
+                      <Trash2 className="h-4 w-4" />
+                      Remove Station
                     </Button>
                   </div>
                 </CardContent>
