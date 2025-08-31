@@ -1,5 +1,5 @@
+import { supabase } from '@/integrations/supabase/client';
 const API_BASE_URL = 'https://e1fc0f1f3c1c.ngrok-free.app';
-
 export interface ApiStation {
   station_id: string;
   name: string;
@@ -50,12 +50,22 @@ export interface ApiPredictionsResponse {
   predictions: ApiPrediction[];
 }
 
+// Proxy helper via Supabase Edge Function
+async function proxyGet<T>(path: 'stations' | 'water-levels' | 'predictions' | 'summary'): Promise<T> {
+  const { data, error } = await supabase.functions.invoke('stream-proxy', {
+    body: { path }
+  });
+  if (error) {
+    console.error('Edge function error:', error);
+    throw error;
+  }
+  return data as T;
+}
+
 // Fetch all stations
 export async function fetchStations(): Promise<ApiStation[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/stations`);
-    const data: ApiStationsResponse = await response.json();
-    
+    const data = await proxyGet<ApiStationsResponse>('stations');
     if (data.success) {
       return data.stations;
     } else {
@@ -70,9 +80,7 @@ export async function fetchStations(): Promise<ApiStation[]> {
 // Fetch water levels
 export async function fetchWaterLevels(): Promise<ApiWaterLevel[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/water-levels`);
-    const data: ApiWaterLevelsResponse = await response.json();
-    
+    const data = await proxyGet<ApiWaterLevelsResponse>('water-levels');
     if (data.success) {
       return data.water_levels;
     } else {
@@ -87,9 +95,7 @@ export async function fetchWaterLevels(): Promise<ApiWaterLevel[]> {
 // Fetch all predictions
 export async function fetchAllPredictions(): Promise<ApiPrediction[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/predictions`);
-    const data: ApiPredictionsResponse = await response.json();
-    
+    const data = await proxyGet<ApiPredictionsResponse>('predictions');
     if (data.success) {
       return data.predictions;
     } else {
