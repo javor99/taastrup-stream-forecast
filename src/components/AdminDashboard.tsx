@@ -19,7 +19,7 @@ interface AdminDashboardProps {
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const { logout } = useAuth();
   const { toast } = useToast();
-  const [streams, setStreams] = useState<Stream[]>([]);
+  const [streams, setStreams] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -175,6 +175,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     <div>
                       <div className="text-muted-foreground">Min Level</div>
                       <div className="font-semibold">{stream.minLevel}m</div>
+                    </div>
+                  </div>
+                  
+                  <div className="pt-2 border-t">
+                    <div className="text-sm">
+                      <div className="text-muted-foreground mb-2">30-Day Range</div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <span className="text-muted-foreground">Min:</span>
+                          <span className="font-medium ml-1">{stream.last_30_days_range?.min_m?.toFixed(3) || 'N/A'}m</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground">Max:</span>
+                          <span className="font-medium ml-1">{stream.last_30_days_range?.max_m?.toFixed(3) || 'N/A'}m</span>
+                        </div>
+                      </div>
                     </div>
                   </div>
                   
