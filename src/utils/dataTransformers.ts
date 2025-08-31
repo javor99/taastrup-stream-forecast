@@ -56,19 +56,16 @@ function determineTrendFromSummary(station: ApiSummaryStation): 'rising' | 'fall
   
   // Calculate station-specific threshold as percentage of range
   const range_m = max_m - min_m;
-  const threshold = Math.max(0.02, range_m * 0.02); // Minimum 2cm or 2% of station range
+  const threshold = Math.max(0.01, range_m * 0.01); // Minimum 1cm or 1% of station range
   
   const change_m = avg_prediction_m - current_m;
   
-  // Always provide a clear trend direction
+  // If change is very small, consider it stable
   if (Math.abs(change_m) < threshold) {
-    // For very small changes, look at the direction trend
-    if (change_m > 0) return 'rising';
-    if (change_m < 0) return 'falling';
     return 'stable';
   }
   
-  // Clear directional trends
+  // Clear directional trends only for significant changes
   return change_m > 0 ? 'rising' : 'falling';
 }
 
