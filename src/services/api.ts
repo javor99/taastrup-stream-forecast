@@ -68,6 +68,7 @@ export interface ApiSummaryStation {
 export interface ApiSummaryResponse {
   success: boolean;
   forecast_date: string;
+  last_updated: string;
   count: number;
   summary: ApiSummaryStation[];
 }
@@ -92,11 +93,14 @@ async function proxyGet<T>(path: 'stations' | 'water-levels' | 'predictions' | '
 }
 
 // Fetch summary data (preferred method - includes stations + current levels)
-export async function fetchSummary(): Promise<ApiSummaryStation[]> {
+export async function fetchSummary(): Promise<{ summary: ApiSummaryStation[], lastUpdated: string }> {
   try {
     const data = await proxyGet<ApiSummaryResponse>('summary');
     if (data.success) {
-      return data.summary;
+      return { 
+        summary: data.summary, 
+        lastUpdated: data.last_updated 
+      };
     } else {
       throw new Error('Failed to fetch summary');
     }
