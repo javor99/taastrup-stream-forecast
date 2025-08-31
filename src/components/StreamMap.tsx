@@ -42,42 +42,20 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
 
     // Function to check which streams are visible in current viewport
     const updateVisibleStreams = () => {
-      console.log('updateVisibleStreams called');
-      if (!onVisibleStreamsChange) {
-        console.log('No onVisibleStreamsChange callback provided');
-        return;
-      }
+      if (!onVisibleStreamsChange) return;
       
       const bounds = newMap.getBounds();
-      console.log('Map bounds:', bounds.toString());
       const visibleStreams = streams.filter(stream => {
-        const isVisible = bounds.contains([stream.location.lng, stream.location.lat]);
-        console.log(`Stream ${stream.name} at [${stream.location.lng}, ${stream.location.lat}] is visible:`, isVisible);
-        return isVisible;
+        return bounds.contains([stream.location.lng, stream.location.lat]);
       });
-      console.log('Calling onVisibleStreamsChange with', visibleStreams.length, 'streams');
       onVisibleStreamsChange(visibleStreams);
     };
 
     // Update visible streams on map events
-    newMap.on('moveend', () => {
-      console.log('Map moveend event fired');
-      updateVisibleStreams();
-    });
-    newMap.on('zoomend', () => {
-      console.log('Map zoomend event fired');
-      updateVisibleStreams();
-    });
-    newMap.on('sourcedata', () => {
-      console.log('Map sourcedata event fired');
-      updateVisibleStreams();
-    });
-    
-    // Initial check for visible streams when map is ready
-    newMap.on('idle', () => {
-      console.log('Map idle event fired');
-      updateVisibleStreams();
-    });
+    newMap.on('moveend', updateVisibleStreams);
+    newMap.on('zoomend', updateVisibleStreams);
+    newMap.on('sourcedata', updateVisibleStreams);
+    newMap.on('idle', updateVisibleStreams);
 
     // Add markers for each stream
     streams.forEach((stream) => {

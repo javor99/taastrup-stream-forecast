@@ -21,7 +21,6 @@ export const StreamGrid = () => {
         setError(null);
         
         const { summary, lastUpdated } = await fetchSummary();
-        console.log('API Response lastUpdated:', lastUpdated);
         
         const transformedStreams = transformApiDataToStreams(summary);
         setAllStreams(transformedStreams);
@@ -39,7 +38,6 @@ export const StreamGrid = () => {
   }, []);
 
   const handleVisibleStreamsChange = React.useCallback((streams: Stream[]) => {
-    console.log('Visible streams updated:', streams.length, streams.map(s => s.name));
     setVisibleStreams(streams);
   }, []);
 
