@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Header } from '@/components/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { Stream } from '@/types/stream';
-import { LogOut, Trash2, MapPin, Waves, Clock, Plus, RefreshCw } from 'lucide-react';
+import { LogOut, Trash2, MapPin, Waves, Clock, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { fetchSummary } from '@/services/api';
 import { transformApiDataToStreams } from '@/utils/dataTransformers';
@@ -52,13 +52,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     }
   };
 
-  const handleRefresh = () => {
-    loadStreams();
-    toast({
-      title: "Refreshed",
-      description: "Station data has been refreshed.",
-    });
-  };
 
   const handleRemoveStation = (streamId: string, streamName: string) => {
     toast({
@@ -89,27 +82,21 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     <div className="fixed inset-0 bg-background z-50 overflow-auto">
       <Header onShowAdminDashboard={onClose} isInDashboard={true} />
       <div className="container mx-auto p-6">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">Manage all active monitoring stations</p>
-            {lastUpdated && (
-              <p className="text-sm text-muted-foreground mt-1">
-                Last updated: {new Date(lastUpdated).toLocaleString('en-DK', { 
-                  timeZone: 'Europe/Copenhagen',
-                  year: 'numeric',
-                  month: '2-digit', 
-                  day: '2-digit',
-                  hour: '2-digit',
-                  minute: '2-digit'
-                })}
-              </p>
-            )}
-          </div>
-          <Button onClick={handleRefresh} disabled={isLoading} className="gap-2">
-            <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+          <p className="text-muted-foreground">Manage all active monitoring stations</p>
+          {lastUpdated && (
+            <p className="text-sm text-muted-foreground mt-1">
+              Last updated: {new Date(lastUpdated).toLocaleString('en-DK', { 
+                timeZone: 'Europe/Copenhagen',
+                year: 'numeric',
+                month: '2-digit', 
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+              })}
+            </p>
+          )}
         </div>
 
         {/* Add New Station Form */}
@@ -146,7 +133,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         {isLoading && (
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
-              <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
+              <div className="h-8 w-8 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-2"></div>
               <p className="text-muted-foreground">Loading station data...</p>
             </div>
           </div>
