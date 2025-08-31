@@ -53,11 +53,7 @@ export interface ApiPredictionsResponse {
 // Fetch all stations
 export async function fetchStations(): Promise<ApiStation[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/stations`, {
-      headers: {
-        'ngrok-skip-browser-warning': 'true'
-      }
-    });
+    const response = await fetch(`${API_BASE_URL}/stations`);
     const data: ApiStationsResponse = await response.json();
     
     if (data.success) {
@@ -74,11 +70,7 @@ export async function fetchStations(): Promise<ApiStation[]> {
 // Fetch water levels
 export async function fetchWaterLevels(): Promise<ApiWaterLevel[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/water-levels`, {
-      headers: {
-        'ngrok-skip-browser-warning': 'true'
-      }
-    });
+    const response = await fetch(`${API_BASE_URL}/water-levels`);
     const data: ApiWaterLevelsResponse = await response.json();
     
     if (data.success) {
@@ -95,11 +87,7 @@ export async function fetchWaterLevels(): Promise<ApiWaterLevel[]> {
 // Fetch all predictions
 export async function fetchAllPredictions(): Promise<ApiPrediction[]> {
   try {
-    const response = await fetch(`${API_BASE_URL}/predictions`, {
-      headers: {
-        'ngrok-skip-browser-warning': 'true'
-      }
-    });
+    const response = await fetch(`${API_BASE_URL}/predictions`);
     const data: ApiPredictionsResponse = await response.json();
     
     if (data.success) {
