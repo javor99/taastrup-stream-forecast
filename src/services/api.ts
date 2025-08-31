@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-const API_BASE_URL = 'https://e1fc0f1f3c1c.ngrok-free.app';
+const API_BASE_URL = 'https://8abd0c42d63c.ngrok-free.app';
 
 export interface ApiStation {
   station_id: string;
