@@ -1,28 +1,34 @@
-const API_BASE_URL = 'https://1420df023212.ngrok-free.app';
+const API_BASE_URL = 'https://e1fc0f1f3c1c.ngrok-free.app';
 
 export interface ApiStation {
   station_id: string;
-  coordinates: {
-    latitude: number;
-    longitude: number;
-  };
-  water_level_stats: {
-    average: number;
-    max: number;
-    min: number;
-  };
-  data_counts: {
-    prediction_records: number;
-    water_level_records: number;
-  };
-  updated_at: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  location_type: string;
+  station_owner: string;
+}
+
+export interface ApiWaterLevel {
+  station_id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  measurement_date: string;
+  water_level_cm: number;
+  water_level_m: number;
 }
 
 export interface ApiPrediction {
-  date: string;
-  predicted_level: number;
-  predicted_change: number;
-  created_at: string;
+  station_id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  prediction_date: string;
+  predicted_water_level_cm: number;
+  predicted_water_level_m: number;
+  change_from_last_cm: number;
+  forecast_date: string;
 }
 
 export interface ApiStationsResponse {
@@ -31,10 +37,17 @@ export interface ApiStationsResponse {
   stations: ApiStation[];
 }
 
+export interface ApiWaterLevelsResponse {
+  success: boolean;
+  count: number;
+  water_levels: ApiWaterLevel[];
+}
+
 export interface ApiPredictionsResponse {
   success: boolean;
-  station_count: number;
-  predictions: Record<string, ApiPrediction[]>;
+  forecast_date: string;
+  count: number;
+  predictions: ApiPrediction[];
 }
 
 // Fetch all stations
@@ -58,8 +71,29 @@ export async function fetchStations(): Promise<ApiStation[]> {
   }
 }
 
+// Fetch water levels
+export async function fetchWaterLevels(): Promise<ApiWaterLevel[]> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/water-levels`, {
+      headers: {
+        'ngrok-skip-browser-warning': 'true'
+      }
+    });
+    const data: ApiWaterLevelsResponse = await response.json();
+    
+    if (data.success) {
+      return data.water_levels;
+    } else {
+      throw new Error('Failed to fetch water levels');
+    }
+  } catch (error) {
+    console.error('Error fetching water levels:', error);
+    throw error;
+  }
+}
+
 // Fetch all predictions
-export async function fetchAllPredictions(): Promise<Record<string, ApiPrediction[]>> {
+export async function fetchAllPredictions(): Promise<ApiPrediction[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/predictions`, {
       headers: {

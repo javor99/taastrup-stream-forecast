@@ -1,20 +1,15 @@
 import { Stream, DailyPrediction } from '@/types/stream';
-import { ApiStation, ApiPrediction } from '@/services/api';
+import { ApiStation, ApiPrediction, ApiWaterLevel } from '@/services/api';
 
-// Mock station names based on coordinates (you can expand this mapping)
-const stationNames: Record<string, string> = {
-  '70000864': 'Hove å, Tostholm bro',
-  '70000927': 'Hakkemosegrøften, Ole Rømers Vej',
-  '70000865': 'Sengeløse å, Sengeløse mose',
-  '70000926': 'Nybølle Å, Ledøje Plantage',
-  '70000925': 'Spangå, Ågesholmvej',
-  '70000923': 'Enghave Å, Rolandsvej 3',
-  '70000924': 'Ll. Vejleå, Lille Solhøjvej 42'
+// Station locations based on API names
+const getLocationFromName = (name: string): string => {
+  const parts = name.split(', ');
+  return parts.length > 1 ? parts[1] : 'Unknown location';
 };
 
-// Convert mm to meters
-function mmToMeters(mm: number): number {
-  return mm / 1000;
+// Convert cm to meters and round to 3 decimals
+function cmToMeters(cm: number): number {
+  return Number((cm / 100).toFixed(3));
 }
 
 // Determine status based on current level vs max level
@@ -29,41 +24,46 @@ function determineStatus(current: number, max: number): 'normal' | 'warning' | '
 function determineTrend(predictions: ApiPrediction[]): 'rising' | 'falling' | 'stable' {
   if (!predictions.length) return 'stable';
   
-  const totalChange = predictions.reduce((sum, pred) => sum + pred.predicted_change, 0);
-  if (totalChange > 50) return 'rising';
-  if (totalChange < -50) return 'falling';
+  const totalChange = predictions.reduce((sum, pred) => sum + pred.change_from_last_cm, 0);
+  if (totalChange > 5) return 'rising';
+  if (totalChange < -5) return 'falling';
   return 'stable';
 }
 
 export function transformApiDataToStreams(
   stations: ApiStation[], 
-  predictions: Record<string, ApiPrediction[]>
+  waterLevels: ApiWaterLevel[],
+  predictions: ApiPrediction[]
 ): Stream[] {
   return stations.map(station => {
-    const stationPredictions = predictions[station.station_id] || [];
+    // Find current water level for this station
+    const currentWaterLevel = waterLevels.find(wl => wl.station_id === station.station_id);
+    
+    // Find predictions for this station
+    const stationPredictions = predictions.filter(pred => pred.station_id === station.station_id);
     
     // Convert predictions to our format
     const transformedPredictions: DailyPrediction[] = stationPredictions.map(pred => ({
-      date: new Date(pred.date),
-      predictedLevel: Number(mmToMeters(pred.predicted_level).toFixed(3))
+      date: new Date(pred.prediction_date),
+      predictedLevel: Number(pred.predicted_water_level_m.toFixed(3))
     }));
 
-    // Get current level (using average from stats, converted to meters)
-    const currentLevel = Number(mmToMeters(station.water_level_stats.average).toFixed(3));
+    // Get current level (converted to meters and rounded)
+    const currentLevel = currentWaterLevel ? Number(currentWaterLevel.water_level_m.toFixed(3)) : 0;
     const maxLevel = Number((currentLevel + 1).toFixed(3)); // Max threshold is 1m above current
 
     return {
       id: station.station_id,
-      name: stationNames[station.station_id] || `Station ${station.station_id}`,
+      name: station.name,
       location: {
-        lat: station.coordinates.latitude,
-        lng: station.coordinates.longitude,
-        address: stationNames[station.station_id]?.split(', ')[1] || 'Unknown location'
+        lat: station.latitude,
+        lng: station.longitude,
+        address: getLocationFromName(station.name)
       },
       currentLevel,
       maxLevel,
       status: determineStatus(currentLevel, maxLevel),
-      lastUpdated: new Date(station.updated_at),
+      lastUpdated: currentWaterLevel ? new Date(currentWaterLevel.measurement_date) : new Date(),
       trend: determineTrend(stationPredictions),
       predictions: transformedPredictions
     };

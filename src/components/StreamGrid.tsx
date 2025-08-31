@@ -4,7 +4,7 @@ import { StreamCard } from './StreamCard';
 import { StreamMap } from './StreamMap';
 import { StreamGridSkeleton } from './StreamGridSkeleton';
 import { Stream } from '@/types/stream';
-import { fetchStations, fetchAllPredictions } from '@/services/api';
+import { fetchStations, fetchAllPredictions, fetchWaterLevels } from '@/services/api';
 import { transformApiDataToStreams } from '@/utils/dataTransformers';
 
 export const StreamGrid = () => {
@@ -19,12 +19,13 @@ export const StreamGrid = () => {
         setIsLoading(true);
         setError(null);
         
-        const [stations, predictions] = await Promise.all([
+        const [stations, waterLevels, predictions] = await Promise.all([
           fetchStations(),
+          fetchWaterLevels(),
           fetchAllPredictions()
         ]);
         
-        const transformedStreams = transformApiDataToStreams(stations, predictions);
+        const transformedStreams = transformApiDataToStreams(stations, waterLevels, predictions);
         setAllStreams(transformedStreams);
         setVisibleStreams(transformedStreams);
       } catch (err) {
