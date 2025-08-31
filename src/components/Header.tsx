@@ -1,5 +1,5 @@
 import React from 'react';
-import { Waves, MapPin, Shield, LogOut } from 'lucide-react';
+import { Waves, MapPin, Settings, Home, LogOut } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -42,7 +42,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
                 size="sm"
                 className="gap-2"
               >
-                <Shield className="h-4 w-4" />
+                <Settings className="h-4 w-4" />
                 Admin
               </Button>
             )}
@@ -50,7 +50,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
             {isAuthenticated && isAdmin && (
               <>
                 <div className="flex items-center space-x-2 text-muted-foreground bg-primary/10 px-3 py-2 rounded-lg border border-primary/20">
-                  <Shield className="h-4 w-4 text-primary" />
+                  <Settings className="h-4 w-4 text-primary" />
                   <span className="text-sm font-medium text-primary">Admin Mode</span>
                 </div>
                 
@@ -61,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
                     size="sm"
                     className="gap-2"
                   >
-                    <Shield className="h-4 w-4" />
+                    {isInDashboard ? <Home className="h-4 w-4" /> : <Settings className="h-4 w-4" />}
                     {isInDashboard ? 'Home' : 'Dashboard'}
                   </Button>
                 )}
