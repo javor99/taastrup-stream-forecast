@@ -1,5 +1,5 @@
 import { Stream, DailyPrediction } from '@/types/stream';
-import { ApiStation, ApiPrediction, ApiWaterLevel } from '@/services/api';
+import { ApiSummaryStation, ApiPrediction } from '@/services/api';
 
 // Station locations based on API names
 const getLocationFromName = (name: string): string => {
@@ -31,14 +31,10 @@ function determineTrend(predictions: ApiPrediction[]): 'rising' | 'falling' | 's
 }
 
 export function transformApiDataToStreams(
-  stations: ApiStation[], 
-  waterLevels: ApiWaterLevel[],
+  summaryStations: ApiSummaryStation[], 
   predictions: ApiPrediction[]
 ): Stream[] {
-  return stations.map(station => {
-    // Find current water level for this station
-    const currentWaterLevel = waterLevels.find(wl => wl.station_id === station.station_id);
-    
+  return summaryStations.map(station => {
     // Find predictions for this station
     const stationPredictions = predictions.filter(pred => pred.station_id === station.station_id);
     
@@ -48,8 +44,8 @@ export function transformApiDataToStreams(
       predictedLevel: Number(pred.predicted_water_level_m.toFixed(3))
     }));
 
-    // Get current level (converted to meters and rounded)
-    const currentLevel = currentWaterLevel ? Number(currentWaterLevel.water_level_m.toFixed(3)) : 0;
+    // Get current level (already in meters from summary)
+    const currentLevel = Number(station.current_water_level_m.toFixed(3));
     const maxLevel = Number((currentLevel + 1).toFixed(3)); // Max threshold is 1m above current
 
     return {
@@ -63,7 +59,7 @@ export function transformApiDataToStreams(
       currentLevel,
       maxLevel,
       status: determineStatus(currentLevel, maxLevel),
-      lastUpdated: currentWaterLevel ? new Date(currentWaterLevel.measurement_date) : new Date(),
+      lastUpdated: new Date(station.current_measurement_date),
       trend: determineTrend(stationPredictions),
       predictions: transformedPredictions
     };

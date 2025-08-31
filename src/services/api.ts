@@ -1,5 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 const API_BASE_URL = 'https://e1fc0f1f3c1c.ngrok-free.app';
+
 export interface ApiStation {
   station_id: string;
   name: string;
@@ -43,6 +44,30 @@ export interface ApiWaterLevelsResponse {
   water_levels: ApiWaterLevel[];
 }
 
+export interface ApiSummaryStation {
+  station_id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  current_water_level_cm: number;
+  current_water_level_m: number;
+  current_measurement_date: string;
+  prediction_summary: {
+    min_prediction_cm: number;
+    max_prediction_cm: number;
+    avg_prediction_cm: number;
+    max_change_cm: number;
+    forecast_date: string;
+  };
+}
+
+export interface ApiSummaryResponse {
+  success: boolean;
+  forecast_date: string;
+  count: number;
+  summary: ApiSummaryStation[];
+}
+
 export interface ApiPredictionsResponse {
   success: boolean;
   forecast_date: string;
@@ -60,6 +85,21 @@ async function proxyGet<T>(path: 'stations' | 'water-levels' | 'predictions' | '
     throw error;
   }
   return data as T;
+}
+
+// Fetch summary data (preferred method - includes stations + current levels)
+export async function fetchSummary(): Promise<ApiSummaryStation[]> {
+  try {
+    const data = await proxyGet<ApiSummaryResponse>('summary');
+    if (data.success) {
+      return data.summary;
+    } else {
+      throw new Error('Failed to fetch summary');
+    }
+  } catch (error) {
+    console.error('Error fetching summary:', error);
+    throw error;
+  }
 }
 
 // Fetch all stations
