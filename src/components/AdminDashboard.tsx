@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Header } from '@/components/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { Stream } from '@/types/stream';
-import { LogOut, Trash2, MapPin, Waves, Clock, Plus } from 'lucide-react';
+import { LogOut, Trash2, MapPin, Waves, Plus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { fetchSummary } from '@/services/api';
 import { transformApiDataToStreams } from '@/utils/dataTransformers';
@@ -85,18 +85,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
           <p className="text-muted-foreground">Manage all active monitoring stations</p>
-          {lastUpdated && (
-            <p className="text-sm text-muted-foreground mt-1">
-              Last updated: {new Date(lastUpdated).toLocaleString('en-DK', { 
-                timeZone: 'Europe/Copenhagen',
-                year: 'numeric',
-                month: '2-digit', 
-                day: '2-digit',
-                hour: '2-digit',
-                minute: '2-digit'
-              })}
-            </p>
-          )}
         </div>
 
         {/* Add New Station Form */}
@@ -185,14 +173,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                       <div className="font-semibold capitalize">{stream.trend}</div>
                     </div>
                     <div>
-                      <div className="text-muted-foreground">Last Update</div>
-                      <div className="font-semibold flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {stream.lastUpdated.toLocaleTimeString('en-US', { 
-                          hour: '2-digit', 
-                          minute: '2-digit' 
-                        })}
-                      </div>
+                      <div className="text-muted-foreground">Min Level</div>
+                      <div className="font-semibold">{stream.minLevel}m</div>
                     </div>
                   </div>
                   
