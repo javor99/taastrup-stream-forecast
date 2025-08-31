@@ -62,6 +62,11 @@ export interface ApiSummaryStation {
     min_m: number;
     max_m: number;
   };
+  last_30_days_historical?: {
+    date: string;
+    water_level_cm: number;
+    water_level_m: number;
+  }[];
   prediction_summary: {
     min_prediction_cm: number;
     max_prediction_cm: number;

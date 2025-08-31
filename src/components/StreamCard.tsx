@@ -1,8 +1,9 @@
 
-import React from 'react';
-import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar } from 'lucide-react';
 import { Stream } from '@/types/stream';
 import { WaterLevelIndicator } from './WaterLevelIndicator';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface StreamCardProps {
   stream: Stream;
@@ -95,12 +96,32 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
         </div>
       </div>
 
-      <div className="mt-3 p-3 bg-cyan-100/50 dark:bg-cyan-900/30 rounded-lg border border-cyan-200/50 dark:border-cyan-700/50">
-        <div className="text-center">
-          <div className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 font-display mb-1">Previous 30 Day Range</div>
-          <div className="text-sm font-bold text-foreground font-display">{stream.last30DaysRange.min_m.toFixed(3)}m - {stream.last30DaysRange.max_m.toFixed(3)}m</div>
-        </div>
-      </div>
+      <Dialog>
+        <DialogTrigger asChild>
+          <div className="mt-3 p-3 bg-cyan-100/50 dark:bg-cyan-900/30 rounded-lg border border-cyan-200/50 dark:border-cyan-700/50 cursor-pointer hover:bg-cyan-200/50 dark:hover:bg-cyan-800/30 transition-colors">
+            <div className="text-center">
+              <div className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 font-display mb-1 flex items-center justify-center gap-1">
+                <Calendar className="h-3 w-3" />
+                Previous 30 Day Range
+              </div>
+              <div className="text-sm font-bold text-foreground font-display">{stream.last30DaysRange.min_m.toFixed(3)}m - {stream.last30DaysRange.max_m.toFixed(3)}m</div>
+            </div>
+          </div>
+        </DialogTrigger>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{stream.name} - 30 Day Historical Data</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            {stream.last30DaysHistorical.map((day, index) => (
+              <div key={index} className="flex justify-between items-center p-2 bg-muted/50 rounded-lg">
+                <span className="text-sm font-medium">{new Date(day.date).toLocaleDateString()}</span>
+                <span className="text-sm font-mono">{day.water_level_m.toFixed(3)}m</span>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <div className="flex items-center justify-end mt-4 pt-4 border-t border-border">
         <div className={`px-3 py-1 rounded-full text-xs font-bold font-display tracking-wide ${

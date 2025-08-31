@@ -99,7 +99,8 @@ export function transformApiDataToStreams(
       lastUpdated: new Date(station.current_measurement_date),
       trend: determineTrendFromSummary(station),
       predictions: transformedPredictions,
-      last30DaysRange: station.last_30_days_range
+      last30DaysRange: station.last_30_days_range,
+      last30DaysHistorical: station.last_30_days_historical || []
     };
   });
 }

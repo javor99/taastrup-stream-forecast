@@ -26,4 +26,9 @@ export interface Stream {
     min_m: number;
     max_m: number;
   };
+  last30DaysHistorical: {
+    date: string;
+    water_level_cm: number;
+    water_level_m: number;
+  }[];
 }

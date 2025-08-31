@@ -51,7 +51,13 @@ const mockStreams: Stream[] = [
     lastUpdated: new Date('2025-01-04T10:30:00'),
     trend: 'rising',
     predictions: generatePredictions(1.2, 'rising'),
-    last30DaysRange: { min_cm: 50, max_cm: 180, min_m: 0.5, max_m: 1.8 }
+    last30DaysRange: {
+      min_cm: 1408.5,
+      max_cm: 1419.9,
+      min_m: 14.085,
+      max_m: 14.199,
+    },
+    last30DaysHistorical: [],
   },
   {
     id: '70000927',
@@ -68,7 +74,13 @@ const mockStreams: Stream[] = [
     lastUpdated: new Date('2025-01-04T10:25:00'),
     trend: 'stable',
     predictions: generatePredictions(0.8, 'stable'),
-    last30DaysRange: { min_cm: 40, max_cm: 120, min_m: 0.4, max_m: 1.2 }
+    last30DaysRange: {
+      min_cm: 1140.5,
+      max_cm: 1151.4,
+      min_m: 11.405,
+      max_m: 11.514,
+    },
+    last30DaysHistorical: [],
   },
   {
     id: '70000865',
@@ -85,7 +97,13 @@ const mockStreams: Stream[] = [
     lastUpdated: new Date('2025-01-04T10:35:00'),
     trend: 'rising',
     predictions: generatePredictions(2.1, 'rising'),
-    last30DaysRange: { min_cm: 150, max_cm: 280, min_m: 1.5, max_m: 2.8 }
+    last30DaysRange: {
+      min_cm: 1587.1,
+      max_cm: 1587.6,
+      min_m: 15.871,
+      max_m: 15.876,
+    },
+    last30DaysHistorical: [],
   },
   {
     id: '70000926',
@@ -102,7 +120,13 @@ const mockStreams: Stream[] = [
     lastUpdated: new Date('2025-01-04T10:20:00'),
     trend: 'rising',
     predictions: generatePredictions(0.6, 'rising'),
-    last30DaysRange: { min_cm: 30, max_cm: 90, min_m: 0.3, max_m: 0.9 }
+    last30DaysRange: {
+      min_cm: 2765.7,
+      max_cm: 2802.1,
+      min_m: 27.657,
+      max_m: 28.021,
+    },
+    last30DaysHistorical: [],
   },
   {
     id: '70000925',
@@ -119,7 +143,13 @@ const mockStreams: Stream[] = [
     lastUpdated: new Date('2025-01-04T10:40:00'),
     trend: 'rising',
     predictions: generatePredictions(2.8, 'rising'),
-    last30DaysRange: { min_cm: 220, max_cm: 320, min_m: 2.2, max_m: 3.2 }
+    last30DaysRange: {
+      min_cm: 1924.3,
+      max_cm: 2002.1,
+      min_m: 19.243,
+      max_m: 20.021,
+    },
+    last30DaysHistorical: [],
   },
   {
     id: '70000923',
@@ -136,7 +166,13 @@ const mockStreams: Stream[] = [
     lastUpdated: new Date('2025-01-04T10:15:00'),
     trend: 'falling',
     predictions: generatePredictions(1.5, 'falling'),
-    last30DaysRange: { min_cm: 100, max_cm: 200, min_m: 1.0, max_m: 2.0 }
+    last30DaysRange: {
+      min_cm: 1244.6,
+      max_cm: 1280.7,
+      min_m: 12.446,
+      max_m: 12.807,
+    },
+    last30DaysHistorical: [],
   },
   {
     id: '70000924',
@@ -153,7 +189,13 @@ const mockStreams: Stream[] = [
     lastUpdated: new Date('2025-01-04T10:10:00'),
     trend: 'stable',
     predictions: generatePredictions(1.1, 'stable'),
-    last30DaysRange: { min_cm: 60, max_cm: 150, min_m: 0.6, max_m: 1.5 }
+    last30DaysRange: {
+      min_cm: 1838.8,
+      max_cm: 1856.6,
+      min_m: 18.388,
+      max_m: 18.566,
+    },
+    last30DaysHistorical: [],
   }
 ];
 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { StreamGrid } from '@/components/StreamGrid';
 import { Header } from '@/components/Header';
@@ -31,7 +30,8 @@ const Index = () => {
         { date: new Date('2025-01-10'), predictedLevel: 2.6, confidence: 89 },
         { date: new Date('2025-01-11'), predictedLevel: 2.8, confidence: 80 }
       ],
-      last30DaysRange: { min_cm: 50, max_cm: 180, min_m: 0.5, max_m: 1.8 }
+      last30DaysRange: { min_cm: 50, max_cm: 180, min_m: 0.5, max_m: 1.8 },
+      last30DaysHistorical: [],
     },
     {
       id: '70000927',
@@ -48,7 +48,8 @@ const Index = () => {
         { date: new Date('2025-01-10'), predictedLevel: 0.8, confidence: 77 },
         { date: new Date('2025-01-11'), predictedLevel: 0.8, confidence: 80 }
       ],
-      last30DaysRange: { min_cm: 40, max_cm: 120, min_m: 0.4, max_m: 1.2 }
+      last30DaysRange: { min_cm: 40, max_cm: 120, min_m: 0.4, max_m: 1.2 },
+      last30DaysHistorical: [],
     },
     {
       id: '70000865',
@@ -65,7 +66,8 @@ const Index = () => {
         { date: new Date('2025-01-10'), predictedLevel: 3.4, confidence: 93 },
         { date: new Date('2025-01-11'), predictedLevel: 3.7, confidence: 76 }
       ],
-      last30DaysRange: { min_cm: 150, max_cm: 280, min_m: 1.5, max_m: 2.8 }
+      last30DaysRange: { min_cm: 150, max_cm: 280, min_m: 1.5, max_m: 2.8 },
+      last30DaysHistorical: [],
     },
     {
       id: '70000940',
@@ -82,7 +84,8 @@ const Index = () => {
         { date: new Date('2025-01-10'), predictedLevel: 2.2, confidence: 94 },
         { date: new Date('2025-01-11'), predictedLevel: 2.4, confidence: 83 }
       ],
-      last30DaysRange: { min_cm: 30, max_cm: 90, min_m: 0.3, max_m: 0.9 }
+      last30DaysRange: { min_cm: 30, max_cm: 90, min_m: 0.3, max_m: 0.9 },
+      last30DaysHistorical: [],
     },
     {
       id: '70000925',
@@ -99,7 +102,8 @@ const Index = () => {
         { date: new Date('2025-01-10'), predictedLevel: 4.4, confidence: 87 },
         { date: new Date('2025-01-11'), predictedLevel: 4.7, confidence: 75 }
       ],
-      last30DaysRange: { min_cm: 220, max_cm: 320, min_m: 2.2, max_m: 3.2 }
+      last30DaysRange: { min_cm: 220, max_cm: 320, min_m: 2.2, max_m: 3.2 },
+      last30DaysHistorical: [],
     },
     {
       id: '70000879',
@@ -116,7 +120,8 @@ const Index = () => {
         { date: new Date('2025-01-10'), predictedLevel: 0.6, confidence: 92 },
         { date: new Date('2025-01-11'), predictedLevel: 0.4, confidence: 82 }
       ],
-      last30DaysRange: { min_cm: 100, max_cm: 200, min_m: 1.0, max_m: 2.0 }
+      last30DaysRange: { min_cm: 100, max_cm: 200, min_m: 1.0, max_m: 2.0 },
+      last30DaysHistorical: [],
     },
     {
       id: '70000942',
@@ -133,7 +138,8 @@ const Index = () => {
         { date: new Date('2025-01-10'), predictedLevel: 1.3, confidence: 81 },
         { date: new Date('2025-01-11'), predictedLevel: 1.4, confidence: 78 }
       ],
-      last30DaysRange: { min_cm: 60, max_cm: 150, min_m: 0.6, max_m: 1.5 }
+      last30DaysRange: { min_cm: 60, max_cm: 150, min_m: 0.6, max_m: 1.5 },
+      last30DaysHistorical: [],
     }
   ]);
 
@@ -198,7 +204,8 @@ const Index = () => {
       lastUpdated: new Date(),
       trend: randomTrend,
       predictions: [],
-      last30DaysRange: { min_cm: 20, max_cm: 100, min_m: 0.2, max_m: 1.0 }
+      last30DaysRange: { min_cm: 20, max_cm: 100, min_m: 0.2, max_m: 1.0 },
+      last30DaysHistorical: [],
     };
   };
 
