@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { MapPin, Clock, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
+import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 import { Stream } from '@/types/stream';
 import { WaterLevelIndicator } from './WaterLevelIndicator';
 
@@ -95,14 +95,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
         </div>
       </div>
 
-      <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-        <div className="flex items-center text-xs text-muted-foreground font-medium">
-          <Clock className="h-3 w-3 mr-1" />
-          Updated {stream.lastUpdated.toLocaleTimeString('da-DK', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
-          })}
-        </div>
+      <div className="flex items-center justify-end mt-4 pt-4 border-t border-border">
         <div className={`px-3 py-1 rounded-full text-xs font-bold font-display tracking-wide ${
           stream.status === 'normal' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200' :
           stream.status === 'warning' ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200' :
