@@ -12,6 +12,133 @@ import { useToast } from '@/hooks/use-toast';
 import { fetchSummary } from '@/services/api';
 import { transformApiDataToStreams } from '@/utils/dataTransformers';
 
+// Generate 7-day predictions for a stream
+const generatePredictions = (baseLevel: number, trend: 'rising' | 'falling' | 'stable') => {
+  const predictions = [];
+  let currentLevel = baseLevel;
+  
+  for (let i = 1; i <= 7; i++) {
+    const date = new Date();
+    date.setDate(date.getDate() + i);
+    
+    // Apply trend with some randomness
+    if (trend === 'rising') {
+      currentLevel += Math.random() * 0.3 + 0.1;
+    } else if (trend === 'falling') {
+      currentLevel -= Math.random() * 0.2 + 0.05;
+    } else {
+      currentLevel += (Math.random() - 0.5) * 0.1;
+    }
+    
+    // Ensure level doesn't go below 0
+    currentLevel = Math.max(0, currentLevel);
+    
+    predictions.push({
+      date,
+      predictedLevel: Math.round(currentLevel * 10) / 10,
+      confidence: Math.floor(Math.random() * 20) + 75 // 75-95% confidence
+    });
+  }
+  
+  return predictions;
+};
+
+// Mock streams for fallback when API fails
+const mockStreams: Stream[] = [
+  {
+    id: '70000864',
+    name: 'Hove å, Tostholm bro',
+    location: {
+      lat: 55.680989,
+      lng: 12.219433,
+      address: 'Tostholm bro'
+    },
+    currentLevel: 1.2,
+    minLevel: 0.5,
+    maxLevel: 3.0,
+    status: 'normal',
+    lastUpdated: new Date('2025-01-04T10:30:00'),
+    trend: 'rising',
+    predictions: generatePredictions(1.2, 'rising'),
+    last30DaysRange: {
+      min_cm: 1408.5,
+      max_cm: 1419.9,
+      min_m: 14.085,
+      max_m: 14.199,
+    },
+    last30DaysHistorical: [],
+  },
+  {
+    id: '70000927',
+    name: 'Hakkemosegrøften, Ole Rømers Vej',
+    location: {
+      lat: 55.681673,
+      lng: 12.281167,
+      address: 'Ole Rømers Vej'
+    },
+    currentLevel: 0.8,
+    minLevel: 0.3,
+    maxLevel: 2.5,
+    status: 'normal',
+    lastUpdated: new Date('2025-01-04T10:25:00'),
+    trend: 'stable',
+    predictions: generatePredictions(0.8, 'stable'),
+    last30DaysRange: {
+      min_cm: 1140.5,
+      max_cm: 1151.4,
+      min_m: 11.405,
+      max_m: 11.514,
+    },
+    last30DaysHistorical: [],
+  },
+  {
+    id: '70000865',
+    name: 'Sengeløse å, Sengeløse mose',
+    location: {
+      lat: 55.689824,
+      lng: 12.267812,
+      address: 'Sengeløse mose'
+    },
+    currentLevel: 2.1,
+    minLevel: 1.0,
+    maxLevel: 3.2,
+    status: 'warning',
+    lastUpdated: new Date('2025-01-04T10:35:00'),
+    trend: 'rising',
+    predictions: generatePredictions(2.1, 'rising'),
+    last30DaysRange: {
+      min_cm: 1587.1,
+      max_cm: 1587.6,
+      min_m: 15.871,
+      max_m: 15.876,
+    },
+    last30DaysHistorical: [],
+  },
+  {
+    id: '70000925',
+    name: 'Spangå, Ågesholmvej',
+    location: {
+      lat: 55.676561,
+      lng: 12.239100,
+      address: 'Ågesholmvej'
+    },
+    currentLevel: 2.8,
+    minLevel: 1.5,
+    maxLevel: 3.5,
+    status: 'danger',
+    lastUpdated: new Date('2025-01-04T10:40:00'),
+    trend: 'rising',
+    predictions: generatePredictions(2.8, 'rising'),
+    last30DaysRange: {
+      min_cm: 1924.3,
+      max_cm: 2002.1,
+      min_m: 19.243,
+      max_m: 20.021,
+    },
+    last30DaysHistorical: [],
+  }
+];
+
 interface AdminDashboardProps {
   onClose: () => void;
 }
@@ -21,7 +148,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const { toast } = useToast();
   const [streams, setStreams] = useState<Stream[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [usingDummyData, setUsingDummyData] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [newStationId, setNewStationId] = useState('');
 
@@ -32,7 +159,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const loadStreams = async () => {
     try {
       setIsLoading(true);
-      setError(null);
+      setUsingDummyData(false);
       
       const { summary, lastUpdated } = await fetchSummary();
       const transformedStreams = transformApiDataToStreams(summary);
@@ -41,11 +168,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
       setLastUpdated(lastUpdated);
     } catch (err) {
       console.error('Failed to load stream data:', err);
-      setError('Failed to load stream data');
+      
+      // Use dummy data as fallback
+      setStreams(mockStreams);
+      setUsingDummyData(true);
+      setLastUpdated(null);
+      
       toast({
-        title: "Error",
-        description: "Failed to load station data. Please try again.",
-        variant: "destructive",
+        title: "Using Demo Data",
+        description: "Unable to connect to live data. Displaying demo station data for management demonstration.",
+        variant: "default",
       });
     } finally {
       setIsLoading(false);
@@ -83,8 +215,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
       <Header onShowAdminDashboard={onClose} isInDashboard={true} />
       <div className="container mx-auto p-6">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-          <p className="text-muted-foreground">Manage all active monitoring stations</p>
+          <div>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
+            <p className="text-muted-foreground">
+              Manage all active monitoring stations
+              {usingDummyData && " (Using demo data - Live data unavailable)"}
+            </p>
+          </div>
         </div>
 
         {/* Add New Station Form */}
@@ -127,18 +264,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
           </div>
         )}
 
-        {error && (
-          <div className="flex items-center justify-center p-8">
-            <div className="text-center">
-              <p className="text-destructive mb-2">Error loading station data</p>
-              <Button onClick={loadStreams} variant="outline">
-                Try again
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {!isLoading && !error && (
+        {!isLoading && (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {streams.map((stream) => {
             return (
