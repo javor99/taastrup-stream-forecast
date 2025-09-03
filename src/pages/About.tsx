@@ -84,7 +84,7 @@ const About = () => {
                   <BarChart3 className="h-8 w-8 text-primary mx-auto" />
                   <h4 className="font-semibold">Predictive Modeling</h4>
                   <p className="text-sm text-muted-foreground">
-                    Generalized water table model generates 7-day forecasts with confidence intervals
+                    Generalized water table model generates 7-day forecasts based on historical patterns and trends
                   </p>
                 </div>
               </div>
@@ -94,19 +94,16 @@ const About = () => {
                   <BarChart3 className="h-4 w-4" />
                   Prediction Accuracy
                 </h4>
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
                   <div>
                     <Badge variant="secondary" className="mb-2">Average Accuracy: 85-92%</Badge>
                     <p className="text-sm text-muted-foreground">
-                      Our models achieve high accuracy under normal conditions with sufficient historical data
+                      Our models achieve high accuracy under normal conditions with sufficient historical data and nearby weather stations
                     </p>
                   </div>
-                  <div>
-                    <Badge variant="outline" className="mb-2">Confidence Range: 75-95%</Badge>
-                    <p className="text-sm text-muted-foreground">
-                      Confidence levels vary based on data quality, seasonal factors, and local conditions
-                    </p>
-                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    <strong>Note:</strong> Accuracy varies based on data quality, seasonal factors, local conditions, and proximity to weather monitoring stations
+                  </p>
                 </div>
               </div>
             </CardContent>
