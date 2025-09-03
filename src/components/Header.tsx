@@ -1,8 +1,9 @@
 import React from 'react';
-import { Waves, MapPin, UserCog, LayoutDashboard, Home, LogOut } from 'lucide-react';
+import { Waves, MapPin, UserCog, LayoutDashboard, Home, LogOut, Info } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { Link, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
   onShowAdminLogin?: () => void;
@@ -12,22 +13,41 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDashboard, isInDashboard }) => {
   const { isAuthenticated, isAdmin, logout } = useAuth();
+  const location = useLocation();
 
   return (
     <header className="bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50 sticky top-0 z-50 transition-all duration-300">
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex items-center justify-between">
-          <div 
-            className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
-            onClick={isInDashboard ? onShowAdminDashboard : undefined}
-          >
-            <div className="bg-gradient-to-br from-primary to-blue-600 p-2 sm:p-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
-              <Waves className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
-            </div>
-            <div className="min-w-0">
-              <h1 className="text-lg sm:text-xl font-display font-bold text-foreground tracking-tight truncate">AquaMonitor</h1>
-              <p className="text-xs sm:text-sm text-muted-foreground font-medium hidden sm:block">Stream Monitoring System</p>
-            </div>
+          <div className="flex items-center space-x-6">
+            <Link
+              to="/"
+              className="flex items-center space-x-2 sm:space-x-3 cursor-pointer hover:opacity-80 transition-opacity"
+            >
+              <div className="bg-gradient-to-br from-primary to-blue-600 p-2 sm:p-2.5 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105">
+                <Waves className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="text-lg sm:text-xl font-display font-bold text-foreground tracking-tight truncate">AquaMonitor</h1>
+                <p className="text-xs sm:text-sm text-muted-foreground font-medium hidden sm:block">Stream Monitoring System</p>
+              </div>
+            </Link>
+            
+            {/* Navigation Links */}
+            {!isInDashboard && (
+              <nav className="hidden md:flex items-center space-x-1">
+                <Link to="/about">
+                  <Button 
+                    variant={location.pathname === '/about' ? 'secondary' : 'ghost'} 
+                    size="sm"
+                    className="gap-2"
+                  >
+                    <Info className="h-4 w-4" />
+                    About
+                  </Button>
+                </Link>
+              </nav>
+            )}
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
             <div className="hidden md:flex items-center space-x-2 text-muted-foreground bg-muted/60 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl backdrop-blur-sm border border-border/30 hover:bg-muted/80 transition-all duration-300">
