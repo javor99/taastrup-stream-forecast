@@ -4,10 +4,11 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Header } from '@/components/Header';
 import { useAuth } from '@/hooks/useAuth';
 import { Stream } from '@/types/stream';
-import { LogOut, Trash2, MapPin, Waves, Plus } from 'lucide-react';
+import { LogOut, Trash2, MapPin, Waves, Plus, UserPlus, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { fetchSummary } from '@/services/api';
 import { transformApiDataToStreams } from '@/utils/dataTransformers';
@@ -18,13 +19,17 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
-  const { logout } = useAuth();
+  const { logout, isSuperAdmin } = useAuth();
   const { toast } = useToast();
   const [streams, setStreams] = useState<Stream[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [usingDummyData, setUsingDummyData] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [newStationId, setNewStationId] = useState('');
+  const [isAddUserDialogOpen, setIsAddUserDialogOpen] = useState(false);
+  const [newUserEmail, setNewUserEmail] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'superadmin'>('admin');
 
   useEffect(() => {
     loadStreams();
@@ -76,6 +81,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
     });
   };
 
+  const handleAddUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // This would normally integrate with a real user management system
+    toast({
+      title: "User Added (Demo)",
+      description: `User ${newUserEmail} with role ${newUserRole} would be created with password: ${newUserPassword}`,
+      variant: "default",
+    });
+    
+    setNewUserEmail('');
+    setNewUserPassword('');
+    setNewUserRole('admin');
+    setIsAddUserDialogOpen(false);
+  };
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'normal': return 'bg-green-100 text-green-800 border-green-200';
@@ -89,12 +110,81 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
       <Header onShowAdminDashboard={onClose} isInDashboard={true} />
       <div className="container mx-auto p-6">
         <div className="mb-8">
-          <div>
-            <h1 className="text-3xl font-bold text-foreground mb-2">Admin Dashboard</h1>
-            <p className="text-muted-foreground">
-              Manage all active monitoring stations
-              {usingDummyData && " (Using demo data - Live data unavailable)"}
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-foreground mb-2">
+                {isSuperAdmin ? 'Superadmin Dashboard' : 'Admin Dashboard'}
+              </h1>
+              <p className="text-muted-foreground">
+                {isSuperAdmin ? 'Superadmin Mode - Full system access' : 'Manage all active monitoring stations'}
+                {usingDummyData && " (Using demo data - Live data unavailable)"}
+              </p>
+            </div>
+            {isSuperAdmin && (
+              <Dialog open={isAddUserDialogOpen} onOpenChange={setIsAddUserDialogOpen}>
+                <DialogTrigger asChild>
+                  <Button className="gap-2">
+                    <UserPlus className="h-4 w-4" />
+                    Add User
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-md">
+                  <form onSubmit={handleAddUser}>
+                    <DialogHeader>
+                      <DialogTitle className="flex items-center gap-2">
+                        <Users className="h-5 w-5" />
+                        Add New User
+                      </DialogTitle>
+                      <DialogDescription>
+                        Create a new admin or superadmin user account
+                      </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-4 py-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="userEmail">Email</Label>
+                        <Input
+                          id="userEmail"
+                          type="email"
+                          value={newUserEmail}
+                          onChange={(e) => setNewUserEmail(e.target.value)}
+                          placeholder="user@example.com"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="userPassword">Password</Label>
+                        <Input
+                          id="userPassword"
+                          type="password"
+                          value={newUserPassword}
+                          onChange={(e) => setNewUserPassword(e.target.value)}
+                          placeholder="Enter password"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="userRole">Role</Label>
+                        <select
+                          id="userRole"
+                          value={newUserRole}
+                          onChange={(e) => setNewUserRole(e.target.value as 'admin' | 'superadmin')}
+                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                        >
+                          <option value="admin">Admin</option>
+                          <option value="superadmin">Superadmin</option>
+                        </select>
+                      </div>
+                    </div>
+                    <DialogFooter>
+                      <Button type="submit" className="gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        Create User
+                      </Button>
+                    </DialogFooter>
+                  </form>
+                </DialogContent>
+              </Dialog>
+            )}
           </div>
         </div>
 
