@@ -4,7 +4,7 @@ import { StreamCard } from './StreamCard';
 import { StreamMap } from './StreamMap';
 import { StreamGridSkeleton } from './StreamGridSkeleton';
 import { Stream } from '@/types/stream';
-import { fetchSummary } from '@/services/api';
+import { fetchSummary, ApiSummaryStation } from '@/services/api';
 import { transformApiDataToStreams } from '@/utils/dataTransformers';
 import { useToast } from '@/hooks/use-toast';
 import { mockStreams } from '@/data/mockStreams';
@@ -12,6 +12,7 @@ import { mockStreams } from '@/data/mockStreams';
 export const StreamGrid = () => {
   const [allStreams, setAllStreams] = useState<Stream[]>([]);
   const [visibleStreams, setVisibleStreams] = useState<Stream[]>([]);
+  const [apiData, setApiData] = useState<ApiSummaryStation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [usingDummyData, setUsingDummyData] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
@@ -28,6 +29,7 @@ export const StreamGrid = () => {
         const transformedStreams = transformApiDataToStreams(summary);
         setAllStreams(transformedStreams);
         setVisibleStreams(transformedStreams);
+        setApiData(summary);
         setLastUpdated(lastUpdated);
       } catch (err) {
         console.error('Failed to load stream data:', err);
@@ -35,6 +37,7 @@ export const StreamGrid = () => {
         // Use dummy data as fallback
         setAllStreams(mockStreams);
         setVisibleStreams(mockStreams);
+        setApiData([]);
         setUsingDummyData(true);
         setLastUpdated(null);
         
@@ -63,7 +66,7 @@ export const StreamGrid = () => {
   return (
     <div className="space-y-8">
       <div className="mb-8">
-        <StreamMap streams={allStreams} onVisibleStreamsChange={handleVisibleStreamsChange} />
+        <StreamMap streams={allStreams} apiData={apiData} onVisibleStreamsChange={handleVisibleStreamsChange} />
       </div>
       <div className="space-y-4">
         <div className="flex items-center justify-between">

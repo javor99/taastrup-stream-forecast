@@ -3,15 +3,33 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Stream } from '@/types/stream';
-import { Fullscreen, X } from 'lucide-react';
+import { ApiSummaryStation } from '@/services/api';
+import { Fullscreen, X, Cloud } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+
+interface WeatherStation {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  elevation: number;
+  data_source: string;
+  model: string;
+  coverage: string;
+  update_frequency: string;
+  forecast_length: string;
+  timezone: string;
+  timezone_abbreviation: string;
+  api_url: string;
+}
 
 interface StreamMapProps {
   streams: Stream[];
+  apiData?: ApiSummaryStation[];
   onVisibleStreamsChange?: (streams: Stream[]) => void;
 }
 
-export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsChange }) => {
+export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, onVisibleStreamsChange }) => {
   const { theme } = useTheme();
   const mapContainer = useRef<HTMLDivElement>(null);
   const fullscreenMapContainer = useRef<HTMLDivElement>(null);
@@ -56,6 +74,37 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
     newMap.on('zoomend', updateVisibleStreams);
     newMap.on('sourcedata', updateVisibleStreams);
     newMap.on('idle', updateVisibleStreams);
+
+    // Extract unique weather stations from API data
+    const weatherStations: WeatherStation[] = [];
+    if (apiData) {
+      const seenCoordinates = new Set<string>();
+      
+      apiData.forEach(station => {
+        if (station.weather_station_info) {
+          const coordKey = `${station.weather_station_info.weather_station_latitude},${station.weather_station_info.weather_station_longitude}`;
+          
+          if (!seenCoordinates.has(coordKey)) {
+            seenCoordinates.add(coordKey);
+            weatherStations.push({
+              id: station.weather_station_info.weather_station_id,
+              name: station.weather_station_info.weather_station_name,
+              latitude: station.weather_station_info.weather_station_latitude,
+              longitude: station.weather_station_info.weather_station_longitude,
+              elevation: station.weather_station_info.weather_station_elevation,
+              data_source: station.weather_station_info.weather_data_source,
+              model: station.weather_station_info.weather_model,
+              coverage: station.weather_station_info.weather_coverage,
+              update_frequency: station.weather_station_info.weather_update_frequency,
+              forecast_length: station.weather_station_info.weather_forecast_length,
+              timezone: station.weather_station_info.weather_timezone,
+              timezone_abbreviation: station.weather_station_info.weather_timezone_abbreviation,
+              api_url: station.weather_station_info.weather_api_url
+            });
+          }
+        }
+      });
+    }
 
     // Add markers for each stream
     streams.forEach((stream) => {
@@ -141,6 +190,76 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
         .addTo(newMap);
     });
 
+    // Add weather station markers
+    weatherStations.forEach((weatherStation) => {
+      const weatherMarkerElement = document.createElement('div');
+      weatherMarkerElement.innerHTML = `
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+        </svg>
+      `;
+      weatherMarkerElement.style.cssText = `
+        width: 24px;
+        height: 24px;
+        cursor: pointer;
+        background: white;
+        border-radius: 50%;
+        padding: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+
+      const popupBg = theme === 'dark' ? '#1f2937' : '#ffffff';
+      const popupTextColor = theme === 'dark' ? '#f9fafb' : '#000000';
+      const popupTextSecondary = theme === 'dark' ? '#9ca3af' : '#666666';
+      const popupBorder = theme === 'dark' ? '#374151' : '#e5e7eb';
+
+      const weatherPopupContent = `
+        <div style="padding: 12px; min-width: 250px; max-width: 280px; position: relative; background-color: ${popupBg}; color: ${popupTextColor}; border-radius: 8px;">
+          <button style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 18px; cursor: pointer; color: ${popupTextSecondary}; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px;" onclick="this.closest('.mapboxgl-popup').remove()">×</button>
+          <div style="display: flex; align-items: center; margin-bottom: 8px; padding-right: 30px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+            </svg>
+            <h3 style="font-weight: bold; font-size: 16px; margin: 0; color: ${popupTextColor};">Weather Station</h3>
+          </div>
+          <h4 style="font-weight: 600; font-size: 14px; margin-bottom: 8px; margin-top: 0; color: ${popupTextColor};">${weatherStation.name}</h4>
+          <div style="font-size: 12px; color: ${popupTextSecondary}; margin-bottom: 12px;">
+            ID: ${weatherStation.id}<br>
+            Coordinates: ${weatherStation.latitude.toFixed(3)}, ${weatherStation.longitude.toFixed(3)}<br>
+            Elevation: ${weatherStation.elevation}m
+          </div>
+          <div style="border-top: 1px solid ${popupBorder}; padding-top: 8px; margin-bottom: 8px;">
+            <div style="font-size: 13px; font-weight: 500; margin-bottom: 6px; color: ${popupTextColor};">Data Source:</div>
+            <div style="font-size: 12px; color: ${popupTextSecondary}; margin-bottom: 4px;">Source: ${weatherStation.data_source}</div>
+            <div style="font-size: 12px; color: ${popupTextSecondary}; margin-bottom: 4px;">Model: ${weatherStation.model}</div>
+            <div style="font-size: 12px; color: ${popupTextSecondary}; margin-bottom: 4px;">Timezone: ${weatherStation.timezone} (${weatherStation.timezone_abbreviation})</div>
+          </div>
+          <div style="border-top: 1px solid ${popupBorder}; padding-top: 8px; margin-bottom: 8px;">
+            <div style="font-size: 13px; font-weight: 500; margin-bottom: 6px; color: ${popupTextColor};">Coverage & Updates:</div>
+            <div style="font-size: 12px; color: ${popupTextSecondary}; margin-bottom: 4px;">Coverage: ${weatherStation.coverage}</div>
+            <div style="font-size: 12px; color: ${popupTextSecondary}; margin-bottom: 4px;">Update Frequency: ${weatherStation.update_frequency}</div>
+            <div style="font-size: 12px; color: ${popupTextSecondary};">Forecast Length: ${weatherStation.forecast_length}</div>
+          </div>
+        </div>
+      `;
+
+      const weatherPopup = new mapboxgl.Popup({ 
+        offset: 25,
+        maxWidth: '280px',
+        closeButton: false,
+        closeOnClick: false,
+        className: 'custom-popup weather-popup'
+      }).setHTML(weatherPopupContent);
+
+      new mapboxgl.Marker(weatherMarkerElement)
+        .setLngLat([weatherStation.longitude, weatherStation.latitude])
+        .setPopup(weatherPopup)
+        .addTo(newMap);
+    });
+
     return newMap;
   };
 
@@ -153,7 +272,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
     return () => {
       map.current?.remove();
     };
-  }, [streams, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [streams, apiData, mapboxToken, theme, onVisibleStreamsChange]);
 
   // Fullscreen map effect
   useEffect(() => {
@@ -167,7 +286,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
         fullscreenMap.current = null;
       }
     };
-  }, [isFullscreen, streams, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [isFullscreen, streams, apiData, mapboxToken, theme, onVisibleStreamsChange]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
