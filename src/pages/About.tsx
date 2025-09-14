@@ -89,21 +89,52 @@ const About = () => {
                 </div>
               </div>
               
-              <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+              <div className="bg-muted/50 rounded-lg p-4 space-y-4">
                 <h4 className="font-semibold flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
-                  Prediction Accuracy
+                  Understanding Water Level Predictions
                 </h4>
-                <div className="space-y-2">
+                
+                <div className="space-y-3">
+                  <div>
+                    <h5 className="font-medium text-sm mb-1">What Are Percentiles?</h5>
+                    <p className="text-sm text-muted-foreground">
+                      Percentiles help you understand where current water levels rank compared to historical data:
+                    </p>
+                    <ul className="text-sm text-muted-foreground mt-2 space-y-1 ml-4">
+                      <li>• <strong>Low percentile (10th-30th):</strong> Water levels are lower than they typically are at this time of year</li>
+                      <li>• <strong>High percentile (70th-90th):</strong> Water levels are higher than they typically are at this time of year</li>
+                      <li>• <strong>50th percentile (median):</strong> Water levels are about average for this time of year</li>
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h5 className="font-medium text-sm mb-1">Status Indicators Explained</h5>
+                    <div className="grid md:grid-cols-3 gap-3 text-xs">
+                      <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded p-2">
+                        <span className="font-medium text-green-700 dark:text-green-300">Normal:</span>
+                        <p className="text-green-600 dark:text-green-400 mt-1">Water levels are within the typical safe range for this location</p>
+                      </div>
+                      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded p-2">
+                        <span className="font-medium text-yellow-700 dark:text-yellow-300">Warning:</span>
+                        <p className="text-yellow-600 dark:text-yellow-400 mt-1">Water levels are elevated and require monitoring for potential issues</p>
+                      </div>
+                      <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded p-2">
+                        <span className="font-medium text-red-700 dark:text-red-300">Danger:</span>
+                        <p className="text-red-600 dark:text-red-400 mt-1">Water levels are at or near flood stage - immediate attention required</p>
+                      </div>
+                    </div>
+                  </div>
+                  
                   <div>
                     <Badge variant="secondary" className="mb-2">Average Accuracy: 85-92%</Badge>
                     <p className="text-sm text-muted-foreground">
                       Our models achieve high accuracy under normal conditions with sufficient historical data and nearby weather stations
                     </p>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      <strong>Note:</strong> Accuracy varies based on data quality, seasonal factors, local conditions, and proximity to weather monitoring stations
+                    </p>
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    <strong>Note:</strong> Accuracy varies based on data quality, seasonal factors, local conditions, and proximity to weather monitoring stations
-                  </p>
                 </div>
               </div>
             </CardContent>
