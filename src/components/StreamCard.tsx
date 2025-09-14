@@ -15,6 +15,12 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
     pred.predictedLevel > max.predictedLevel ? pred : max
   );
 
+  // Check if station has insufficient 30-day historical data
+  const hasInsufficientData = !stream.last30DaysHistorical || 
+    stream.last30DaysHistorical.length < 25 || // Less than 25 days of data
+    !stream.last30DaysRange ||
+    stream.last30DaysRange.min_m === 0 && stream.last30DaysRange.max_m === 0;
+
   const getTomorrowName = () => {
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -62,6 +68,17 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
 
   return (
     <div className={`bg-card/90 backdrop-blur-sm rounded-xl shadow-lg border-2 ${getStatusColor()} p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:bg-card/95 hover:scale-105 animate-fade-in`}>
+      {hasInsufficientData && (
+        <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
+          <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-sm font-medium">Limited Historical Data</span>
+          </div>
+          <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+            This station has insufficient 30-day historical data. Predictions may be less accurate.
+          </p>
+        </div>
+      )}
       <div className="flex items-start justify-between mb-4">
         <div>
           <h3 className="text-xl font-display font-bold text-foreground mb-1 tracking-tight">{stream.name}</h3>
@@ -98,13 +115,27 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
 
       <Dialog>
         <DialogTrigger asChild>
-          <div className="mt-3 p-3 bg-cyan-100/50 dark:bg-cyan-900/30 rounded-lg border border-cyan-200/50 dark:border-cyan-700/50 cursor-pointer hover:bg-cyan-200/50 dark:hover:bg-cyan-800/30 transition-colors">
+          <div className={`mt-3 p-3 rounded-lg border cursor-pointer transition-colors ${
+            hasInsufficientData 
+              ? 'bg-amber-100/50 dark:bg-amber-900/30 border-amber-200/50 dark:border-amber-700/50 hover:bg-amber-200/50 dark:hover:bg-amber-800/30'
+              : 'bg-cyan-100/50 dark:bg-cyan-900/30 border-cyan-200/50 dark:border-cyan-700/50 hover:bg-cyan-200/50 dark:hover:bg-cyan-800/30'
+          }`}>
             <div className="text-center">
-              <div className="text-xs font-semibold text-cyan-700 dark:text-cyan-300 font-display mb-1 flex items-center justify-center gap-1">
+              <div className={`text-xs font-semibold font-display mb-1 flex items-center justify-center gap-1 ${
+                hasInsufficientData 
+                  ? 'text-amber-700 dark:text-amber-300'
+                  : 'text-cyan-700 dark:text-cyan-300'
+              }`}>
                 <Calendar className="h-3 w-3" />
                 Previous 30 Day Range
+                {hasInsufficientData && <AlertTriangle className="h-3 w-3" />}
               </div>
-              <div className="text-sm font-bold text-foreground font-display">{stream.last30DaysRange.min_m.toFixed(3)}m - {stream.last30DaysRange.max_m.toFixed(3)}m</div>
+              <div className="text-sm font-bold text-foreground font-display">
+                {hasInsufficientData 
+                  ? 'Insufficient Data' 
+                  : `${stream.last30DaysRange.min_m.toFixed(3)}m - ${stream.last30DaysRange.max_m.toFixed(3)}m`
+                }
+              </div>
             </div>
           </div>
         </DialogTrigger>
@@ -112,14 +143,28 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
           <DialogHeader>
             <DialogTitle>{stream.name} - 30 Day Historical Data</DialogTitle>
           </DialogHeader>
-          <div className="space-y-2">
-            {stream.last30DaysHistorical.map((day, index) => (
-              <div key={index} className="flex justify-between items-center p-2 bg-muted/50 rounded-lg">
-                <span className="text-sm font-medium">{new Date(day.date).toLocaleDateString()}</span>
-                <span className="text-sm font-mono">{day.water_level_m.toFixed(3)}m</span>
-              </div>
-            ))}
-          </div>
+          {hasInsufficientData ? (
+            <div className="text-center py-8">
+              <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Insufficient Historical Data</h3>
+              <p className="text-muted-foreground">
+                This monitoring station does not have enough historical data for the previous 30 days. 
+                This may be due to recent installation, maintenance periods, or data collection issues.
+              </p>
+              <p className="text-sm text-muted-foreground mt-2">
+                Available data points: {stream.last30DaysHistorical?.length || 0} out of 30 days
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              {stream.last30DaysHistorical.map((day, index) => (
+                <div key={index} className="flex justify-between items-center p-2 bg-muted/50 rounded-lg">
+                  <span className="text-sm font-medium">{new Date(day.date).toLocaleDateString()}</span>
+                  <span className="text-sm font-mono">{day.water_level_m.toFixed(3)}m</span>
+                </div>
+              ))}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 
