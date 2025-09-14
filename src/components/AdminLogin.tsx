@@ -11,7 +11,7 @@ interface AdminLoginProps {
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
@@ -20,9 +20,9 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
     e.preventDefault();
     setError('');
     
-    const success = login(username, password);
+    const success = login(email, password);
     if (!success) {
-      setError('Invalid credentials. Use test/test for admin access.');
+      setError('Invalid credentials. Check your email and password.');
     }
   };
 
@@ -49,13 +49,13 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="username">Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                id="username"
+                id="email"
                 type="email"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                placeholder="test@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="test@test.com"
                 required
               />
             </div>
@@ -79,7 +79,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
           </form>
           <div className="mt-4 p-3 bg-muted rounded-lg">
             <p className="text-xs text-muted-foreground">
-              Test credentials: username: <code>test</code>, password: <code>test</code>
+              Admin: <code>test@test.com</code> / <code>test</code><br />
+              Superadmin: <code>supertest@supertest.com</code> / <code>supertest</code>
             </p>
           </div>
         </CardContent>
