@@ -31,167 +31,113 @@ const generatePredictions = (baseLevel: number, trend: 'rising' | 'falling' | 's
   return predictions;
 };
 
+// Generate 30 days of historical data
+const generate30DaysHistorical = (baseLevel: number) => {
+  const historical = [];
+  let currentLevel = baseLevel;
+  
+  for (let i = 30; i >= 1; i--) {
+    const date = new Date();
+    date.setDate(date.getDate() - i);
+    
+    // Add some variation to the level
+    currentLevel += (Math.random() - 0.5) * 0.2;
+    currentLevel = Math.max(0, currentLevel);
+    
+    const levelCm = Math.round(currentLevel * 100 * 10) / 10;
+    const levelM = Math.round(currentLevel * 100) / 100;
+    
+    historical.push({
+      date: date.toISOString().split('T')[0],
+      water_level_cm: levelCm,
+      water_level_m: levelM
+    });
+  }
+  
+  return historical;
+};
+
+// Calculate range from historical data
+const calculateRange = (historical: any[]) => {
+  const levels = historical.map(h => h.water_level_cm);
+  return {
+    min_cm: Math.min(...levels),
+    max_cm: Math.max(...levels),
+    min_m: Math.min(...levels) / 100,
+    max_m: Math.max(...levels) / 100
+  };
+};
+
+// Dummy weather station data
+const dummyWeatherStation = {
+  weather_station_id: "copenhagen_meteorological",
+  weather_station_name: "Copenhagen Meteorological Station",
+  weather_station_latitude: 55.681,
+  weather_station_longitude: 12.285095,
+  weather_station_elevation: 19,
+  weather_data_source: "Open-Meteo API",
+  weather_model: "DMI HARMONIE AROME",
+  weather_coverage: "All water level stations use weather data from this single Copenhagen location",
+  weather_update_frequency: "Every 3 hours",
+  weather_forecast_length: "Up to 10 days",
+  weather_timezone: "Europe/Copenhagen",
+  weather_timezone_abbreviation: "GMT+2",
+  weather_api_url: "https://api.open-meteo.com/v1/forecast"
+};
+
+// Generate mock streams with proper historical data
+const generateMockStream = (id: string, name: string, lat: number, lng: number, address: string, currentLevel: number, minLevel: number, maxLevel: number, status: 'normal' | 'warning' | 'danger', trend: 'rising' | 'falling' | 'stable') => {
+  const historical = generate30DaysHistorical(currentLevel);
+  const range = calculateRange(historical);
+  
+  return {
+    id,
+    name,
+    location: { lat, lng, address },
+    currentLevel,
+    minLevel,
+    maxLevel,
+    status,
+    lastUpdated: new Date('2025-01-04T10:30:00'),
+    trend,
+    predictions: generatePredictions(currentLevel, trend),
+    last30DaysRange: range,
+    last30DaysHistorical: historical,
+  };
+};
+
 // Mock streams for fallback when API fails
 export const mockStreams: Stream[] = [
-  {
-    id: '70000864',
-    name: 'Hove å, Tostholm bro',
-    location: {
-      lat: 55.680989,
-      lng: 12.219433,
-      address: 'Tostholm bro'
-    },
-    currentLevel: 1.2,
-    minLevel: 0.5,
-    maxLevel: 3.0,
-    status: 'normal',
-    lastUpdated: new Date('2025-01-04T10:30:00'),
-    trend: 'rising',
-    predictions: generatePredictions(1.2, 'rising'),
-    last30DaysRange: {
-      min_cm: 1408.5,
-      max_cm: 1419.9,
-      min_m: 14.085,
-      max_m: 14.199,
-    },
-    last30DaysHistorical: [],
-  },
-  {
-    id: '70000927',
-    name: 'Hakkemosegrøften, Ole Rømers Vej',
-    location: {
-      lat: 55.681673,
-      lng: 12.281167,
-      address: 'Ole Rømers Vej'
-    },
-    currentLevel: 0.8,
-    minLevel: 0.3,
-    maxLevel: 2.5,
-    status: 'normal',
-    lastUpdated: new Date('2025-01-04T10:25:00'),
-    trend: 'stable',
-    predictions: generatePredictions(0.8, 'stable'),
-    last30DaysRange: {
-      min_cm: 1140.5,
-      max_cm: 1151.4,
-      min_m: 11.405,
-      max_m: 11.514,
-    },
-    last30DaysHistorical: [],
-  },
-  {
-    id: '70000865',
-    name: 'Sengeløse å, Sengeløse mose',
-    location: {
-      lat: 55.689824,
-      lng: 12.267812,
-      address: 'Sengeløse mose'
-    },
-    currentLevel: 2.1,
-    minLevel: 1.0,
-    maxLevel: 3.2,
-    status: 'warning',
-    lastUpdated: new Date('2025-01-04T10:35:00'),
-    trend: 'rising',
-    predictions: generatePredictions(2.1, 'rising'),
-    last30DaysRange: {
-      min_cm: 1587.1,
-      max_cm: 1587.6,
-      min_m: 15.871,
-      max_m: 15.876,
-    },
-    last30DaysHistorical: [],
-  },
-  {
-    id: '70000926',
-    name: 'Nybølle Å, Ledøje Plantage',
-    location: {
-      lat: 55.693957,
-      lng: 12.309862,
-      address: 'Ledøje Plantage'
-    },
-    currentLevel: 0.6,
-    minLevel: 0.2,
-    maxLevel: 2.8,
-    status: 'normal',
-    lastUpdated: new Date('2025-01-04T10:20:00'),
-    trend: 'rising',
-    predictions: generatePredictions(0.6, 'rising'),
-    last30DaysRange: {
-      min_cm: 2765.7,
-      max_cm: 2802.1,
-      min_m: 27.657,
-      max_m: 28.021,
-    },
-    last30DaysHistorical: [],
-  },
-  {
-    id: '70000925',
-    name: 'Spangå, Ågesholmvej',
-    location: {
-      lat: 55.676561,
-      lng: 12.239100,
-      address: 'Ågesholmvej'
-    },
-    currentLevel: 2.8,
-    minLevel: 1.5,
-    maxLevel: 3.5,
-    status: 'danger',
-    lastUpdated: new Date('2025-01-04T10:40:00'),
-    trend: 'rising',
-    predictions: generatePredictions(2.8, 'rising'),
-    last30DaysRange: {
-      min_cm: 1924.3,
-      max_cm: 2002.1,
-      min_m: 19.243,
-      max_m: 20.021,
-    },
-    last30DaysHistorical: [],
-  },
-  {
-    id: '70000923',
-    name: 'Enghave Å, Rolandsvej 3',
-    location: {
-      lat: 55.687870,
-      lng: 12.201108,
-      address: 'Rolandsvej 3'
-    },
-    currentLevel: 1.5,
-    minLevel: 0.8,
-    maxLevel: 3.0,
-    status: 'normal',
-    lastUpdated: new Date('2025-01-04T10:15:00'),
-    trend: 'falling',
-    predictions: generatePredictions(1.5, 'falling'),
-    last30DaysRange: {
-      min_cm: 1244.6,
-      max_cm: 1280.7,
-      min_m: 12.446,
-      max_m: 12.807,
-    },
-    last30DaysHistorical: [],
-  },
-  {
-    id: '70000924',
-    name: 'Ll. Vejleå, Lille Solhøjvej 42',
-    location: {
-      lat: 55.636369,
-      lng: 12.212559,
-      address: 'Lille Solhøjvej 42'
-    },
-    currentLevel: 1.1,
-    minLevel: 0.4,
-    maxLevel: 2.7,
-    status: 'normal',
-    lastUpdated: new Date('2025-01-04T10:10:00'),
-    trend: 'stable',
-    predictions: generatePredictions(1.1, 'stable'),
-    last30DaysRange: {
-      min_cm: 1838.8,
-      max_cm: 1856.6,
-      min_m: 18.388,
-      max_m: 18.566,
-    },
-    last30DaysHistorical: [],
-  }
+  generateMockStream('70000864', 'Hove å, Tostholm bro', 55.680989, 12.219433, 'Tostholm bro', 1.2, 0.5, 3.0, 'normal', 'rising'),
+  generateMockStream('70000927', 'Hakkemosegrøften, Ole Rømers Vej', 55.681673, 12.281167, 'Ole Rømers Vej', 0.8, 0.3, 2.5, 'normal', 'stable'),
+  generateMockStream('70000865', 'Sengeløse å, Sengeløse mose', 55.689824, 12.267812, 'Sengeløse mose', 2.1, 1.0, 3.2, 'warning', 'rising'),
+  generateMockStream('70000926', 'Nybølle Å, Ledøje Plantage', 55.693957, 12.309862, 'Ledøje Plantage', 0.6, 0.2, 2.8, 'normal', 'rising'),
+  generateMockStream('70000925', 'Spangå, Ågesholmvej', 55.676561, 12.239100, 'Ågesholmvej', 2.8, 1.5, 3.5, 'danger', 'rising'),
+  generateMockStream('70000923', 'Enghave Å, Rolandsvej 3', 55.687870, 12.201108, 'Rolandsvej 3', 1.5, 0.8, 3.0, 'normal', 'falling'),
+  generateMockStream('70000924', 'Ll. Vejleå, Lille Solhøjvej 42', 55.636369, 12.212559, 'Lille Solhøjvej 42', 1.1, 0.4, 2.7, 'normal', 'stable'),
 ];
+
+// Mock API data with weather station info
+export const mockApiData = mockStreams.map(stream => ({
+  station_id: stream.id,
+  name: stream.name,
+  latitude: stream.location.lat,
+  longitude: stream.location.lng,
+  current_water_level_cm: stream.currentLevel * 100,
+  current_water_level_m: stream.currentLevel,
+  current_measurement_date: "2025-09-12",
+  danger_level_cm: stream.maxLevel * 100,
+  danger_level_m: stream.maxLevel,
+  min_level_cm: stream.minLevel * 100,
+  min_level_m: stream.minLevel,
+  last_30_days_range: stream.last30DaysRange,
+  last_30_days_historical: stream.last30DaysHistorical,
+  prediction_summary: {
+    min_prediction_cm: stream.currentLevel * 100 - 5,
+    max_prediction_cm: stream.currentLevel * 100 + 5,
+    avg_prediction_cm: stream.currentLevel * 100,
+    max_change_cm: 10,
+    forecast_date: "2025-09-14 17:59:56"
+  },
+  weather_station_info: dummyWeatherStation
+}));

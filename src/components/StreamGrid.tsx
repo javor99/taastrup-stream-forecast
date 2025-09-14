@@ -7,7 +7,7 @@ import { Stream } from '@/types/stream';
 import { fetchSummary, ApiSummaryStation } from '@/services/api';
 import { transformApiDataToStreams } from '@/utils/dataTransformers';
 import { useToast } from '@/hooks/use-toast';
-import { mockStreams } from '@/data/mockStreams';
+import { mockStreams, mockApiData } from '@/data/mockStreams';
 
 export const StreamGrid = () => {
   const [allStreams, setAllStreams] = useState<Stream[]>([]);
@@ -37,7 +37,7 @@ export const StreamGrid = () => {
         // Use dummy data as fallback
         setAllStreams(mockStreams);
         setVisibleStreams(mockStreams);
-        setApiData([]);
+        setApiData(mockApiData);
         setUsingDummyData(true);
         setLastUpdated(null);
         
