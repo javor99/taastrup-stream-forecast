@@ -33,10 +33,14 @@ Deno.serve(async (req) => {
   try {
     const contentType = req.headers.get('content-type') || '';
     let path = '';
+    let method = 'GET';
+    let postData = null;
 
     if (contentType.includes('application/json')) {
       const body = await req.json().catch(() => ({}));
       path = body?.path || '';
+      method = body?.method || 'GET';
+      postData = body?.data || null;
     }
 
     if (!path) {
@@ -45,15 +49,31 @@ Deno.serve(async (req) => {
       path = url.searchParams.get('path') || '';
     }
 
+    // Allow dynamic paths for station updates
+    const pathSegments = path.split('/');
+    const isStationMinMaxPath = pathSegments.length === 3 && pathSegments[0] === 'stations' && pathSegments[2] === 'minmax';
     const allowed = new Set(['stations', 'water-levels', 'predictions', 'summary']);
-    if (!allowed.has(path)) {
+    
+    if (!allowed.has(pathSegments[0]) && !isStationMinMaxPath) {
       return jsonResponse({ success: false, error: 'Invalid or missing path' }, 400);
     }
 
-    console.log('[stream-proxy] Fetching', path);
-    const upstream = await fetch(`${BASE_URL}/${path}`, {
+    console.log(`[stream-proxy] ${method} ${path}`);
+    
+    const fetchOptions: RequestInit = {
+      method: method,
       headers: { 'Accept': 'application/json' }
-    });
+    };
+
+    if (method === 'POST' && postData) {
+      fetchOptions.headers = {
+        ...fetchOptions.headers,
+        'Content-Type': 'application/json'
+      };
+      fetchOptions.body = JSON.stringify(postData);
+    }
+
+    const upstream = await fetch(`${BASE_URL}/${path}`, fetchOptions);
 
     const upstreamText = await upstream.text();
     let parsed;

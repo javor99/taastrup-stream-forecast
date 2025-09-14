@@ -180,3 +180,29 @@ export async function fetchAllPredictions(): Promise<ApiPrediction[]> {
     throw error;
   }
 }
+
+// Update min/max values for a station
+export async function updateStationMinMax(stationId: string, minLevelCm: number, maxLevelCm: number): Promise<any> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `stations/${stationId}/minmax`,
+        method: 'POST',
+        data: {
+          min_level_cm: minLevelCm,
+          max_level_cm: maxLevelCm
+        }
+      }
+    });
+    
+    if (error) {
+      console.error('Error updating station min/max:', error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error updating station min/max:', error);
+    throw error;
+  }
+}

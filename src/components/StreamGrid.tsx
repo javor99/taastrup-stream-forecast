@@ -18,40 +18,40 @@ export const StreamGrid = () => {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const loadStreams = async () => {
-      try {
-        setIsLoading(true);
-        setUsingDummyData(false);
-        
-        const { summary, lastUpdated } = await fetchSummary();
-        
-        const transformedStreams = transformApiDataToStreams(summary);
-        setAllStreams(transformedStreams);
-        setVisibleStreams(transformedStreams);
-        setApiData(summary);
-        setLastUpdated(lastUpdated);
-      } catch (err) {
-        console.error('Failed to load stream data:', err);
-        
-        // Use dummy data as fallback
-        setAllStreams(mockStreams);
-        setVisibleStreams(mockStreams);
-        setApiData(mockApiData);
-        setUsingDummyData(true);
-        setLastUpdated(null);
-        
-        // Show toast notification
-        toast({
-          title: "Using Demo Data",
-          description: "Unable to connect to live data. Displaying demo stream monitoring data for demonstration purposes.",
-          variant: "default",
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const loadStreams = async () => {
+    try {
+      setIsLoading(true);
+      setUsingDummyData(false);
+      
+      const { summary, lastUpdated } = await fetchSummary();
+      
+      const transformedStreams = transformApiDataToStreams(summary);
+      setAllStreams(transformedStreams);
+      setVisibleStreams(transformedStreams);
+      setApiData(summary);
+      setLastUpdated(lastUpdated);
+    } catch (err) {
+      console.error('Failed to load stream data:', err);
+      
+      // Use dummy data as fallback
+      setAllStreams(mockStreams);
+      setVisibleStreams(mockStreams);
+      setApiData(mockApiData);
+      setUsingDummyData(true);
+      setLastUpdated(null);
+      
+      // Show toast notification
+      toast({
+        title: "Using Demo Data",
+        description: "Unable to connect to live data. Displaying demo stream monitoring data for demonstration purposes.",
+        variant: "default",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadStreams();
   }, [toast]);
 
@@ -113,7 +113,7 @@ export const StreamGrid = () => {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {visibleStreams.map((stream) => (
-            <StreamCard key={stream.id} stream={stream} />
+            <StreamCard key={stream.id} stream={stream} onDataUpdate={loadStreams} />
           ))}
         </div>
       </div>

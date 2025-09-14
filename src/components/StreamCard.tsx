@@ -1,15 +1,27 @@
 
 import React, { useState } from 'react';
-import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar } from 'lucide-react';
+import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings } from 'lucide-react';
 import { Stream } from '@/types/stream';
 import { WaterLevelIndicator } from './WaterLevelIndicator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { updateStationMinMax } from '@/services/api';
 
 interface StreamCardProps {
   stream: Stream;
+  onDataUpdate?: () => void;
 }
 
-export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
+export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) => {
+  const [isEditingMinMax, setIsEditingMinMax] = useState(false);
+  const [minLevel, setMinLevel] = useState(stream.minLevel * 100); // Convert to cm
+  const [maxLevel, setMaxLevel] = useState(stream.maxLevel * 100); // Convert to cm
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { toast } = useToast();
+  
   const nextPrediction = stream.predictions[0];
   const maxPrediction = stream.predictions.reduce((max, pred) => 
     pred.predictedLevel > max.predictedLevel ? pred : max
@@ -63,6 +75,37 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
         return 'border-rose-200 dark:border-rose-800 bg-rose-50/50 dark:bg-rose-950/30';
       default:
         return 'border-border bg-muted/20';
+    }
+  };
+
+  const handleUpdateMinMax = async () => {
+    if (minLevel >= maxLevel) {
+      toast({
+        title: "Invalid Values",
+        description: "Minimum level must be less than maximum level.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      await updateStationMinMax(stream.id, minLevel, maxLevel);
+      toast({
+        title: "Success",
+        description: "Min/Max levels updated successfully.",
+      });
+      setIsEditingMinMax(false);
+      onDataUpdate?.();
+    } catch (error) {
+      console.error('Error updating min/max:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update min/max levels. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -168,7 +211,18 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
         </DialogContent>
       </Dialog>
 
-      <div className="flex items-center justify-end mt-4 pt-4 border-t border-border">
+
+      <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setIsEditingMinMax(true)}
+          className="flex items-center gap-2"
+        >
+          <Settings className="h-4 w-4" />
+          Edit Min/Max
+        </Button>
+        
         <div className={`px-3 py-1 rounded-full text-xs font-bold font-display tracking-wide ${
           stream.status === 'normal' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200' :
           stream.status === 'warning' ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200' :
@@ -177,6 +231,52 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream }) => {
           {stream.status.toUpperCase()}
         </div>
       </div>
+
+      <Dialog open={isEditingMinMax} onOpenChange={setIsEditingMinMax}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Min/Max Levels - {stream.name}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="text-sm text-muted-foreground">
+              Current Range: {stream.minLevel.toFixed(2)}m - {stream.maxLevel.toFixed(2)}m
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="minLevel">Minimum Level (cm)</Label>
+                <Input
+                  id="minLevel"
+                  type="number"
+                  value={minLevel}
+                  onChange={(e) => setMinLevel(Number(e.target.value))}
+                  placeholder="Min level in cm"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="maxLevel">Maximum Level (cm)</Label>
+                <Input
+                  id="maxLevel"
+                  type="number"
+                  value={maxLevel}
+                  onChange={(e) => setMaxLevel(Number(e.target.value))}
+                  placeholder="Max level in cm"
+                />
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Preview: {(minLevel/100).toFixed(2)}m - {(maxLevel/100).toFixed(2)}m
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setIsEditingMinMax(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleUpdateMinMax} disabled={isUpdating}>
+                {isUpdating ? 'Updating...' : 'Update'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
