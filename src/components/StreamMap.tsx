@@ -3,15 +3,17 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Stream } from '@/types/stream';
-import { Fullscreen, X } from 'lucide-react';
+import { Fullscreen, X, Cloud } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
+import { ApiSummaryStation } from '@/services/api';
 
 interface StreamMapProps {
   streams: Stream[];
   onVisibleStreamsChange?: (streams: Stream[]) => void;
+  weatherStations?: ApiSummaryStation[];
 }
 
-export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsChange }) => {
+export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsChange, weatherStations = [] }) => {
   const { theme } = useTheme();
   const mapContainer = useRef<HTMLDivElement>(null);
   const fullscreenMapContainer = useRef<HTMLDivElement>(null);
@@ -141,6 +143,82 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
         .addTo(newMap);
     });
 
+    // Add weather station markers
+    weatherStations
+      .filter(station => station.weather_station_info)
+      .forEach((station) => {
+        const weatherInfo = station.weather_station_info!;
+        
+        const weatherMarkerElement = document.createElement('div');
+        const borderColor = theme === 'dark' ? '#374151' : 'white';
+        
+        // Create weather station marker with cloud icon
+        weatherMarkerElement.innerHTML = `
+          <div style="
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background-color: #3b82f6;
+            border: 3px solid ${borderColor};
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+            </svg>
+          </div>
+        `;
+
+        const popupBg = theme === 'dark' ? '#1f2937' : '#ffffff';
+        const popupTextColor = theme === 'dark' ? '#f9fafb' : '#000000';
+        const popupTextSecondary = theme === 'dark' ? '#9ca3af' : '#666666';
+        const popupBorder = theme === 'dark' ? '#374151' : '#e5e7eb';
+
+        const weatherPopupContent = `
+          <div style="padding: 12px; min-width: 200px; max-width: 240px; position: relative; background-color: ${popupBg}; color: ${popupTextColor}; border-radius: 8px;">
+            <button style="position: absolute; top: 8px; right: 8px; background: none; border: none; font-size: 18px; cursor: pointer; color: ${popupTextSecondary}; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border-radius: 4px;" onclick="this.closest('.mapboxgl-popup').remove()">×</button>
+            <h3 style="font-weight: bold; font-size: 16px; margin-bottom: 8px; margin-top: 0; padding-right: 30px; color: ${popupTextColor}; display: flex; align-items: center; gap: 6px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>
+              </svg>
+              Weather Station
+            </h3>
+            <p style="font-size: 13px; color: ${popupTextColor}; margin-bottom: 8px; margin-top: 0; font-weight: 500;">${weatherInfo.weather_station_name}</p>
+            <div style="margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span style="font-size: 12px; color: ${popupTextSecondary};">Coordinates:</span>
+                <span style="font-size: 12px; color: ${popupTextColor}; font-family: monospace;">${weatherInfo.weather_station_latitude.toFixed(4)}, ${weatherInfo.weather_station_longitude.toFixed(4)}</span>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span style="font-size: 12px; color: ${popupTextSecondary};">Data Source:</span>
+                <span style="font-size: 12px; color: ${popupTextColor};">${weatherInfo.weather_data_source}</span>
+              </div>
+            </div>
+            <div style="border-top: 1px solid ${popupBorder}; padding-top: 8px;">
+              <div style="font-size: 11px; color: ${popupTextSecondary}; text-align: center;">
+                Linked to: ${station.name}
+              </div>
+            </div>
+          </div>
+        `;
+
+        const weatherPopup = new mapboxgl.Popup({ 
+          offset: 25,
+          maxWidth: '240px',
+          closeButton: false,
+          closeOnClick: false,
+          className: 'custom-popup weather-popup'
+        }).setHTML(weatherPopupContent);
+
+        new mapboxgl.Marker(weatherMarkerElement)
+          .setLngLat([weatherInfo.weather_station_longitude, weatherInfo.weather_station_latitude])
+          .setPopup(weatherPopup)
+          .addTo(newMap);
+      });
+
     return newMap;
   };
 
@@ -153,7 +231,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
     return () => {
       map.current?.remove();
     };
-  }, [streams, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [streams, weatherStations, mapboxToken, theme, onVisibleStreamsChange]);
 
   // Fullscreen map effect
   useEffect(() => {
@@ -167,7 +245,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
         fullscreenMap.current = null;
       }
     };
-  }, [isFullscreen, streams, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [isFullscreen, streams, weatherStations, mapboxToken, theme, onVisibleStreamsChange]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
@@ -179,8 +257,8 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
       <div className="bg-card/90 backdrop-blur-sm rounded-xl shadow-lg overflow-hidden border border-border/50">
         <div className="p-4 border-b border-border flex justify-between items-center">
           <div>
-            <h3 className="text-lg font-semibold text-foreground">Stream Locations</h3>
-            <p className="text-sm text-muted-foreground">Click markers for predictions</p>
+            <h3 className="text-lg font-semibold text-foreground">Stream & Weather Locations</h3>
+            <p className="text-sm text-muted-foreground">Blue markers show weather stations, colored markers show streams</p>
           </div>
           <button
             onClick={toggleFullscreen}
@@ -199,8 +277,8 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, onVisibleStreamsC
           <div className="bg-card/95 backdrop-blur-md rounded-xl shadow-2xl w-full h-full max-w-7xl max-h-full overflow-hidden border border-border/50">
             <div className="p-4 border-b border-border flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-semibold text-foreground">Stream Locations - Fullscreen</h3>
-                <p className="text-sm text-muted-foreground">Click markers for detailed predictions</p>
+                <h3 className="text-lg font-semibold text-foreground">Stream & Weather Locations - Fullscreen</h3>
+                <p className="text-sm text-muted-foreground">Blue markers show weather stations, colored markers show streams with predictions</p>
               </div>
               <button
                 onClick={toggleFullscreen}

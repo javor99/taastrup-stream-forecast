@@ -74,6 +74,13 @@ export interface ApiSummaryStation {
     max_change_cm: number;
     forecast_date: string;
   };
+  weather_station_info?: {
+    weather_api_url: string;
+    weather_data_source: string;
+    weather_station_latitude: number;
+    weather_station_longitude: number;
+    weather_station_name: string;
+  };
 }
 
 export interface ApiSummaryResponse {
