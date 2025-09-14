@@ -65,6 +65,27 @@ export const StreamGrid = () => {
 
   return (
     <div className="space-y-8">
+      {usingDummyData && (
+        <div className="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-lg shadow-sm">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
+              <svg className="h-6 w-6 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-lg font-semibold text-amber-800">
+                Demo Mode Active
+              </h3>
+              <p className="text-amber-700 mt-1">
+                Currently displaying demonstration data with simulated water levels and weather stations. 
+                Live data from monitoring stations is temporarily unavailable.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+      
       <div className="mb-8">
         <StreamMap streams={allStreams} apiData={apiData} onVisibleStreamsChange={handleVisibleStreamsChange} />
       </div>
@@ -72,11 +93,6 @@ export const StreamGrid = () => {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-2xl font-bold">Stream Monitoring Stations</h2>
-            {usingDummyData && (
-              <p className="text-sm text-muted-foreground mt-1">
-                ⚠️ Displaying demo data - Live data unavailable
-              </p>
-            )}
           </div>
           <div className="text-sm text-muted-foreground space-y-1">
             <div>Showing {visibleStreams.length} of {allStreams.length} stations</div>
@@ -91,7 +107,7 @@ export const StreamGrid = () => {
               })}</div>
             )}
             {usingDummyData && (
-              <div>Demo data for testing purposes</div>
+              <div className="text-amber-600 font-medium">Demo data for testing purposes</div>
             )}
           </div>
         </div>
