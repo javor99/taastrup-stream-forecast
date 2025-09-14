@@ -97,15 +97,25 @@ const About = () => {
                 
                 <div className="space-y-3">
                   <div>
-                    <h5 className="font-medium text-sm mb-1">What Are Percentiles?</h5>
-                    <p className="text-sm text-muted-foreground">
-                      Percentiles help you understand where current water levels rank compared to historical data:
+                    <h5 className="font-medium text-sm mb-1">Understanding Min/Max Values & Percentiles</h5>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      Each monitoring station has minimum and maximum values that represent the biggest and smallest 
+                      water levels recorded at that location over the last 5 years. These historical extremes serve 
+                      as reference points for all calculations.
+                    </p>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      <strong>Percentiles show where current levels and predictions fall between these extremes:</strong>
                     </p>
                     <ul className="text-sm text-muted-foreground mt-2 space-y-1 ml-4">
-                      <li>• <strong>Low percentile (10th-30th):</strong> Water levels are lower than they typically are at this time of year</li>
-                      <li>• <strong>High percentile (70th-90th):</strong> Water levels are higher than they typically are at this time of year</li>
-                      <li>• <strong>50th percentile (median):</strong> Water levels are about average for this time of year</li>
+                      <li>• <strong>0th percentile:</strong> At the historical 5-year minimum level</li>
+                      <li>• <strong>50th percentile:</strong> Halfway between the 5-year minimum and maximum</li>
+                      <li>• <strong>100th percentile:</strong> At the historical 5-year maximum level</li>
+                      <li>• <strong>Low percentiles (0-30%):</strong> Closer to the 5-year minimum (typically low water)</li>
+                      <li>• <strong>High percentiles (70-100%):</strong> Closer to the 5-year maximum (typically high water)</li>
                     </ul>
+                    <p className="text-sm text-muted-foreground mt-2">
+                      <strong>Note:</strong> Administrators can manually adjust min/max values if needed using the edit controls on each station card.
+                    </p>
                   </div>
                   
                   <div>
