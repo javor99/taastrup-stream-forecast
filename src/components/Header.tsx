@@ -12,7 +12,7 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDashboard, isInDashboard }) => {
-  const { isAuthenticated, isAdmin, logout } = useAuth();
+  const { isAuthenticated, isAdmin, isSuperAdmin, logout } = useAuth();
   const location = useLocation();
 
   return (
@@ -71,7 +71,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
               <>
                 <div className="flex items-center space-x-2 text-muted-foreground bg-primary/10 px-3 py-2 rounded-lg border border-primary/20">
                   <UserCog className="h-4 w-4 text-primary" />
-                  <span className="text-sm font-medium text-primary">Admin Mode</span>
+                  <span className="text-sm font-medium text-primary">{isSuperAdmin ? 'Superadmin Mode' : 'Admin Mode'}</span>
                 </div>
                 
                 {onShowAdminDashboard && (
