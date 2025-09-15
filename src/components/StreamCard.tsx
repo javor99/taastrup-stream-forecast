@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { updateStationMinMax } from '@/services/api';
 
 interface StreamCardProps {
@@ -21,6 +22,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const [maxLevel, setMaxLevel] = useState(stream.maxLevel * 100); // Convert to cm
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
+  const { isAdmin, isSuperAdmin } = useAuth();
   
   const nextPrediction = stream.predictions[0];
   const maxPrediction = stream.predictions.reduce((max, pred) => 
@@ -213,21 +215,23 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
 
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => setIsEditingMinMax(true)}
-          className="flex items-center gap-2"
-        >
-          <Settings className="h-4 w-4" />
-          Edit Min/Max
-        </Button>
+        {(isAdmin || isSuperAdmin) && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditingMinMax(true)}
+            className="flex items-center gap-2"
+          >
+            <Settings className="h-4 w-4" />
+            Edit Min/Max
+          </Button>
+        )}
         
         <div className={`px-3 py-1 rounded-full text-xs font-bold font-display tracking-wide ${
           stream.status === 'normal' ? 'bg-emerald-100 dark:bg-emerald-900/50 text-emerald-800 dark:text-emerald-200' :
           stream.status === 'warning' ? 'bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-200' :
           'bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-200'
-        }`}>
+        } ${!(isAdmin || isSuperAdmin) ? 'ml-auto' : ''}`}>
           {stream.status.toUpperCase()}
         </div>
       </div>
