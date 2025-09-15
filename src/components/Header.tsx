@@ -3,6 +3,7 @@ import { Waves, MapPin, UserCog, LayoutDashboard, Home, LogOut, Info } from 'luc
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
+import { useToast } from '@/hooks/use-toast';
 import { Link, useLocation } from 'react-router-dom';
 
 interface HeaderProps {
@@ -13,7 +14,17 @@ interface HeaderProps {
 
 export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDashboard, isInDashboard }) => {
   const { isAuthenticated, isAdmin, isSuperAdmin, logout } = useAuth();
+  const { toast } = useToast();
   const location = useLocation();
+
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "Logged Out",
+      description: "You have been successfully logged out.",
+      variant: "default",
+    });
+  };
 
   return (
     <header className="bg-background/90 backdrop-blur-md shadow-lg border-b border-border/50 sticky top-0 z-50 transition-all duration-300">
@@ -87,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
                 )}
                 
                 <Button 
-                  onClick={logout}
+                  onClick={handleLogout}
                   variant="ghost"
                   size="sm"
                   className="gap-2"
