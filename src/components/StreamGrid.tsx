@@ -111,8 +111,8 @@ export const StreamGrid = () => {
       <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'all' | 'municipalities')} className="w-full">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="all">All Stations</TabsTrigger>
-          <TabsTrigger value="municipalities" disabled={!isAuthenticated}>
-            By Municipality {!isAuthenticated && "(Login Required)"}
+          <TabsTrigger value="municipalities">
+            By Municipality
           </TabsTrigger>
         </TabsList>
         

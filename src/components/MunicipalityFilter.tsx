@@ -23,14 +23,9 @@ export const MunicipalityFilter: React.FC<MunicipalityFilterProps> = ({
   const { toast } = useToast();
 
   const loadMunicipalities = async () => {
-    if (!isAuthenticated) return;
-    
     try {
       setIsLoading(true);
       const token = getToken();
-      if (!token) {
-        throw new Error('No authentication token available');
-      }
       
       const data = await fetchMunicipalities(token);
       setMunicipalities(data.municipalities.map(m => ({ ...m, station_count: m.station_count || 0 })));
@@ -48,7 +43,7 @@ export const MunicipalityFilter: React.FC<MunicipalityFilterProps> = ({
 
   useEffect(() => {
     loadMunicipalities();
-  }, [isAuthenticated]);
+  }, []);
 
   const handleMunicipalityToggle = (municipalityId: number, checked: boolean) => {
     if (checked) {
@@ -66,16 +61,6 @@ export const MunicipalityFilter: React.FC<MunicipalityFilterProps> = ({
     onMunicipalityChange([]);
   };
 
-  if (!isAuthenticated) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Municipality Filter</CardTitle>
-          <CardDescription>Please login to view and filter by municipalities</CardDescription>
-        </CardHeader>
-      </Card>
-    );
-  }
 
   return (
     <Card>
