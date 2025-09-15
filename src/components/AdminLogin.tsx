@@ -55,7 +55,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="test@test.com"
+                placeholder="admin@admin.com"
                 required
               />
             </div>
@@ -66,7 +66,7 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="test"
+                placeholder="12345678"
                 required
               />
             </div>
@@ -79,8 +79,8 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
           </form>
           <div className="mt-4 p-3 bg-muted rounded-lg">
             <p className="text-xs text-muted-foreground">
-              Admin: <code>test@test.com</code> / <code>test</code><br />
-              Superadmin: <code>supertest@supertest.com</code> / <code>supertest</code>
+              Admin: <code>admin@admin.com</code> / <code>12345678</code><br />
+              Superadmin: <code>superadmin@superadmin.com</code> / <code>12345678</code>
             </p>
           </div>
         </CardContent>

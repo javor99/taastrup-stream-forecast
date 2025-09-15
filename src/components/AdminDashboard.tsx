@@ -19,7 +19,7 @@ interface AdminDashboardProps {
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
-  const { logout, isSuperAdmin } = useAuth();
+  const { logout, isSuperAdmin, register } = useAuth();
   const { toast } = useToast();
   const [streams, setStreams] = useState<Stream[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -84,44 +84,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    try {
-      const response = await fetch('https://ee870f0e958a.ngrok-free.app/auth/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-        },
-        body: JSON.stringify({
-          email: newUserEmail,
-          password: newUserPassword,
-        }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        toast({
-          title: "User Created Successfully",
-          description: `User ${newUserEmail} has been created successfully.`,
-          variant: "default",
-        });
-        
-        setNewUserEmail('');
-        setNewUserPassword('');
-        setNewUserRole('admin');
-        setIsAddUserDialogOpen(false);
-      } else {
-        toast({
-          title: "Failed to Create User",
-          description: data.message || 'Failed to create user. Please try again.',
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Error creating user:', error);
+    const result = await register(newUserEmail, newUserPassword, newUserRole);
+    
+    if (result.success) {
       toast({
-        title: "Network Error",
-        description: 'Failed to create user due to network error.',
+        title: "User Created Successfully",
+        description: `User ${newUserEmail} has been created successfully.`,
+        variant: "default",
+      });
+      
+      setNewUserEmail('');
+      setNewUserPassword('');
+      setNewUserRole('admin');
+      setIsAddUserDialogOpen(false);
+    } else {
+      toast({
+        title: "Failed to Create User",
+        description: result.error || 'Failed to create user. Please try again.',
         variant: "destructive",
       });
     }
