@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Stream } from '@/types/stream';
-import { ApiSummaryStation } from '@/services/api';
+import { ApiSummaryStation, MunicipalityStation } from '@/services/api';
 import { Fullscreen, X, Cloud } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -26,10 +26,11 @@ interface WeatherStation {
 interface StreamMapProps {
   streams: Stream[];
   apiData?: ApiSummaryStation[];
+  municipalityData?: MunicipalityStation[];
   onVisibleStreamsChange?: (streams: Stream[]) => void;
 }
 
-export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, onVisibleStreamsChange }) => {
+export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipalityData, onVisibleStreamsChange }) => {
   const { theme } = useTheme();
   const mapContainer = useRef<HTMLDivElement>(null);
   const fullscreenMapContainer = useRef<HTMLDivElement>(null);
@@ -77,10 +78,11 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, onVisibl
 
     // Extract unique weather stations from API data
     const weatherStations: WeatherStation[] = [];
-    if (apiData) {
+    const dataSource = municipalityData || apiData;
+    if (dataSource) {
       const seenCoordinates = new Set<string>();
       
-      apiData.forEach(station => {
+      dataSource.forEach(station => {
         if (station.weather_station_info) {
           const coordKey = `${station.weather_station_info.weather_station_latitude},${station.weather_station_info.weather_station_longitude}`;
           
@@ -272,7 +274,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, onVisibl
     return () => {
       map.current?.remove();
     };
-  }, [streams, apiData, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [streams, apiData, municipalityData, mapboxToken, theme, onVisibleStreamsChange]);
 
   // Fullscreen map effect
   useEffect(() => {
@@ -286,7 +288,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, onVisibl
         fullscreenMap.current = null;
       }
     };
-  }, [isFullscreen, streams, apiData, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [isFullscreen, streams, apiData, municipalityData, mapboxToken, theme, onVisibleStreamsChange]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);

@@ -106,10 +106,88 @@ export interface ApiPredictionsResponse {
   predictions: ApiPrediction[];
 }
 
+// Municipality interfaces
+export interface Municipality {
+  id: number;
+  name: string;
+  region: string;
+  population: number;
+  area_km2: number;
+  description: string;
+  created_at: string;
+  created_by: string;
+  updated_at?: string;
+  updated_by?: string;
+  station_count?: number;
+}
+
+export interface MunicipalityStation {
+  station_id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  location_type: string;
+  station_owner: string;
+  municipality_id: number;
+  municipality_name: string;
+  last_30_days_min_cm: number;
+  last_30_days_max_cm: number;
+  last_30_days_min_m: number;
+  last_30_days_max_m: number;
+  weather_station_info?: {
+    weather_station_id: string;
+    weather_station_name: string;
+    weather_station_latitude: number;
+    weather_station_longitude: number;
+    weather_station_elevation: number;
+    weather_data_source: string;
+    weather_model: string;
+    weather_coverage: string;
+    weather_update_frequency: string;
+    weather_forecast_length: string;
+    weather_timezone: string;
+    weather_timezone_abbreviation: string;
+    weather_api_url: string;
+  };
+}
+
+export interface MunicipalitiesResponse {
+  success: boolean;
+  count: number;
+  municipalities: Municipality[];
+}
+
+export interface MunicipalityStationsResponse {
+  success: boolean;
+  count: number;
+  stations: MunicipalityStation[];
+  filters: {
+    municipality_ids: string;
+    include_weather: boolean;
+  };
+}
+
 // Proxy helper via Supabase Edge Function
-async function proxyGet<T>(path: 'stations' | 'water-levels' | 'predictions' | 'summary'): Promise<T> {
+async function proxyGet<T>(path: string): Promise<T> {
   const { data, error } = await supabase.functions.invoke('stream-proxy', {
     body: { path }
+  });
+  if (error) {
+    console.error('Edge function error:', error);
+    throw error;
+  }
+  return data as T;
+}
+
+// Proxy helper for authenticated requests
+async function proxyAuthGet<T>(path: string, token: string): Promise<T> {
+  const { data, error } = await supabase.functions.invoke('stream-proxy', {
+    body: { 
+      path,
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    }
   });
   if (error) {
     console.error('Edge function error:', error);
@@ -203,6 +281,47 @@ export async function updateStationMinMax(stationId: string, minLevelCm: number,
     return data;
   } catch (error) {
     console.error('Error updating station min/max:', error);
+    throw error;
+  }
+}
+
+// Municipality API functions
+export async function fetchMunicipalities(token: string): Promise<Municipality[]> {
+  try {
+    const data = await proxyAuthGet<MunicipalitiesResponse>('municipalities', token);
+    if (data.success) {
+      return data.municipalities;
+    } else {
+      throw new Error('Failed to fetch municipalities');
+    }
+  } catch (error) {
+    console.error('Error fetching municipalities:', error);
+    throw error;
+  }
+}
+
+export async function fetchMunicipalityStations(municipalityIds?: number[], token?: string): Promise<MunicipalityStation[]> {
+  try {
+    let path = 'municipalities/stations';
+    if (municipalityIds && municipalityIds.length > 0) {
+      const params = municipalityIds.map(id => `municipality_id=${id}`).join('&');
+      path += `?${params}`;
+    }
+    
+    let data;
+    if (token) {
+      data = await proxyAuthGet<MunicipalityStationsResponse>(path, token);
+    } else {
+      data = await proxyGet<MunicipalityStationsResponse>(path);
+    }
+    
+    if (data.success) {
+      return data.stations;
+    } else {
+      throw new Error('Failed to fetch municipality stations');
+    }
+  } catch (error) {
+    console.error('Error fetching municipality stations:', error);
     throw error;
   }
 }

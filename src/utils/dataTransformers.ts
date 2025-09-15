@@ -1,5 +1,5 @@
 import { Stream, DailyPrediction } from '@/types/stream';
-import { ApiSummaryStation } from '@/services/api';
+import { ApiSummaryStation, MunicipalityStation } from '@/services/api';
 
 // Station locations based on API names
 const getLocationFromName = (name: string): string => {
@@ -98,6 +98,99 @@ export function transformApiDataToStreams(
       predictions: transformedPredictions,
       last30DaysRange: station.last_30_days_range,
       last30DaysHistorical: station.last_30_days_historical || []
+    };
+  });
+}
+
+// Transform municipality station data to Stream objects
+export function transformMunicipalityStationsToStreams(stations: MunicipalityStation[]): Stream[] {
+  return stations.map((station) => {
+    // Generate mock predictions for municipality stations (since the API might not include them)
+    const predictions: DailyPrediction[] = Array.from({ length: 7 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() + i + 1);
+      
+      // Use the current level from min/max range as base for predictions
+      const baseLevel = (station.last_30_days_min_m + station.last_30_days_max_m) / 2;
+      const variation = (Math.random() - 0.5) * 0.2; // ±0.1m variation
+      
+      return {
+        date,
+        predictedLevel: Math.max(0, baseLevel + variation),
+        confidence: 75 + Math.random() * 20, // 75-95% confidence
+      };
+    });
+
+    // Generate mock historical data
+    const last30DaysHistorical = Array.from({ length: 30 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - (29 - i));
+      
+      const baseLevel = (station.last_30_days_min_cm + station.last_30_days_max_cm) / 2;
+      const variation = (Math.random() - 0.5) * (station.last_30_days_max_cm - station.last_30_days_min_cm) * 0.8;
+      const level_cm = Math.max(0, baseLevel + variation);
+      
+      return {
+        date: date.toISOString().split('T')[0],
+        water_level_cm: level_cm,
+        water_level_m: level_cm / 100,
+      };
+    });
+
+    // Use current day's historical value as current level
+    const currentLevel = last30DaysHistorical[last30DaysHistorical.length - 1].water_level_m;
+    
+    // Determine status based on position within min/max range
+    let status: 'normal' | 'warning' | 'danger';
+    const range = station.last_30_days_max_m - station.last_30_days_min_m;
+    const position = (currentLevel - station.last_30_days_min_m) / range;
+    
+    if (position < 0.3) {
+      status = 'normal';
+    } else if (position < 0.7) {
+      status = 'warning';
+    } else {
+      status = 'danger';
+    }
+
+    // Determine trend (simplified)
+    const recentLevels = last30DaysHistorical.slice(-3);
+    const avgRecent = recentLevels.reduce((sum, item) => sum + item.water_level_m, 0) / recentLevels.length;
+    const olderLevels = last30DaysHistorical.slice(-7, -3);
+    const avgOlder = olderLevels.reduce((sum, item) => sum + item.water_level_m, 0) / olderLevels.length;
+    
+    let trend: 'rising' | 'falling' | 'stable';
+    const trendDiff = avgRecent - avgOlder;
+    if (Math.abs(trendDiff) < 0.05) {
+      trend = 'stable';
+    } else if (trendDiff > 0) {
+      trend = 'rising';
+    } else {
+      trend = 'falling';
+    }
+
+    return {
+      id: station.station_id,
+      name: station.name,
+      location: {
+        lat: station.latitude,
+        lng: station.longitude,
+        address: `${station.name}, ${station.municipality_name}`,
+      },
+      currentLevel,
+      minLevel: station.last_30_days_min_m,
+      maxLevel: station.last_30_days_max_m,
+      status,
+      lastUpdated: new Date(),
+      trend,
+      predictions,
+      last30DaysRange: {
+        min_cm: station.last_30_days_min_cm,
+        max_cm: station.last_30_days_max_cm,
+        min_m: station.last_30_days_min_m,
+        max_m: station.last_30_days_max_m,
+      },
+      last30DaysHistorical,
     };
   });
 }

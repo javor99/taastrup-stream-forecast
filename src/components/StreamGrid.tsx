@@ -3,33 +3,51 @@ import React, { useState, useEffect } from 'react';
 import { StreamCard } from './StreamCard';
 import { StreamMap } from './StreamMap';
 import { StreamGridSkeleton } from './StreamGridSkeleton';
+import { MunicipalityFilter } from './MunicipalityFilter';
 import { Stream } from '@/types/stream';
-import { fetchSummary, ApiSummaryStation } from '@/services/api';
-import { transformApiDataToStreams } from '@/utils/dataTransformers';
+import { fetchSummary, fetchMunicipalityStations, ApiSummaryStation, MunicipalityStation } from '@/services/api';
+import { transformApiDataToStreams, transformMunicipalityStationsToStreams } from '@/utils/dataTransformers';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 import { mockStreams, mockApiData } from '@/data/mockStreams';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 export const StreamGrid = () => {
   const [allStreams, setAllStreams] = useState<Stream[]>([]);
   const [visibleStreams, setVisibleStreams] = useState<Stream[]>([]);
   const [apiData, setApiData] = useState<ApiSummaryStation[]>([]);
+  const [municipalityData, setMunicipalityData] = useState<MunicipalityStation[]>([]);
+  const [selectedMunicipalities, setSelectedMunicipalities] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [usingDummyData, setUsingDummyData] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'all' | 'municipalities'>('all');
   const { toast } = useToast();
+  const { isAuthenticated, getToken } = useAuth();
 
   const loadStreams = async () => {
     try {
       setIsLoading(true);
       setUsingDummyData(false);
       
-      const { summary, lastUpdated } = await fetchSummary();
-      
-      const transformedStreams = transformApiDataToStreams(summary);
-      setAllStreams(transformedStreams);
-      setVisibleStreams(transformedStreams);
-      setApiData(summary);
-      setLastUpdated(lastUpdated);
+      if (viewMode === 'municipalities' && selectedMunicipalities.length > 0) {
+        // Load municipality-specific stations
+        const token = getToken();
+        const stations = await fetchMunicipalityStations(selectedMunicipalities, token || undefined);
+        const transformedStreams = transformMunicipalityStationsToStreams(stations);
+        setAllStreams(transformedStreams);
+        setVisibleStreams(transformedStreams);
+        setMunicipalityData(stations);
+        setLastUpdated(new Date().toISOString());
+      } else {
+        // Load all streams (existing functionality)
+        const { summary, lastUpdated } = await fetchSummary();
+        const transformedStreams = transformApiDataToStreams(summary);
+        setAllStreams(transformedStreams);
+        setVisibleStreams(transformedStreams);
+        setApiData(summary);
+        setLastUpdated(lastUpdated);
+      }
     } catch (err) {
       console.error('Failed to load stream data:', err);
       
@@ -53,7 +71,11 @@ export const StreamGrid = () => {
 
   useEffect(() => {
     loadStreams();
-  }, [toast]);
+  }, [viewMode, selectedMunicipalities, toast]);
+
+  const handleMunicipalityChange = (municipalityIds: number[]) => {
+    setSelectedMunicipalities(municipalityIds);
+  };
 
   const handleVisibleStreamsChange = React.useCallback((streams: Stream[]) => {
     setVisibleStreams(streams);
@@ -86,13 +108,62 @@ export const StreamGrid = () => {
         </div>
       )}
       
-      <div className="mb-8">
-        <StreamMap streams={allStreams} apiData={apiData} onVisibleStreamsChange={handleVisibleStreamsChange} />
-      </div>
+      <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as 'all' | 'municipalities')} className="w-full">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="all">All Stations</TabsTrigger>
+          <TabsTrigger value="municipalities" disabled={!isAuthenticated}>
+            By Municipality {!isAuthenticated && "(Login Required)"}
+          </TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="all" className="space-y-8">
+          <div className="mb-8">
+            <StreamMap streams={allStreams} apiData={apiData} onVisibleStreamsChange={handleVisibleStreamsChange} />
+          </div>
+        </TabsContent>
+        
+        <TabsContent value="municipalities" className="space-y-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <div className="lg:col-span-1">
+              <MunicipalityFilter
+                selectedMunicipalities={selectedMunicipalities}
+                onMunicipalityChange={handleMunicipalityChange}
+              />
+            </div>
+            <div className="lg:col-span-3">
+              {selectedMunicipalities.length > 0 ? (
+                <StreamMap 
+                  streams={allStreams} 
+                  apiData={apiData}
+                  municipalityData={municipalityData}
+                  onVisibleStreamsChange={handleVisibleStreamsChange} 
+                />
+              ) : (
+                <div className="bg-muted/50 border-2 border-dashed border-border rounded-lg p-12 text-center">
+                  <div className="text-muted-foreground">
+                    <h3 className="text-lg font-semibold mb-2">Select Municipalities</h3>
+                    <p>Choose one or more municipalities from the filter to view their monitoring stations on the map.</p>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </TabsContent>
+      </Tabs>
+      
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-2xl font-bold">Stream Monitoring Stations</h2>
+            <h2 className="text-2xl font-bold">
+              {viewMode === 'municipalities' && selectedMunicipalities.length > 0 
+                ? "Municipality Stations" 
+                : "Stream Monitoring Stations"}
+            </h2>
+            {viewMode === 'municipalities' && selectedMunicipalities.length > 0 && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Showing stations from selected municipalities
+              </p>
+            )}
           </div>
           <div className="text-sm text-muted-foreground space-y-1">
             <div>Showing {visibleStreams.length} of {allStreams.length} stations</div>
