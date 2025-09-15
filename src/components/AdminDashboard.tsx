@@ -84,17 +84,47 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // This would normally integrate with a real user management system
-    toast({
-      title: "User Added (Demo)",
-      description: `User ${newUserEmail} with role ${newUserRole} would be created with password: ${newUserPassword}`,
-      variant: "default",
-    });
-    
-    setNewUserEmail('');
-    setNewUserPassword('');
-    setNewUserRole('admin');
-    setIsAddUserDialogOpen(false);
+    try {
+      const response = await fetch('https://ee870f0e958a.ngrok-free.app/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+        },
+        body: JSON.stringify({
+          email: newUserEmail,
+          password: newUserPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast({
+          title: "User Created Successfully",
+          description: `User ${newUserEmail} has been created successfully.`,
+          variant: "default",
+        });
+        
+        setNewUserEmail('');
+        setNewUserPassword('');
+        setNewUserRole('admin');
+        setIsAddUserDialogOpen(false);
+      } else {
+        toast({
+          title: "Failed to Create User",
+          description: data.message || 'Failed to create user. Please try again.',
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error('Error creating user:', error);
+      toast({
+        title: "Network Error",
+        description: 'Failed to create user due to network error.',
+        variant: "destructive",
+      });
+    }
   };
 
   const getStatusColor = (status: string) => {

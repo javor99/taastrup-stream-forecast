@@ -16,13 +16,13 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
   const [error, setError] = useState('');
   const { login } = useAuth();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     
-    const success = login(email, password);
-    if (!success) {
-      setError('Invalid credentials. Check your email and password.');
+    const result = await login(email, password);
+    if (!result.success) {
+      setError(result.error || 'Login failed. Check your email and password.');
     }
   };
 
