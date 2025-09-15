@@ -1,6 +1,19 @@
 import { supabase } from '@/integrations/supabase/client';
 const API_BASE_URL = 'https://341eb1bb8654.ngrok-free.app';
 
+// Add a client-side timeout to prevent infinite loading when the edge function/upstream hangs
+const INVOKE_TIMEOUT_MS = 8000; // 8s timeout for edge function calls
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label = 'request'): Promise<T> {
+  let timeoutId: number | undefined;
+  const timeout = new Promise<never>((_, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)) as unknown as number, ms) as unknown as number;
+  });
+  return Promise.race([promise, timeout]).finally(() => {
+    if (timeoutId) clearTimeout(timeoutId);
+  }) as Promise<T>;
+}
+
 export interface ApiStation {
   station_id: string;
   name: string;
@@ -169,31 +182,47 @@ export interface MunicipalityStationsResponse {
 
 // Proxy helper via Supabase Edge Function
 async function proxyGet<T>(path: string): Promise<T> {
-  const { data, error } = await supabase.functions.invoke('stream-proxy', {
-    body: { path }
-  });
-  if (error) {
-    console.error('Edge function error:', error);
-    throw error;
+  try {
+    const { data, error } = await withTimeout(
+      supabase.functions.invoke('stream-proxy', { body: { path } }),
+      INVOKE_TIMEOUT_MS,
+      `stream-proxy:${path}`
+    );
+    if ((error as unknown)) {
+      console.error('Edge function error:', error);
+      throw error as unknown as Error;
+    }
+    return (data as T);
+  } catch (err) {
+    console.error('Edge function invocation failed:', err);
+    throw err;
   }
-  return data as T;
 }
 
 // Proxy helper for authenticated requests
 async function proxyAuthGet<T>(path: string, token: string): Promise<T> {
-  const { data, error } = await supabase.functions.invoke('stream-proxy', {
-    body: { 
-      path,
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+  try {
+    const { data, error } = await withTimeout(
+      supabase.functions.invoke('stream-proxy', {
+        body: {
+          path,
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      }),
+      INVOKE_TIMEOUT_MS,
+      `stream-proxy:${path}`
+    );
+    if ((error as unknown)) {
+      console.error('Edge function error:', error);
+      throw error as unknown as Error;
     }
-  });
-  if (error) {
-    console.error('Edge function error:', error);
-    throw error;
+    return (data as T);
+  } catch (err) {
+    console.error('Edge function invocation failed:', err);
+    throw err;
   }
-  return data as T;
 }
 
 // Fetch summary data using stations endpoint instead of summary
