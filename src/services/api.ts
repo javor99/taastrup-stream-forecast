@@ -286,16 +286,123 @@ export async function updateStationMinMax(stationId: string, minLevelCm: number,
 }
 
 // Municipality API functions
-export async function fetchMunicipalities(token: string): Promise<Municipality[]> {
+export async function fetchMunicipalities(token?: string): Promise<MunicipalitiesResponse> {
   try {
-    const data = await proxyAuthGet<MunicipalitiesResponse>('municipalities', token);
+    let data;
+    if (token) {
+      data = await proxyAuthGet<MunicipalitiesResponse>('municipalities', token);
+    } else {
+      data = await proxyGet<MunicipalitiesResponse>('municipalities');
+    }
+    
     if (data.success) {
-      return data.municipalities;
+      return data;
     } else {
       throw new Error('Failed to fetch municipalities');
     }
   } catch (error) {
     console.error('Error fetching municipalities:', error);
+    throw error;
+  }
+}
+
+export async function createMunicipality(municipalityData: {
+  name: string;
+  region: string;
+  population: number;
+  area_km2: number;
+  description: string;
+}, token?: string): Promise<Municipality> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: 'municipalities',
+        method: 'POST',
+        data: municipalityData,
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error creating municipality:', error);
+      throw error;
+    }
+    
+    return data.municipality;
+  } catch (error) {
+    console.error('Error creating municipality:', error);
+    throw error;
+  }
+}
+
+export async function updateMunicipality(id: number, municipalityData: {
+  name: string;
+  region: string;
+  population: number;
+  area_km2: number;
+  description: string;
+}, token?: string): Promise<Municipality> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `municipalities/${id}`,
+        method: 'PUT',
+        data: municipalityData,
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error updating municipality:', error);
+      throw error;
+    }
+    
+    return data.municipality;
+  } catch (error) {
+    console.error('Error updating municipality:', error);
+    throw error;
+  }
+}
+
+export async function deleteMunicipality(id: number, token?: string): Promise<void> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `municipalities/${id}`,
+        method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error deleting municipality:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error deleting municipality:', error);
+    throw error;
+  }
+}
+
+export async function assignStationsToMunicipality(municipalityId: number, stationIds: string[], token?: string): Promise<any> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `municipalities/${municipalityId}/stations`,
+        method: 'POST',
+        data: { station_ids: stationIds },
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error assigning stations to municipality:', error);
+      throw error;
+    }
+    
+    return data;
+  } catch (error) {
+    console.error('Error assigning stations to municipality:', error);
     throw error;
   }
 }

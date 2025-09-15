@@ -33,7 +33,7 @@ export const MunicipalityFilter: React.FC<MunicipalityFilterProps> = ({
       }
       
       const data = await fetchMunicipalities(token);
-      setMunicipalities(data);
+      setMunicipalities(data.municipalities.map(m => ({ ...m, station_count: m.station_count || 0 })));
     } catch (error) {
       console.error('Error loading municipalities:', error);
       toast({

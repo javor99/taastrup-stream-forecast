@@ -102,7 +102,7 @@ export function transformApiDataToStreams(
   });
 }
 
-// Transform municipality station data to Stream objects
+// Transform municipality station data to Stream objects (fixed export)
 export function transformMunicipalityStationsToStreams(stations: MunicipalityStation[]): Stream[] {
   return stations.map((station) => {
     // Generate mock predictions for municipality stations (since the API might not include them)
