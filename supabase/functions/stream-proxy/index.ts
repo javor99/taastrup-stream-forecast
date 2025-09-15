@@ -62,7 +62,10 @@ Deno.serve(async (req) => {
     
     const fetchOptions: RequestInit = {
       method: method,
-      headers: { 'Accept': 'application/json' }
+      headers: { 
+        'Accept': 'application/json',
+        'ngrok-skip-browser-warning': 'true'
+      }
     };
 
     if (method === 'POST' && postData) {
