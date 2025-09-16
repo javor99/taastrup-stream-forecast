@@ -65,18 +65,16 @@ export const StreamGrid = () => {
           }
         });
 
-        // Optionally fetch admin-configured min/max thresholds
+        // Fetch admin-configured min/max thresholds (no auth required)
         const minmaxMap = new Map<string, { min_m: number; max_m: number }>();
-        if ((isAdmin || isSuperAdmin) && token) {
-          const minmaxResults = await Promise.all(
-            stations.map(s => fetchStationMinMax(s.station_id, token!).catch(() => null))
-          );
-          minmaxResults.forEach(res => {
-            if (res) {
-              minmaxMap.set(res.station_id, { min_m: res.min_value_m, max_m: res.max_value_m });
-            }
-          });
-        }
+        const minmaxResults = await Promise.all(
+          stations.map(s => fetchStationMinMax(s.station_id, token || '').catch(() => null))
+        );
+        minmaxResults.forEach(res => {
+          if (res) {
+            minmaxMap.set(res.station_id, { min_m: res.min_value_m, max_m: res.max_value_m });
+          }
+        });
 
         const transformedStreams: Stream[] = stations.map((station) => {
           const wl = wlMap.get(station.station_id);
