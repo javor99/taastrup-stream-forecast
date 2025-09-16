@@ -324,11 +324,11 @@ export async function fetchAllPredictions(): Promise<ApiPrediction[]> {
 export interface ApiStationMinMax {
   station_id: string;
   station_name: string;
-  min_value_cm: number;
-  max_value_cm: number;
-  min_value_m: number;
-  max_value_m: number;
-  last_updated: string;
+  min_level_cm: number;
+  max_level_cm: number;
+  min_level_m: number;
+  max_level_m: number;
+  last_updated?: string;
   updated_by?: string | null;
 }
 

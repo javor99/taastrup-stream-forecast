@@ -72,7 +72,7 @@ export const StreamGrid = () => {
         );
         minmaxResults.forEach(res => {
           if (res) {
-            minmaxMap.set(res.station_id, { min_m: res.min_value_m, max_m: res.max_value_m });
+            minmaxMap.set(res.station_id, { min_m: res.min_level_m, max_m: res.max_level_m });
           }
         });
 
