@@ -358,8 +358,51 @@ export interface ApiStationWaterLevels {
 }
 
 export async function fetchStationWaterLevels(stationId: string): Promise<ApiStationWaterLevels> {
-  const data = await proxyGet<ApiStationWaterLevels>(`water-levels/${stationId}`);
-  return data;
+  // Fetch raw data from upstream
+  const raw = await proxyGet<any>(`water-levels/${stationId}`);
+
+  // If the response already matches the expected shape, return it as-is
+  if (raw && (raw as any).last_30_days_historical) {
+    return raw as ApiStationWaterLevels;
+  }
+
+  // Transform upstream { history: [...], station_id, station_name } into ApiStationWaterLevels
+  const history = Array.isArray(raw?.history) ? raw.history : [];
+  const last_30_days_historical = history.map((h: any) => ({
+    date: h.date,
+    water_level_cm: h.water_level_cm,
+    water_level_m: h.water_level_m,
+  }));
+
+  const cmValues = history.map((h: any) => Number(h.water_level_cm)).filter((v: number) => !Number.isNaN(v));
+  const mValues = history.map((h: any) => Number(h.water_level_m)).filter((v: number) => !Number.isNaN(v));
+
+  const min_cm = cmValues.length ? Math.min(...cmValues) : 0;
+  const max_cm = cmValues.length ? Math.max(...cmValues) : 0;
+  const min_m = mValues.length ? Math.min(...mValues) : 0;
+  const max_m = mValues.length ? Math.max(...mValues) : 0;
+
+  const last = history[history.length - 1] ?? null;
+  const current_water_level_cm = last?.water_level_cm ?? 0;
+  const current_water_level_m = last?.water_level_m ?? 0;
+  const measurement_date = last?.date ?? new Date().toISOString();
+
+  const transformed: ApiStationWaterLevels = {
+    station_id: raw?.station_id ?? stationId,
+    name: raw?.station_name ?? '',
+    current_water_level_cm,
+    current_water_level_m,
+    measurement_date,
+    last_30_days_range: {
+      min_cm,
+      max_cm,
+      min_m,
+      max_m,
+    },
+    last_30_days_historical,
+  };
+
+  return transformed;
 }
 
 // Update min/max values for a station
