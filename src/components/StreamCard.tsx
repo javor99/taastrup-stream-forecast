@@ -22,7 +22,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const [maxLevel, setMaxLevel] = useState(stream.maxLevel * 100); // Convert to cm
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
-  const { isAdmin, isSuperAdmin } = useAuth();
+  const { isAdmin, isSuperAdmin, getToken } = useAuth();
   
   const nextPrediction = stream.predictions[0];
   const maxPrediction = stream.predictions.reduce((max, pred) => 
@@ -92,7 +92,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
 
     setIsUpdating(true);
     try {
-      await updateStationMinMax(stream.id, minLevel, maxLevel);
+      await updateStationMinMax(stream.id, minLevel, maxLevel, getToken() || undefined);
       toast({
         title: "Success",
         description: "Min/Max levels updated successfully.",

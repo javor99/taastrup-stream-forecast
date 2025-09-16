@@ -5,8 +5,8 @@ import { StreamMap } from './StreamMap';
 import { StreamGridSkeleton } from './StreamGridSkeleton';
 import { MunicipalityFilter } from './MunicipalityFilter';
 import { Stream } from '@/types/stream';
-import { fetchSummary, fetchMunicipalityStations, ApiSummaryStation, MunicipalityStation } from '@/services/api';
-import { transformApiDataToStreams, transformMunicipalityStationsToStreams } from '@/utils/dataTransformers';
+import { fetchStations, fetchWaterLevels, fetchAllPredictions, fetchMunicipalityStations, fetchStationMinMax, ApiSummaryStation, MunicipalityStation } from '@/services/api';
+import { transformMunicipalityStationsToStreams } from '@/utils/dataTransformers';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { mockStreams, mockApiData } from '@/data/mockStreams';
@@ -23,7 +23,7 @@ export const StreamGrid = () => {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'all' | 'municipalities'>('all');
   const { toast } = useToast();
-  const { isAuthenticated, getToken } = useAuth();
+  const { isAuthenticated, getToken, isAdmin, isSuperAdmin } = useAuth();
 
   const loadStreams = async () => {
     try {
@@ -40,13 +40,91 @@ export const StreamGrid = () => {
         setMunicipalityData(stations);
         setLastUpdated(new Date().toISOString());
       } else {
-        // Load all streams (existing functionality)
-        const { summary, lastUpdated } = await fetchSummary();
-        const transformedStreams = transformApiDataToStreams(summary);
+        // Load all streams using live endpoints (stations, water levels, predictions, and municipality ranges)
+        const token = getToken();
+        const [stations, waterLevels, predictions, muniStations] = await Promise.all([
+          fetchStations(),
+          fetchWaterLevels(),
+          fetchAllPredictions(),
+          fetchMunicipalityStations(undefined, token || undefined).catch(() => [] as MunicipalityStation[]),
+        ]);
+
+        // Build lookup maps
+        const wlMap = new Map(waterLevels.map(wl => [wl.station_id, wl]));
+        const muniMap = new Map(muniStations.map(ms => [ms.station_id, ms]));
+
+        // Optionally fetch admin-configured min/max thresholds
+        const minmaxMap = new Map<string, { min_m: number; max_m: number }>();
+        if ((isAdmin || isSuperAdmin) && token) {
+          const minmaxResults = await Promise.all(
+            stations.map(s => fetchStationMinMax(s.station_id, token!).catch(() => null))
+          );
+          minmaxResults.forEach(res => {
+            if (res) {
+              minmaxMap.set(res.station_id, { min_m: res.min_value_m, max_m: res.max_value_m });
+            }
+          });
+        }
+
+        const transformedStreams: Stream[] = stations.map((station) => {
+          const wl = wlMap.get(station.station_id);
+          const muni = muniMap.get(station.station_id);
+          const currentLevel = Number(((wl?.water_level_m ?? 0)).toFixed(3));
+
+          const minMax = minmaxMap.get(station.station_id);
+          const minLevel = Number((minMax?.min_m ?? muni?.last_30_days_min_m ?? Math.max(0, (wl?.water_level_m ?? 0) - 0.2)).toFixed(3));
+          const maxLevel = Number((minMax?.max_m ?? muni?.last_30_days_max_m ?? ((wl?.water_level_m ?? 0) + 0.5)).toFixed(3));
+
+          // Determine status
+          const range = Math.max(0.0001, maxLevel - minLevel);
+          const pct = ((currentLevel - minLevel) / range) * 100;
+          const status: 'normal' | 'warning' | 'danger' = pct >= 85 ? 'danger' : pct >= 65 ? 'warning' : 'normal';
+
+          // Predictions for this station
+          const preds = predictions
+            .filter(p => p.station_id === station.station_id)
+            .slice(0, 7)
+            .map(p => ({
+              date: new Date(p.prediction_date),
+              predictedLevel: Number(p.predicted_water_level_m.toFixed(3)),
+            }));
+
+          // Trend determination
+          const avgPred = preds.length ? preds.reduce((sum, p) => sum + p.predictedLevel, 0) / preds.length : currentLevel;
+          const change = avgPred - currentLevel;
+          const threshold = Math.max(0.01, (maxLevel - minLevel) * 0.01);
+          const trend: 'rising' | 'falling' | 'stable' = Math.abs(change) < threshold ? 'stable' : (change > 0 ? 'rising' : 'falling');
+
+          return {
+            id: station.station_id,
+            name: station.name.split(',')[0].trim(),
+            location: {
+              lat: station.latitude,
+              lng: station.longitude,
+              address: station.name.includes(',') ? station.name.split(', ')[1] : station.name,
+            },
+            currentLevel,
+            minLevel,
+            maxLevel,
+            status,
+            lastUpdated: wl ? new Date(wl.measurement_date) : new Date(),
+            trend,
+            predictions: preds,
+            last30DaysRange: {
+              min_cm: muni?.last_30_days_min_cm ?? 0,
+              max_cm: muni?.last_30_days_max_cm ?? 0,
+              min_m: muni?.last_30_days_min_m ?? 0,
+              max_m: muni?.last_30_days_max_m ?? 0,
+            },
+            last30DaysHistorical: [],
+          };
+        });
+
         setAllStreams(transformedStreams);
         setVisibleStreams(transformedStreams);
-        setApiData(summary);
-        setLastUpdated(lastUpdated);
+        setMunicipalityData(muniStations);
+        setApiData([] as unknown as ApiSummaryStation[]);
+        setLastUpdated(new Date().toISOString());
       }
     } catch (err) {
       console.error('Failed to load stream data:', err);
@@ -118,7 +196,7 @@ export const StreamGrid = () => {
         
         <TabsContent value="all" className="space-y-8">
           <div className="mb-8">
-            <StreamMap streams={allStreams} apiData={apiData} onVisibleStreamsChange={handleVisibleStreamsChange} />
+            <StreamMap streams={allStreams} apiData={apiData} municipalityData={municipalityData} onVisibleStreamsChange={handleVisibleStreamsChange} />
           </div>
         </TabsContent>
         

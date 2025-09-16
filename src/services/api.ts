@@ -320,25 +320,47 @@ export async function fetchAllPredictions(): Promise<ApiPrediction[]> {
   }
 }
 
+// Station min/max types and calls
+export interface ApiStationMinMax {
+  station_id: string;
+  station_name: string;
+  min_value_cm: number;
+  max_value_cm: number;
+  min_value_m: number;
+  max_value_m: number;
+  last_updated: string;
+  updated_by?: string | null;
+}
+
+export async function fetchStationMinMax(stationId: string, token: string): Promise<ApiStationMinMax> {
+  const data = await proxyAuthGet<ApiStationMinMax>(`stations/${stationId}/minmax`, token);
+  return data;
+}
+
 // Update min/max values for a station
-export async function updateStationMinMax(stationId: string, minLevelCm: number, maxLevelCm: number): Promise<any> {
+export async function updateStationMinMax(stationId: string, minLevelCm: number, maxLevelCm: number, token?: string): Promise<any> {
   try {
-    const { data, error } = await supabase.functions.invoke('stream-proxy', {
-      body: {
-        path: `stations/${stationId}/minmax`,
-        method: 'POST',
-        data: {
-          min_level_cm: minLevelCm,
-          max_level_cm: maxLevelCm
+    const { data, error } = await withTimeout(
+      supabase.functions.invoke('stream-proxy', {
+        body: {
+          path: `stations/${stationId}/minmax`,
+          method: 'POST',
+          data: {
+            min_value_cm: minLevelCm,
+            max_value_cm: maxLevelCm
+          },
+          headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
         }
-      }
-    });
-    
-    if (error) {
+      }),
+      INVOKE_TIMEOUT_MS,
+      `stream-proxy:stations/${stationId}/minmax`
+    );
+
+    if ((error as unknown)) {
       console.error('Error updating station min/max:', error);
-      throw error;
+      throw error as unknown as Error;
     }
-    
+
     return data;
   } catch (error) {
     console.error('Error updating station min/max:', error);
