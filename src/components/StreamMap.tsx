@@ -109,6 +109,8 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
     }
 
     // Add markers for each stream
+    console.log('StreamMap: Creating markers for', streams.length, 'streams');
+    console.log('Stream IDs in map:', streams.map(s => s.id));
     streams.forEach((stream) => {
       const getMarkerColor = (status: string) => {
         switch (status) {
@@ -186,8 +188,22 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
         className: 'custom-popup'
       }).setHTML(popupContent);
 
+      // Check for duplicate coordinates and add slight offset
+      const existingMarkers = streams.slice(0, streams.indexOf(stream));
+      let adjustedLng = stream.location.lng;
+      let adjustedLat = stream.location.lat;
+      
+      existingMarkers.forEach(existingStream => {
+        if (Math.abs(existingStream.location.lng - stream.location.lng) < 0.0001 && 
+            Math.abs(existingStream.location.lat - stream.location.lat) < 0.0001) {
+          // Add small random offset to prevent overlapping markers
+          adjustedLng += (Math.random() - 0.5) * 0.001;
+          adjustedLat += (Math.random() - 0.5) * 0.001;
+        }
+      });
+
       new mapboxgl.Marker(markerElement)
-        .setLngLat([stream.location.lng, stream.location.lat])
+        .setLngLat([adjustedLng, adjustedLat])
         .setPopup(popup)
         .addTo(newMap);
     });

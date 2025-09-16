@@ -133,6 +133,9 @@ export const StreamGrid = () => {
           };
         });
 
+        console.log('Stream processing complete:', transformedStreams.length, 'stations processed');
+        console.log('Station IDs:', transformedStreams.map(s => s.id));
+
         setAllStreams(transformedStreams);
         setVisibleStreams(transformedStreams);
         setMunicipalityData(muniStations);
