@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-const BASE_URL = 'https://b7f87b7c1ec1.ngrok-free.app';
+const BASE_URL = 'https://6fe4a9afdb88.ngrok-free.app';
 
 // deno-lint-ignore no-explicit-any
 function jsonResponse(body: any, status = 200) {
@@ -35,12 +35,14 @@ Deno.serve(async (req) => {
     let path = '';
     let method = 'GET';
     let postData = null;
+    let extraHeaders: Record<string, string> | null = null;
 
     if (contentType.includes('application/json')) {
       const body = await req.json().catch(() => ({}));
       path = body?.path || '';
       method = body?.method || 'GET';
       postData = body?.data || null;
+      extraHeaders = body?.headers || null;
     }
 
     if (!path) {
@@ -52,7 +54,7 @@ Deno.serve(async (req) => {
     // Allow dynamic paths for station updates
     const pathSegments = path.split('/');
     const isStationMinMaxPath = pathSegments.length === 3 && pathSegments[0] === 'stations' && pathSegments[2] === 'minmax';
-    const allowed = new Set(['stations', 'water-levels', 'predictions', 'summary']);
+    const allowed = new Set(['stations', 'water-levels', 'predictions', 'summary', 'municipalities']);
     
     if (!allowed.has(pathSegments[0]) && !isStationMinMaxPath) {
       return jsonResponse({ success: false, error: 'Invalid or missing path' }, 400);
@@ -64,11 +66,12 @@ Deno.serve(async (req) => {
       method: method,
       headers: { 
         'Accept': 'application/json',
-        'ngrok-skip-browser-warning': 'true'
+        'ngrok-skip-browser-warning': 'true',
+        ...(extraHeaders || {})
       }
     };
 
-    if (method === 'POST' && postData) {
+    if (method !== 'GET' && postData) {
       fetchOptions.headers = {
         ...fetchOptions.headers,
         'Content-Type': 'application/json'
