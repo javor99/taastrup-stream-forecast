@@ -1,12 +1,9 @@
 import React from 'react';
 import { StreamGrid } from '@/components/StreamGrid';
-import { StreamMap } from '@/components/StreamMap';
 import { Header } from '@/components/Header';
 import { AdminLogin } from '@/components/AdminLogin';
 import { AdminDashboard } from '@/components/AdminDashboard';
-import WeatherStationInfo from '@/components/WeatherStationInfo';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 import { Shield } from 'lucide-react';
 import { Stream } from '@/types/stream';
@@ -252,26 +249,7 @@ const Index = () => {
             </h2>
             
           </div>
-          
-          <Tabs defaultValue="grid" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 mb-8">
-              <TabsTrigger value="grid">Grid View</TabsTrigger>
-              <TabsTrigger value="map">Map View</TabsTrigger>
-              <TabsTrigger value="weather">Weather Station</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="grid" className="mt-0">
-              <StreamGrid />
-            </TabsContent>
-            
-            <TabsContent value="map" className="mt-0">
-              <StreamMap streams={streams} />
-            </TabsContent>
-            
-            <TabsContent value="weather" className="mt-0">
-              <WeatherStationInfo />
-            </TabsContent>
-          </Tabs>
+          <StreamGrid />
         </main>
       </div>
 

@@ -43,28 +43,6 @@ export interface ApiPrediction {
   predicted_water_level_m: number;
   change_from_last_cm: number;
   forecast_date: string;
-  weather_station_info?: WeatherStationInfo;
-}
-
-export interface WeatherStationInfo {
-  weather_api_url: string;
-  weather_coverage: string;
-  weather_data_source: string;
-  weather_forecast_length: string;
-  weather_model: string;
-  weather_station_elevation: number;
-  weather_station_id: string;
-  weather_station_latitude: number;
-  weather_station_longitude: number;
-  weather_station_name: string;
-  weather_timezone: string;
-  weather_timezone_abbreviation: string;
-  weather_update_frequency: string;
-}
-
-export interface WeatherStationResponse {
-  success: boolean;
-  weather_station: WeatherStationInfo;
 }
 
 export interface ApiStationsResponse {
@@ -576,23 +554,6 @@ export async function assignStationsToMunicipality(municipalityId: number, stati
     return data;
   } catch (error) {
     console.error('Error assigning stations to municipality:', error);
-    throw error;
-  }
-}
-
-// Weather Station API
-export async function fetchWeatherStation(): Promise<WeatherStationInfo> {
-  try {
-    console.log('Fetching weather station information...');
-    const response = await withTimeout(
-      proxyGet<WeatherStationResponse>('weather-station'),
-      INVOKE_TIMEOUT_MS,
-      'fetchWeatherStation'
-    );
-    console.log('Weather station response:', response);
-    return response.weather_station;
-  } catch (error) {
-    console.error('Error fetching weather station:', error);
     throw error;
   }
 }
