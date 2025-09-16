@@ -275,6 +275,21 @@ export async function fetchSummary(): Promise<{ summary: ApiSummaryStation[], la
   }
 }
 
+// Fetch weather station
+export async function fetchWeatherStation(): Promise<any> {
+  try {
+    const data = await proxyGet<{ success: boolean, weather_station: any }>('weather-station');
+    if (data.success) {
+      return data.weather_station;
+    } else {
+      throw new Error('Failed to fetch weather station');
+    }
+  } catch (error) {
+    console.error('Error fetching weather station:', error);
+    throw error;
+  }
+}
+
 // Fetch all stations
 export async function fetchStations(): Promise<ApiStation[]> {
   try {

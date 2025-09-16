@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { Stream } from '@/types/stream';
-import { ApiSummaryStation, MunicipalityStation } from '@/services/api';
+import { ApiSummaryStation, MunicipalityStation, fetchWeatherStation } from '@/services/api';
 import { Fullscreen, X, Cloud } from 'lucide-react';
 import { useTheme } from '@/components/ThemeProvider';
 
@@ -38,6 +38,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
   const fullscreenMap = useRef<mapboxgl.Map | null>(null);
   const [mapboxToken] = useState('pk.eyJ1IjoiamF2b3I5OSIsImEiOiJjbWNwNG1nOHowMnNjMmpzM3RjbXY5aTcwIn0.dRpur8lSFnUtR9JHaJ-N2Q');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [weatherStationData, setWeatherStationData] = useState<any>(null);
 
   const getWeekdayName = (dayOffset: number) => {
     const date = new Date();
@@ -76,36 +77,57 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
     newMap.on('sourcedata', updateVisibleStreams);
     newMap.on('idle', updateVisibleStreams);
 
-    // Extract unique weather stations from API data
+    // Extract weather station data - from direct endpoint or from API data
     const weatherStations: WeatherStation[] = [];
-    const dataSource = municipalityData || apiData;
-    if (dataSource) {
-      const seenCoordinates = new Set<string>();
-      
-      dataSource.forEach(station => {
-        if (station.weather_station_info) {
-          const coordKey = `${station.weather_station_info.weather_station_latitude},${station.weather_station_info.weather_station_longitude}`;
-          
-          if (!seenCoordinates.has(coordKey)) {
-            seenCoordinates.add(coordKey);
-            weatherStations.push({
-              id: station.weather_station_info.weather_station_id,
-              name: station.weather_station_info.weather_station_name,
-              latitude: station.weather_station_info.weather_station_latitude,
-              longitude: station.weather_station_info.weather_station_longitude,
-              elevation: station.weather_station_info.weather_station_elevation,
-              data_source: station.weather_station_info.weather_data_source,
-              model: station.weather_station_info.weather_model,
-              coverage: station.weather_station_info.weather_coverage,
-              update_frequency: station.weather_station_info.weather_update_frequency,
-              forecast_length: station.weather_station_info.weather_forecast_length,
-              timezone: station.weather_station_info.weather_timezone,
-              timezone_abbreviation: station.weather_station_info.weather_timezone_abbreviation,
-              api_url: station.weather_station_info.weather_api_url
-            });
-          }
-        }
+    
+    // Add weather station from direct endpoint if available
+    if (weatherStationData) {
+      weatherStations.push({
+        id: weatherStationData.weather_station_id,
+        name: weatherStationData.weather_station_name,
+        latitude: weatherStationData.weather_station_latitude,
+        longitude: weatherStationData.weather_station_longitude,
+        elevation: weatherStationData.weather_station_elevation,
+        data_source: weatherStationData.weather_data_source,
+        model: weatherStationData.weather_model,
+        coverage: weatherStationData.weather_coverage,
+        update_frequency: weatherStationData.weather_update_frequency,
+        forecast_length: weatherStationData.weather_forecast_length,
+        timezone: weatherStationData.weather_timezone,
+        timezone_abbreviation: weatherStationData.weather_timezone_abbreviation,
+        api_url: weatherStationData.weather_api_url
       });
+    } else {
+      // Fallback to extracting from API data if available
+      const dataSource = municipalityData || apiData;
+      if (dataSource) {
+        const seenCoordinates = new Set<string>();
+        
+        dataSource.forEach(station => {
+          if (station.weather_station_info) {
+            const coordKey = `${station.weather_station_info.weather_station_latitude},${station.weather_station_info.weather_station_longitude}`;
+            
+            if (!seenCoordinates.has(coordKey)) {
+              seenCoordinates.add(coordKey);
+              weatherStations.push({
+                id: station.weather_station_info.weather_station_id,
+                name: station.weather_station_info.weather_station_name,
+                latitude: station.weather_station_info.weather_station_latitude,
+                longitude: station.weather_station_info.weather_station_longitude,
+                elevation: station.weather_station_info.weather_station_elevation,
+                data_source: station.weather_station_info.weather_data_source,
+                model: station.weather_station_info.weather_model,
+                coverage: station.weather_station_info.weather_coverage,
+                update_frequency: station.weather_station_info.weather_update_frequency,
+                forecast_length: station.weather_station_info.weather_forecast_length,
+                timezone: station.weather_station_info.weather_timezone,
+                timezone_abbreviation: station.weather_station_info.weather_timezone_abbreviation,
+                api_url: station.weather_station_info.weather_api_url
+              });
+            }
+          }
+        });
+      }
     }
 
     // Add markers for each stream
@@ -281,6 +303,20 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
     return newMap;
   };
 
+  // Fetch weather station data
+  useEffect(() => {
+    const loadWeatherStation = async () => {
+      try {
+        const data = await fetchWeatherStation();
+        setWeatherStationData(data);
+      } catch (error) {
+        console.error('Failed to fetch weather station:', error);
+      }
+    };
+    
+    loadWeatherStation();
+  }, []);
+
   // Main map effect
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
@@ -290,7 +326,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
     return () => {
       map.current?.remove();
     };
-  }, [streams, apiData, municipalityData, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [streams, apiData, municipalityData, mapboxToken, theme, weatherStationData, onVisibleStreamsChange]);
 
   // Fullscreen map effect
   useEffect(() => {
@@ -304,7 +340,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
         fullscreenMap.current = null;
       }
     };
-  }, [isFullscreen, streams, apiData, municipalityData, mapboxToken, theme, onVisibleStreamsChange]);
+  }, [isFullscreen, streams, apiData, municipalityData, mapboxToken, theme, weatherStationData, onVisibleStreamsChange]);
 
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
