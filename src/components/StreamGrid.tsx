@@ -5,7 +5,7 @@ import { StreamMap } from './StreamMap';
 import { StreamGridSkeleton } from './StreamGridSkeleton';
 import { MunicipalityFilter } from './MunicipalityFilter';
 import { Stream } from '@/types/stream';
-import { fetchStations, fetchWaterLevels, fetchAllPredictions, fetchMunicipalityStations, fetchStationMinMax, ApiSummaryStation, MunicipalityStation } from '@/services/api';
+import { fetchStations, fetchWaterLevels, fetchAllPredictions, fetchMunicipalityStations, fetchStationMinMax, fetchStationWaterLevels, ApiSummaryStation, MunicipalityStation } from '@/services/api';
 import { transformMunicipalityStationsToStreams } from '@/utils/dataTransformers';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -53,6 +53,18 @@ export const StreamGrid = () => {
         const wlMap = new Map(waterLevels.map(wl => [wl.station_id, wl]));
         const muniMap = new Map(muniStations.map(ms => [ms.station_id, ms]));
 
+        // Fetch detailed historical data for each station
+        const stationHistoricalData = new Map();
+        const historicalPromises = stations.map(s => 
+          fetchStationWaterLevels(s.station_id).catch(() => null)
+        );
+        const historicalResults = await Promise.all(historicalPromises);
+        historicalResults.forEach((data, index) => {
+          if (data) {
+            stationHistoricalData.set(stations[index].station_id, data);
+          }
+        });
+
         // Optionally fetch admin-configured min/max thresholds
         const minmaxMap = new Map<string, { min_m: number; max_m: number }>();
         if ((isAdmin || isSuperAdmin) && token) {
@@ -69,11 +81,14 @@ export const StreamGrid = () => {
         const transformedStreams: Stream[] = stations.map((station) => {
           const wl = wlMap.get(station.station_id);
           const muni = muniMap.get(station.station_id);
-          const currentLevel = Number(((wl?.water_level_m ?? 0)).toFixed(3));
+          const historical = stationHistoricalData.get(station.station_id);
+          
+          // Use historical data if available, otherwise fallback to current water level
+          const currentLevel = Number((historical?.current_water_level_m ?? wl?.water_level_m ?? 0).toFixed(3));
 
           const minMax = minmaxMap.get(station.station_id);
-          const minLevel = Number((minMax?.min_m ?? muni?.last_30_days_min_m ?? Math.max(0, (wl?.water_level_m ?? 0) - 0.2)).toFixed(3));
-          const maxLevel = Number((minMax?.max_m ?? muni?.last_30_days_max_m ?? ((wl?.water_level_m ?? 0) + 0.5)).toFixed(3));
+          const minLevel = Number((minMax?.min_m ?? historical?.last_30_days_range?.min_m ?? muni?.last_30_days_min_m ?? Math.max(0, currentLevel - 0.2)).toFixed(3));
+          const maxLevel = Number((minMax?.max_m ?? historical?.last_30_days_range?.max_m ?? muni?.last_30_days_max_m ?? (currentLevel + 0.5)).toFixed(3));
 
           // Determine status
           const range = Math.max(0.0001, maxLevel - minLevel);
@@ -107,16 +122,16 @@ export const StreamGrid = () => {
             minLevel,
             maxLevel,
             status,
-            lastUpdated: wl ? new Date(wl.measurement_date) : new Date(),
+            lastUpdated: historical ? new Date(historical.measurement_date) : (wl ? new Date(wl.measurement_date) : new Date()),
             trend,
             predictions: preds,
             last30DaysRange: {
-              min_cm: muni?.last_30_days_min_cm ?? 0,
-              max_cm: muni?.last_30_days_max_cm ?? 0,
-              min_m: muni?.last_30_days_min_m ?? 0,
-              max_m: muni?.last_30_days_max_m ?? 0,
+              min_cm: historical?.last_30_days_range?.min_cm ?? muni?.last_30_days_min_cm ?? 0,
+              max_cm: historical?.last_30_days_range?.max_cm ?? muni?.last_30_days_max_cm ?? 0,
+              min_m: historical?.last_30_days_range?.min_m ?? muni?.last_30_days_min_m ?? 0,
+              max_m: historical?.last_30_days_range?.max_m ?? muni?.last_30_days_max_m ?? 0,
             },
-            last30DaysHistorical: [],
+            last30DaysHistorical: historical?.last_30_days_historical ?? [],
           };
         });
 

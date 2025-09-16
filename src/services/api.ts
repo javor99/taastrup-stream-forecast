@@ -337,6 +337,31 @@ export async function fetchStationMinMax(stationId: string, token: string): Prom
   return data;
 }
 
+// Individual station water levels with historical data
+export interface ApiStationWaterLevels {
+  station_id: string;
+  name: string;
+  current_water_level_cm: number;
+  current_water_level_m: number;
+  measurement_date: string;
+  last_30_days_range: {
+    min_cm: number;
+    max_cm: number;
+    min_m: number;
+    max_m: number;
+  };
+  last_30_days_historical: {
+    date: string;
+    water_level_cm: number;
+    water_level_m: number;
+  }[];
+}
+
+export async function fetchStationWaterLevels(stationId: string): Promise<ApiStationWaterLevels> {
+  const data = await proxyGet<ApiStationWaterLevels>(`water-levels/${stationId}`);
+  return data;
+}
+
 // Update min/max values for a station
 export async function updateStationMinMax(stationId: string, minLevelCm: number, maxLevelCm: number, token?: string): Promise<any> {
   try {
