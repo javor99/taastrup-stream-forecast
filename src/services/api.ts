@@ -549,17 +549,27 @@ export interface UsersResponse {
 
 export async function fetchUsers(token?: string): Promise<UsersResponse> {
   try {
-    let data;
-    if (token) {
-      data = await proxyAuthGet<UsersResponse>('auth/users', token);
-    } else {
-      data = await proxyGet<UsersResponse>('auth/users');
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+    
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: 'auth/users',
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+    });
+    
+    if (error) {
+      console.error('Error fetching users:', error);
+      throw error;
     }
     
     if (data.success) {
       return data;
     } else {
-      throw new Error('Failed to fetch users');
+      throw new Error(data.error || 'Failed to fetch users');
     }
   } catch (error) {
     console.error('Error fetching users:', error);
@@ -573,18 +583,26 @@ export async function createUser(userData: {
   role: 'user' | 'admin' | 'superadmin';
 }, token?: string): Promise<User> {
   try {
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+
     const { data, error } = await supabase.functions.invoke('stream-proxy', {
       body: {
         path: 'auth/register',
         method: 'POST',
         data: userData,
-        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+        headers: { 'Authorization': `Bearer ${token}` }
       }
     });
     
     if (error) {
       console.error('Error creating user:', error);
       throw error;
+    }
+    
+    if (data.error) {
+      throw new Error(data.error);
     }
     
     return data.user;
@@ -601,18 +619,26 @@ export async function updateUser(userId: number, userData: {
   is_active?: boolean;
 }, token?: string): Promise<User> {
   try {
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+
     const { data, error } = await supabase.functions.invoke('stream-proxy', {
       body: {
         path: `auth/users/${userId}`,
         method: 'PUT',
         data: userData,
-        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+        headers: { 'Authorization': `Bearer ${token}` }
       }
     });
     
     if (error) {
       console.error('Error updating user:', error);
       throw error;
+    }
+    
+    if (data.error) {
+      throw new Error(data.error);
     }
     
     return data.user;
@@ -624,17 +650,25 @@ export async function updateUser(userId: number, userData: {
 
 export async function deleteUser(userId: number, token?: string): Promise<void> {
   try {
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+
     const { data, error } = await supabase.functions.invoke('stream-proxy', {
       body: {
         path: `auth/users/${userId}`,
         method: 'DELETE',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+        headers: { 'Authorization': `Bearer ${token}` }
       }
     });
     
     if (error) {
       console.error('Error deleting user:', error);
       throw error;
+    }
+    
+    if (data && data.error) {
+      throw new Error(data.error);
     }
   } catch (error) {
     console.error('Error deleting user:', error);
@@ -644,17 +678,25 @@ export async function deleteUser(userId: number, token?: string): Promise<void> 
 
 export async function deactivateUser(userId: number, token?: string): Promise<User> {
   try {
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+
     const { data, error } = await supabase.functions.invoke('stream-proxy', {
       body: {
         path: `auth/users/${userId}/deactivate`,
         method: 'POST',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+        headers: { 'Authorization': `Bearer ${token}` }
       }
     });
     
     if (error) {
       console.error('Error deactivating user:', error);
       throw error;
+    }
+    
+    if (data.error) {
+      throw new Error(data.error);
     }
     
     return data.user;
@@ -666,17 +708,25 @@ export async function deactivateUser(userId: number, token?: string): Promise<Us
 
 export async function activateUser(userId: number, token?: string): Promise<User> {
   try {
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+
     const { data, error } = await supabase.functions.invoke('stream-proxy', {
       body: {
         path: `auth/users/${userId}/activate`,
         method: 'POST',
-        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+        headers: { 'Authorization': `Bearer ${token}` }
       }
     });
     
     if (error) {
       console.error('Error activating user:', error);
       throw error;
+    }
+    
+    if (data.error) {
+      throw new Error(data.error);
     }
     
     return data.user;

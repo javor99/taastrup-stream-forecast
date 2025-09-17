@@ -39,16 +39,27 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
   const { toast } = useToast();
 
   const loadUsers = async () => {
+    const token = getToken();
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "Please log in again to continue",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
-      const token = getToken();
-      const data = await fetchUsers(token || undefined);
+      const data = await fetchUsers(token);
       setUsers(data.users);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load users:', error);
+      const errorMessage = error?.message || "Failed to load users";
       toast({
         title: "Error",
-        description: "Failed to load users",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
@@ -102,13 +113,22 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       return;
     }
 
+    const token = getToken();
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "Please log in again to continue",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      const token = getToken();
       await createUser({
         email: formData.email,
         password: formData.password,
         role: formData.role
-      }, token || undefined);
+      }, token);
 
       toast({
         title: "Success",
@@ -119,11 +139,12 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       resetForm();
       loadUsers();
       onUserUpdate?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to create user:', error);
+      const errorMessage = error?.message || "Failed to create user. Email may already exist.";
       toast({
         title: "Error",
-        description: "Failed to create user. Email may already exist.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -141,8 +162,17 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       return;
     }
 
+    const token = getToken();
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "Please log in again to continue",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      const token = getToken();
       const updateData: any = {
         email: editFormData.email,
         role: editFormData.role,
@@ -154,7 +184,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
         updateData.password = editFormData.password;
       }
 
-      await updateUser(editingUser.id, updateData, token || undefined);
+      await updateUser(editingUser.id, updateData, token);
 
       toast({
         title: "Success",
@@ -166,11 +196,12 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       resetEditForm();
       loadUsers();
       onUserUpdate?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update user:', error);
+      const errorMessage = error?.message || "Failed to update user. Email may already be in use.";
       toast({
         title: "Error",
-        description: "Failed to update user. Email may already be in use.",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -205,9 +236,18 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       return;
     }
 
+    const token = getToken();
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "Please log in again to continue",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      const token = getToken();
-      await deleteUser(user.id, token || undefined);
+      await deleteUser(user.id, token);
 
       toast({
         title: "Success",
@@ -216,11 +256,12 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
 
       loadUsers();
       onUserUpdate?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to delete user:', error);
+      const errorMessage = error?.message || "Failed to delete user";
       toast({
         title: "Error",
-        description: "Failed to delete user",
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -255,17 +296,25 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       return;
     }
 
+    const token = getToken();
+    if (!token) {
+      toast({
+        title: "Authentication Error",
+        description: "Please log in again to continue",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
-      const token = getToken();
-      
       if (user.is_active) {
-        await deactivateUser(user.id, token || undefined);
+        await deactivateUser(user.id, token);
         toast({
           title: "Success",
           description: `User ${user.email} deactivated successfully`,
         });
       } else {
-        await activateUser(user.id, token || undefined);
+        await activateUser(user.id, token);
         toast({
           title: "Success",
           description: `User ${user.email} activated successfully`,
@@ -274,11 +323,12 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
 
       loadUsers();
       onUserUpdate?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to toggle user status:', error);
+      const errorMessage = error?.message || "Failed to update user status";
       toast({
         title: "Error",
-        description: "Failed to update user status",
+        description: errorMessage,
         variant: "destructive",
       });
     }
