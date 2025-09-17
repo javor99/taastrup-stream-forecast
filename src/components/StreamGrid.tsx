@@ -6,7 +6,7 @@ import { StreamGridSkeleton } from './StreamGridSkeleton';
 import { MunicipalityFilter } from './MunicipalityFilter';
 import { Stream } from '@/types/stream';
 import { fetchStations, fetchWaterLevels, fetchAllPredictions, fetchMunicipalityStations, fetchStationMinMax, fetchStationWaterLevels, ApiSummaryStation, MunicipalityStation } from '@/services/api';
-import { transformMunicipalityStationsToStreams } from '@/utils/dataTransformers';
+// Removed unused import - now using same processing logic for both all stations and municipalities
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { mockStreams, mockApiData } from '@/data/mockStreams';
@@ -31,13 +31,114 @@ export const StreamGrid = () => {
       setUsingDummyData(false);
       
       if (viewMode === 'municipalities' && selectedMunicipalities.length > 0) {
-        // Load municipality-specific stations
+        // Load municipality-specific stations using SAME logic as all stations
         const token = getToken();
-        const stations = await fetchMunicipalityStations(selectedMunicipalities, token || undefined);
-        const transformedStreams = transformMunicipalityStationsToStreams(stations);
+        const municipalityStations = await fetchMunicipalityStations(selectedMunicipalities, token || undefined);
+        
+        // Extract station data from municipality response
+        const stations = municipalityStations.map(ms => ({
+          station_id: ms.station_id,
+          name: ms.name,
+          latitude: ms.latitude,
+          longitude: ms.longitude,
+          location_type: ms.location_type,
+          station_owner: ms.station_owner
+        }));
+        
+        // Use EXACT same processing as all stations path
+        const [waterLevels, predictions] = await Promise.all([
+          fetchWaterLevels(),
+          fetchAllPredictions(),
+        ]);
+
+        // Build lookup maps
+        const wlMap = new Map(waterLevels.map(wl => [wl.station_id, wl]));
+        const muniMap = new Map(municipalityStations.map(ms => [ms.station_id, ms]));
+
+        // Fetch detailed historical data for each station
+        const stationHistoricalData = new Map();
+        const historicalPromises = stations.map(s => 
+          fetchStationWaterLevels(s.station_id).catch(() => null)
+        );
+        const historicalResults = await Promise.all(historicalPromises);
+        historicalResults.forEach((data, index) => {
+          if (data) {
+            stationHistoricalData.set(stations[index].station_id, data);
+          }
+        });
+
+        // Fetch admin-configured min/max thresholds (same as all stations)
+        const minmaxMap = new Map<string, { min_m: number; max_m: number }>();
+        const minmaxResults = await Promise.all(
+          stations.map(s => fetchStationMinMax(s.station_id, token || '').catch(() => null))
+        );
+        minmaxResults.forEach(res => {
+          if (res) {
+            minmaxMap.set(res.station_id, { min_m: res.min_level_m, max_m: res.max_level_m });
+          }
+        });
+
+        // IDENTICAL processing logic as all stations
+        const transformedStreams: Stream[] = stations.map((station) => {
+          const wl = wlMap.get(station.station_id);
+          const muni = muniMap.get(station.station_id);
+          const historical = stationHistoricalData.get(station.station_id);
+          
+          // Use historical data if available, otherwise fallback to current water level
+          const currentLevel = Number((historical?.current_water_level_m ?? wl?.water_level_m ?? 0).toFixed(3));
+
+          const minMax = minmaxMap.get(station.station_id);
+          const minLevel = Number((minMax?.min_m ?? historical?.last_30_days_range?.min_m ?? muni?.last_30_days_min_m ?? Math.max(0, currentLevel - 0.2)).toFixed(3));
+          const maxLevel = Number((minMax?.max_m ?? historical?.last_30_days_range?.max_m ?? muni?.last_30_days_max_m ?? (currentLevel + 0.5)).toFixed(3));
+
+          // Determine status - SAME logic as all stations
+          const range = Math.max(0.0001, maxLevel - minLevel);
+          const pct = ((currentLevel - minLevel) / range) * 100;
+          const status: 'normal' | 'warning' | 'danger' = pct >= 85 ? 'danger' : pct >= 65 ? 'warning' : 'normal';
+
+          // Predictions for this station - SAME logic as all stations
+          const preds = predictions
+            .filter(p => p.station_id === station.station_id)
+            .slice(0, 7)
+            .map(p => ({
+              date: new Date(p.prediction_date),
+              predictedLevel: Number(p.predicted_water_level_m.toFixed(3)),
+            }));
+
+          // Trend determination - SAME logic as all stations
+          const avgPred = preds.length ? preds.reduce((sum, p) => sum + p.predictedLevel, 0) / preds.length : currentLevel;
+          const change = avgPred - currentLevel;
+          const threshold = Math.max(0.01, (maxLevel - minLevel) * 0.01);
+          const trend: 'rising' | 'falling' | 'stable' = Math.abs(change) < threshold ? 'stable' : (change > 0 ? 'rising' : 'falling');
+
+          return {
+            id: station.station_id,
+            name: station.name.split(',')[0].trim(),
+            location: {
+              lat: station.latitude,
+              lng: station.longitude,
+              address: station.name.includes(',') ? station.name.split(', ')[1] : station.name,
+            },
+            currentLevel,
+            minLevel,
+            maxLevel,
+            status,
+            lastUpdated: historical ? new Date(historical.measurement_date) : (wl ? new Date(wl.measurement_date) : new Date()),
+            trend,
+            predictions: preds,
+            last30DaysRange: {
+              min_cm: historical?.last_30_days_range?.min_cm ?? muni?.last_30_days_min_cm ?? 0,
+              max_cm: historical?.last_30_days_range?.max_cm ?? muni?.last_30_days_max_cm ?? 0,
+              min_m: historical?.last_30_days_range?.min_m ?? muni?.last_30_days_min_m ?? 0,
+              max_m: historical?.last_30_days_range?.max_m ?? muni?.last_30_days_max_m ?? 0,
+            },
+            last30DaysHistorical: historical?.last_30_days_historical ?? [],
+          };
+        });
+
         setAllStreams(transformedStreams);
         setVisibleStreams(transformedStreams);
-        setMunicipalityData(stations);
+        setMunicipalityData(municipalityStations);
         setLastUpdated(new Date().toISOString());
       } else {
         // Load all streams using live endpoints (stations, water levels, predictions, and municipality ranges)
