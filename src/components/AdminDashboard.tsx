@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StreamGrid } from './StreamGrid';
 import { MunicipalityManager } from './MunicipalityManager';
+import { UserManager } from './UserManager';
 import { Users, Settings, LogOut, MapPin, Database } from 'lucide-react';
 
 interface AdminDashboardProps {
@@ -132,20 +133,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         )}
 
         {activeTab === 'users' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>User Management</CardTitle>
-              <CardDescription>
-                Manage system users and their access levels
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                User management features will be implemented here.
-                Currently showing active user: {user?.email}
-              </p>
-            </CardContent>
-          </Card>
+          <UserManager />
         )}
       </div>
     </div>

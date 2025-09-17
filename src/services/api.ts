@@ -529,6 +529,67 @@ export async function assignStationsToMunicipality(municipalityId: number, stati
   }
 }
 
+// User management functions
+export interface User {
+  id: number;
+  email: string;
+  role: 'user' | 'admin' | 'superadmin';
+  created_at: string;
+}
+
+export interface UsersResponse {
+  success: boolean;
+  count: number;
+  users: User[];
+}
+
+export async function fetchUsers(token?: string): Promise<UsersResponse> {
+  try {
+    let data;
+    if (token) {
+      data = await proxyAuthGet<UsersResponse>('auth/users', token);
+    } else {
+      data = await proxyGet<UsersResponse>('auth/users');
+    }
+    
+    if (data.success) {
+      return data;
+    } else {
+      throw new Error('Failed to fetch users');
+    }
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    throw error;
+  }
+}
+
+export async function createUser(userData: {
+  email: string;
+  password: string;
+  role: 'user' | 'admin' | 'superadmin';
+}, token?: string): Promise<User> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: 'auth/register',
+        method: 'POST',
+        data: userData,
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error creating user:', error);
+      throw error;
+    }
+    
+    return data.user;
+  } catch (error) {
+    console.error('Error creating user:', error);
+    throw error;
+  }
+}
+
 export async function fetchMunicipalityStations(municipalityIds?: number[], token?: string): Promise<MunicipalityStation[]> {
   try {
     let path = 'municipalities/stations';
