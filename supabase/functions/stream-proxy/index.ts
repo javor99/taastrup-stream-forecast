@@ -51,12 +51,13 @@ Deno.serve(async (req) => {
       path = url.searchParams.get('path') || '';
     }
 
-    // Allow dynamic paths for station updates
+    // Allow dynamic paths for station updates and auth endpoints
     const pathSegments = path.split('/');
     const isStationMinMaxPath = pathSegments.length === 3 && pathSegments[0] === 'stations' && pathSegments[2] === 'minmax';
-    const allowed = new Set(['stations', 'water-levels', 'predictions', 'summary', 'municipalities']);
+    const isAuthPath = pathSegments[0] === 'auth';
+    const allowed = new Set(['stations', 'water-levels', 'predictions', 'summary', 'municipalities', 'auth']);
     
-    if (!allowed.has(pathSegments[0]) && !isStationMinMaxPath) {
+    if (!allowed.has(pathSegments[0]) && !isStationMinMaxPath && !isAuthPath) {
       return jsonResponse({ success: false, error: 'Invalid or missing path' }, 400);
     }
 
