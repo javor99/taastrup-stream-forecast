@@ -295,7 +295,7 @@ export const StreamGrid = () => {
                 Demo Mode Active
               </h3>
               <p className="text-amber-700 mt-1">
-                Currently displaying demonstration data with simulated water levels and weather stations. 
+                Currently displaying demonstration data with simulated water levels and monitoring stations. 
                 Live data from monitoring stations is temporarily unavailable.
               </p>
             </div>

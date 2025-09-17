@@ -242,10 +242,10 @@ const Index = () => {
         <main className="container mx-auto px-4 py-8">
           <div className="text-center mb-12">
             <h1 className="text-5xl font-display font-bold text-foreground mb-4 tracking-tight">
-              Høje-Taastrup Municipality
+              Water Level Monitoring System
             </h1>
             <h2 className="text-3xl font-display font-semibold text-primary mb-3 tracking-wide">
-              Stream Water Level Monitoring
+              Stream Monitoring Dashboard
             </h2>
             
           </div>

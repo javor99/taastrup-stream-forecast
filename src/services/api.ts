@@ -87,21 +87,6 @@ export interface ApiSummaryStation {
     max_change_cm: number;
     forecast_date: string;
   };
-  weather_station_info?: {
-    weather_station_id: string;
-    weather_station_name: string;
-    weather_station_latitude: number;
-    weather_station_longitude: number;
-    weather_station_elevation: number;
-    weather_data_source: string;
-    weather_model: string;
-    weather_coverage: string;
-    weather_update_frequency: string;
-    weather_forecast_length: string;
-    weather_timezone: string;
-    weather_timezone_abbreviation: string;
-    weather_api_url: string;
-  };
 }
 
 export interface ApiSummaryResponse {
@@ -147,21 +132,6 @@ export interface MunicipalityStation {
   last_30_days_max_cm: number;
   last_30_days_min_m: number;
   last_30_days_max_m: number;
-  weather_station_info?: {
-    weather_station_id: string;
-    weather_station_name: string;
-    weather_station_latitude: number;
-    weather_station_longitude: number;
-    weather_station_elevation: number;
-    weather_data_source: string;
-    weather_model: string;
-    weather_coverage: string;
-    weather_update_frequency: string;
-    weather_forecast_length: string;
-    weather_timezone: string;
-    weather_timezone_abbreviation: string;
-    weather_api_url: string;
-  };
 }
 
 export interface MunicipalitiesResponse {
@@ -176,7 +146,6 @@ export interface MunicipalityStationsResponse {
   stations: MunicipalityStation[];
   filters: {
     municipality_ids: string;
-    include_weather: boolean;
   };
 }
 
@@ -275,20 +244,7 @@ export async function fetchSummary(): Promise<{ summary: ApiSummaryStation[], la
   }
 }
 
-// Fetch weather station
-export async function fetchWeatherStation(): Promise<any> {
-  try {
-    const data = await proxyGet<{ success: boolean, weather_station: any }>('weather-station');
-    if (data.success) {
-      return data.weather_station;
-    } else {
-      throw new Error('Failed to fetch weather station');
-    }
-  } catch (error) {
-    console.error('Error fetching weather station:', error);
-    throw error;
-  }
-}
+// Fetch weather station - REMOVED
 
 // Fetch all stations
 export async function fetchStations(): Promise<ApiStation[]> {
