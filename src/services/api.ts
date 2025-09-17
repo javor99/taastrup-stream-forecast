@@ -535,6 +535,10 @@ export interface User {
   email: string;
   role: 'user' | 'admin' | 'superadmin';
   created_at: string;
+  last_login?: string;
+  is_active: boolean;
+  created_by?: string;
+  updated_by?: string;
 }
 
 export interface UsersResponse {
@@ -586,6 +590,98 @@ export async function createUser(userData: {
     return data.user;
   } catch (error) {
     console.error('Error creating user:', error);
+    throw error;
+  }
+}
+
+export async function updateUser(userId: number, userData: {
+  email?: string;
+  password?: string;
+  role?: 'user' | 'admin' | 'superadmin';
+  is_active?: boolean;
+}, token?: string): Promise<User> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `auth/users/${userId}`,
+        method: 'PUT',
+        data: userData,
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error updating user:', error);
+      throw error;
+    }
+    
+    return data.user;
+  } catch (error) {
+    console.error('Error updating user:', error);
+    throw error;
+  }
+}
+
+export async function deleteUser(userId: number, token?: string): Promise<void> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `auth/users/${userId}`,
+        method: 'DELETE',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error deleting user:', error);
+      throw error;
+    }
+  } catch (error) {
+    console.error('Error deleting user:', error);
+    throw error;
+  }
+}
+
+export async function deactivateUser(userId: number, token?: string): Promise<User> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `auth/users/${userId}/deactivate`,
+        method: 'POST',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error deactivating user:', error);
+      throw error;
+    }
+    
+    return data.user;
+  } catch (error) {
+    console.error('Error deactivating user:', error);
+    throw error;
+  }
+}
+
+export async function activateUser(userId: number, token?: string): Promise<User> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `auth/users/${userId}/activate`,
+        method: 'POST',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
+      }
+    });
+    
+    if (error) {
+      console.error('Error activating user:', error);
+      throw error;
+    }
+    
+    return data.user;
+  } catch (error) {
+    console.error('Error activating user:', error);
     throw error;
   }
 }
