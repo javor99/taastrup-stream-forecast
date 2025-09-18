@@ -27,12 +27,12 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    role: 'user' as 'user' | 'admin' | 'superadmin'
+    role: 'admin' as 'admin' | 'superadmin'
   });
   const [editFormData, setEditFormData] = useState({
     email: '',
     password: '',
-    role: 'user' as 'user' | 'admin' | 'superadmin',
+    role: 'admin' as 'user' | 'admin' | 'superadmin',
     is_active: true
   });
 
@@ -78,7 +78,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     setFormData({
       email: '',
       password: '',
-      role: 'user'
+      role: 'admin'
     });
   };
 
@@ -86,7 +86,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     setEditFormData({
       email: '',
       password: '',
-      role: 'user',
+      role: 'admin' as 'user' | 'admin' | 'superadmin',
       is_active: true
     });
   };
@@ -96,7 +96,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     setEditFormData({
       email: user.email,
       password: '',
-      role: user.role,
+      role: user.role === 'user' ? 'admin' : user.role, // Convert existing 'user' roles to 'admin'
       is_active: user.is_active
     });
     setIsEditDialogOpen(true);
@@ -433,12 +433,11 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
               </div>
               <div>
                 <Label htmlFor="role">User Role</Label>
-                <Select value={formData.role} onValueChange={(value: 'user' | 'admin' | 'superadmin') => setFormData(prev => ({ ...prev, role: value }))}>
+                <Select value={formData.role} onValueChange={(value: 'admin' | 'superadmin') => setFormData(prev => ({ ...prev, role: value }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="user">User - Read-only access</SelectItem>
                     <SelectItem value="admin">Admin - Station management</SelectItem>
                     <SelectItem value="superadmin">Superadmin - Full system access</SelectItem>
                   </SelectContent>
@@ -668,12 +667,11 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
             </div>
             <div>
               <Label htmlFor="edit-role">User Role</Label>
-              <Select value={editFormData.role} onValueChange={(value: 'user' | 'admin' | 'superadmin') => setEditFormData(prev => ({ ...prev, role: value }))}>
+              <Select value={editFormData.role} onValueChange={(value: 'admin' | 'superadmin') => setEditFormData(prev => ({ ...prev, role: value }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user">User - Read-only access</SelectItem>
                   <SelectItem value="admin">Admin - Station management</SelectItem>
                   <SelectItem value="superadmin">Superadmin - Full system access</SelectItem>
                 </SelectContent>
