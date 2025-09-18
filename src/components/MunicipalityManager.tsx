@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { fetchMunicipalities, createMunicipality, updateMunicipality, deleteMunicipality, assignStationsToMunicipality } from '@/services/api';
+import { MunicipalityDetail } from './MunicipalityDetail';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -9,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, MapPin } from 'lucide-react';
+import { Plus, Edit, Trash2, MapPin, Eye } from 'lucide-react';
 
 interface Municipality {
   id: number;
@@ -33,6 +34,7 @@ export const MunicipalityManager: React.FC<MunicipalityManagerProps> = ({ onMuni
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingMunicipality, setEditingMunicipality] = useState<Municipality | null>(null);
+  const [viewingMunicipalityId, setViewingMunicipalityId] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     region: '',
@@ -343,24 +345,36 @@ export const MunicipalityManager: React.FC<MunicipalityManagerProps> = ({ onMuni
                   <Badge variant="secondary">
                     {municipality.station_count} stations
                   </Badge>
-                  {isSuperAdmin && (
-                    <div className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(municipality)}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(municipality)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
+                  <div className="flex gap-1">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setViewingMunicipalityId(municipality.id)}
+                      title="View Details"
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    {isSuperAdmin && (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openEditDialog(municipality)}
+                          title="Edit Municipality"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDelete(municipality)}
+                          title="Delete Municipality"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </CardHeader>
@@ -480,6 +494,13 @@ export const MunicipalityManager: React.FC<MunicipalityManagerProps> = ({ onMuni
           </CardContent>
         </Card>
       )}
+
+      {/* Municipality Detail Modal */}
+      <MunicipalityDetail
+        municipalityId={viewingMunicipalityId || 0}
+        isOpen={viewingMunicipalityId !== null}
+        onClose={() => setViewingMunicipalityId(null)}
+      />
     </div>
   );
 };

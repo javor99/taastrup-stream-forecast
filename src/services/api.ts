@@ -506,6 +506,27 @@ export async function deleteMunicipality(id: number, token?: string): Promise<vo
   }
 }
 
+// Get specific municipality by ID
+export async function fetchMunicipalityById(id: number, token?: string): Promise<Municipality & { stations?: ApiStation[] }> {
+  try {
+    let data;
+    if (token) {
+      data = await proxyAuthGet<{ success: boolean, municipality: Municipality & { stations?: ApiStation[] } }>(`municipalities/${id}`, token);
+    } else {
+      data = await proxyGet<{ success: boolean, municipality: Municipality & { stations?: ApiStation[] } }>(`municipalities/${id}`);
+    }
+    
+    if (data.success) {
+      return data.municipality;
+    } else {
+      throw new Error('Failed to fetch municipality');
+    }
+  } catch (error) {
+    console.error('Error fetching municipality:', error);
+    throw error;
+  }
+}
+
 export async function assignStationsToMunicipality(municipalityId: number, stationIds: string[], token?: string): Promise<any> {
   try {
     const { data, error } = await supabase.functions.invoke('stream-proxy', {

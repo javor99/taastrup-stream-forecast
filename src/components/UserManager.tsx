@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -713,4 +714,102 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       )}
     </div>
   );
+
+  // Helper function for role badge variants
+  const getRoleVariant = (role: string): "default" | "secondary" | "destructive" | "outline" => {
+    switch (role) {
+      case 'superadmin':
+        return 'default';
+      case 'admin':
+        return 'secondary';
+      case 'user':
+        return 'outline';
+      default:
+        return 'outline';
+    }
+  };
+
+  // Helper component for user list
+  const UserList = ({ users: userList }: { users: User[] }) => {
+    return (
+      <div className="space-y-4">
+        {userList.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            <Users className="mx-auto h-12 w-12 mb-4 opacity-50" />
+            <p>No users found in this category</p>
+          </div>
+        ) : (
+          userList.map((user) => (
+            <div
+              key={user.id}
+              className="flex items-center justify-between p-4 border rounded-lg"
+            >
+              <div className="flex-1">
+                <div className="flex items-center gap-3">
+                  <div>
+                    <p className="font-medium">{user.email}</p>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Badge variant={getRoleVariant(user.role)}>{user.role}</Badge>
+                      <span className={`inline-flex items-center gap-1 ${user.is_active ? 'text-green-600' : 'text-red-600'}`}>
+                        {user.is_active ? <UserCheck className="h-3 w-3" /> : <UserX className="h-3 w-3" />}
+                        {user.is_active ? 'Active' : 'Inactive'}
+                      </span>
+                      <span>Created: {new Date(user.created_at).toLocaleDateString()}</span>
+                      {user.last_login && (
+                        <span>Last login: {new Date(user.last_login).toLocaleDateString()}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleToggleActive(user)}
+                >
+                  {user.is_active ? <UserX className="h-4 w-4" /> : <UserCheck className="h-4 w-4" />}
+                </Button>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => openEditDialog(user)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete User</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Are you sure you want to permanently delete the user "{user.email}"? 
+                        This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDelete(user)}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        Delete User
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    );
+  };
 };
