@@ -24,10 +24,12 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const { toast } = useToast();
   const { isAdmin, isSuperAdmin, getToken } = useAuth();
   
-  const nextPrediction = stream.predictions[0];
-  const maxPrediction = stream.predictions.reduce((max, pred) => 
-    pred.predictedLevel > max.predictedLevel ? pred : max
-  );
+  const nextPrediction = stream.predictions?.[0];
+  const maxPrediction = stream.predictions?.length > 0 
+    ? stream.predictions.reduce((max, pred) => 
+        pred.predictedLevel > max.predictedLevel ? pred : max
+      )
+    : null;
 
   // Check if station has insufficient 30-day historical data
   const hasInsufficientData = !stream.last30DaysHistorical || 
@@ -150,11 +152,11 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
         </div>
         <div className="text-center p-3 bg-purple-100/50 dark:bg-purple-900/30 rounded-lg border border-purple-200/50 dark:border-purple-700/50">
           <div className="text-xs font-semibold text-purple-700 dark:text-purple-300 font-display">{getTomorrowName()}</div>
-          <div className="text-lg font-bold text-foreground font-display">{nextPrediction.predictedLevel}m</div>
+          <div className="text-lg font-bold text-foreground font-display">{nextPrediction?.predictedLevel || 'N/A'}m</div>
         </div>
         <div className="text-center p-3 bg-orange-100/50 dark:bg-orange-900/30 rounded-lg border border-orange-200/50 dark:border-orange-700/50">
           <div className="text-xs font-semibold text-orange-700 dark:text-orange-300 font-display">7-Day Max</div>
-          <div className="text-lg font-bold text-foreground font-display">{maxPrediction.predictedLevel}m</div>
+          <div className="text-lg font-bold text-foreground font-display">{maxPrediction?.predictedLevel || 'N/A'}m</div>
         </div>
       </div>
 
