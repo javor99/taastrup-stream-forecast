@@ -85,10 +85,10 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
         cursor: pointer;
       `;
 
-      const nextPrediction = stream.predictions[0];
-      const maxPrediction = stream.predictions.reduce((max, pred) => 
+      const nextPrediction = stream.predictions?.[0];
+      const maxPrediction = stream.predictions?.length ? stream.predictions.reduce((max, pred) => 
         pred.predictedLevel > max.predictedLevel ? pred : max
-      );
+      ) : null;
       
       const predictionsHtml = stream.predictions.slice(0, 3).map((pred, index) => {
         const dayName = getWeekdayName(index);
@@ -119,7 +119,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
           <div style="border-top: 1px solid ${popupBorder}; padding-top: 8px; margin-bottom: 8px;">
             <div style="font-size: 13px; font-weight: 500; margin-bottom: 4px; color: ${popupTextColor};">Next 3 Days:</div>
             ${predictionsHtml.replace(/color: #666/g, `color: ${popupTextSecondary}`)}
-            <div style="font-size: 11px; color: ${popupTextSecondary}; margin-top: 4px;">7-day max: ${maxPrediction.predictedLevel}m</div>
+            <div style="font-size: 11px; color: ${popupTextSecondary}; margin-top: 4px;">7-day max: ${maxPrediction ? maxPrediction.predictedLevel : 'N/A'}m</div>
           </div>
           <div style="display: flex; justify-content: space-between; border-top: 1px solid ${popupBorder}; padding-top: 8px;">
             <span style="font-size: 12px; color: ${popupTextColor};">Status:</span>
