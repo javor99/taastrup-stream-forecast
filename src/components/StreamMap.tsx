@@ -35,30 +35,37 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
     
     const mapStyle = 'mapbox://styles/javor99/cmdzty06m00vk01qs18v31qz0';
     
-    // Calculate map center and zoom based on streams
+    // Calculate map center and zoom based on municipality selection
     let center: [number, number];
     let zoom: number;
     
-    if (streams.length === 0) {
-      // Default Denmark view when no streams
+    if (!selectedMunicipalities || selectedMunicipalities.length === 0 || selectedMunicipalities.length > 1) {
+      // Show whole Denmark for all stations or multiple municipalities
       center = [12.0, 56.0];
       zoom = 6.5;
-    } else if (streams.length === 1) {
-      // Zoom to single station
-      center = [streams[0].location.lng, streams[0].location.lat];
-      zoom = 12;
-    } else if (streams.length <= 5) {
-      // Calculate bounds for small number of stations
-      const lngs = streams.map(s => s.location.lng);
-      const lats = streams.map(s => s.location.lat);
-      const avgLng = lngs.reduce((a, b) => a + b, 0) / lngs.length;
-      const avgLat = lats.reduce((a, b) => a + b, 0) / lats.length;
-      center = [avgLng, avgLat];
-      zoom = 9;
-    } else {
-      // Default Denmark view for many stations
-      center = [12.0, 56.0];
-      zoom = 6.5;
+    } else if (selectedMunicipalities.length === 1) {
+      // Zoom to single municipality - calculate bounds of all stations in that municipality
+      if (streams.length > 0) {
+        const lngs = streams.map(s => s.location.lng);
+        const lats = streams.map(s => s.location.lat);
+        const avgLng = lngs.reduce((a, b) => a + b, 0) / lngs.length;
+        const avgLat = lats.reduce((a, b) => a + b, 0) / lats.length;
+        center = [avgLng, avgLat];
+        
+        // Calculate zoom based on spread of stations
+        const lngSpread = Math.max(...lngs) - Math.min(...lngs);
+        const latSpread = Math.max(...lats) - Math.min(...lats);
+        const maxSpread = Math.max(lngSpread, latSpread);
+        
+        if (maxSpread < 0.01) zoom = 12;      // Very close stations
+        else if (maxSpread < 0.05) zoom = 10; // Close stations  
+        else if (maxSpread < 0.1) zoom = 9;   // Medium spread
+        else zoom = 8;                        // Wide spread
+      } else {
+        // Fallback if no stations in municipality
+        center = [12.0, 56.0];
+        zoom = 6.5;
+      }
     }
     
     const newMap = new mapboxgl.Map({
