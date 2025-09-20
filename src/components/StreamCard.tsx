@@ -133,6 +133,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
             <MapPin className="h-4 w-4 mr-1" />
             <span>{stream.location.address}</span>
           </div>
+          <div className="text-xs text-muted-foreground/70 font-mono mb-1">
+            Station ID: {stream.id}
+          </div>
           <div className="text-xs text-muted-foreground/70 font-mono">
             GPS: {stream.location.lat.toFixed(4)}, {stream.location.lng.toFixed(4)}
           </div>

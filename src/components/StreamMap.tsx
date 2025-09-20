@@ -39,21 +39,9 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
     let center: [number, number];
     let zoom: number;
     
-    if (selectedMunicipalities && selectedMunicipalities.length === 1 && streams.length > 0) {
-      // Single municipality: center on average coordinates of stations in that municipality
-      const avgLat = streams.reduce((sum, stream) => sum + stream.location.lat, 0) / streams.length;
-      const avgLng = streams.reduce((sum, stream) => sum + stream.location.lng, 0) / streams.length;
-      center = [avgLng, avgLat];
-      zoom = 10;
-    } else if (selectedMunicipalities && selectedMunicipalities.length > 1) {
-      // Multiple municipalities: Denmark view
-      center = [12.0, 56.0]; // Center of Denmark
-      zoom = 6.5;
-    } else {
-      // Default: Average of all stream locations
-      center = [12.247292, 55.678177];
-      zoom = 12;
-    }
+    // Always show Denmark view to see all stations
+    center = [12.0, 56.0]; // Center of Denmark
+    zoom = 6.5;
     
     const newMap = new mapboxgl.Map({
       container: container,
