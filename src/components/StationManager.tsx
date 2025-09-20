@@ -134,7 +134,7 @@ export const StationManager: React.FC = () => {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="station_id">Station ID</Label>
+              <Label htmlFor="station_id">Vandah Station ID</Label>
               <Input
                 id="station_id"
                 type="text"
