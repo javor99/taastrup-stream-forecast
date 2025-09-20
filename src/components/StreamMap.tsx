@@ -12,9 +12,10 @@ interface StreamMapProps {
   apiData?: ApiSummaryStation[];
   municipalityData?: MunicipalityStation[];
   onVisibleStreamsChange?: (streams: Stream[]) => void;
+  selectedMunicipalities?: number[];
 }
 
-export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipalityData, onVisibleStreamsChange }) => {
+export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipalityData, onVisibleStreamsChange, selectedMunicipalities }) => {
   const { theme } = useTheme();
   const mapContainer = useRef<HTMLDivElement>(null);
   const fullscreenMapContainer = useRef<HTMLDivElement>(null);
@@ -34,11 +35,31 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
     
     const mapStyle = 'mapbox://styles/javor99/cmdzty06m00vk01qs18v31qz0';
     
+    // Calculate map center and zoom based on municipality selection
+    let center: [number, number];
+    let zoom: number;
+    
+    if (selectedMunicipalities && selectedMunicipalities.length === 1 && streams.length > 0) {
+      // Single municipality: center on average coordinates of stations in that municipality
+      const avgLat = streams.reduce((sum, stream) => sum + stream.location.lat, 0) / streams.length;
+      const avgLng = streams.reduce((sum, stream) => sum + stream.location.lng, 0) / streams.length;
+      center = [avgLng, avgLat];
+      zoom = 12;
+    } else if (selectedMunicipalities && selectedMunicipalities.length > 1) {
+      // Multiple municipalities: Denmark view
+      center = [12.0, 56.0]; // Center of Denmark
+      zoom = 6.5;
+    } else {
+      // Default: Average of all stream locations
+      center = [12.247292, 55.678177];
+      zoom = 12;
+    }
+    
     const newMap = new mapboxgl.Map({
       container: container,
       style: mapStyle,
-      center: [12.247292, 55.678177], // Average of all stream locations
-      zoom: 12,
+      center: center,
+      zoom: zoom,
     });
 
     newMap.addControl(new mapboxgl.NavigationControl(), 'top-right');

@@ -331,7 +331,8 @@ export const StreamGrid = () => {
                   streams={allStreams} 
                   apiData={apiData}
                   municipalityData={municipalityData}
-                  onVisibleStreamsChange={handleVisibleStreamsChange} 
+                  onVisibleStreamsChange={handleVisibleStreamsChange}
+                  selectedMunicipalities={selectedMunicipalities}
                 />
               ) : (
                 <div className="bg-muted/50 border-2 border-dashed border-border rounded-lg p-12 text-center">
