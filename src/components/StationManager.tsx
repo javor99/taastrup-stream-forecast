@@ -70,8 +70,9 @@ export const StationManager: React.FC = () => {
     setMessage(null);
 
     try {
-      await createStation(stationData, token);
-      setMessage({ type: 'success', text: `Station ${stationData.station_id} created successfully!` });
+      const response = await createStation(stationData, token);
+      const stationName = response?.station?.name || stationData.station_id;
+      setMessage({ type: 'success', text: `Success ${stationName} successfully added` });
       
       // Reset form
       setStationData({
