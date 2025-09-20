@@ -44,7 +44,7 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
       const avgLat = streams.reduce((sum, stream) => sum + stream.location.lat, 0) / streams.length;
       const avgLng = streams.reduce((sum, stream) => sum + stream.location.lng, 0) / streams.length;
       center = [avgLng, avgLat];
-      zoom = 12;
+      zoom = 10;
     } else if (selectedMunicipalities && selectedMunicipalities.length > 1) {
       // Multiple municipalities: Denmark view
       center = [12.0, 56.0]; // Center of Denmark
