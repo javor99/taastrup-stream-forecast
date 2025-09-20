@@ -46,18 +46,16 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
             
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
-            {!isInDashboard && (
-              <Link to="/about">
-                <Button 
-                  variant={location.pathname === '/about' ? 'secondary' : 'ghost'} 
-                  size="sm"
-                  className="gap-2 hidden md:flex"
-                >
-                  <Info className="h-4 w-4" />
-                  About
-                </Button>
-              </Link>
-            )}
+            <Link to="/about">
+              <Button 
+                variant={location.pathname === '/about' ? 'secondary' : 'ghost'} 
+                size="sm"
+                className="gap-2 hidden md:flex"
+              >
+                <Info className="h-4 w-4" />
+                About
+              </Button>
+            </Link>
             
             {!isAuthenticated && onShowAdminLogin && (
               <Button 
