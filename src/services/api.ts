@@ -385,8 +385,8 @@ export async function updateStationMinMax(stationId: string, minLevelCm: number,
           path: `stations/${stationId}/minmax`,
           method: 'POST',
           data: {
-            min_value_cm: minLevelCm,
-            max_value_cm: maxLevelCm
+            min_level_cm: minLevelCm,
+            max_level_cm: maxLevelCm
           },
           headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
         }
