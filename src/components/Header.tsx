@@ -57,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
               </Button>
             </Link>
             
-            {!isAuthenticated && onShowAdminLogin && (
+            {!isAuthenticated && (
               <Button 
                 onClick={onShowAdminLogin}
                 variant="ghost" 
@@ -76,17 +76,15 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
                   <span className="text-sm font-medium text-primary">{isSuperAdmin ? 'Superadmin Mode' : 'Admin Mode'}</span>
                 </div>
                 
-                {onShowAdminDashboard && (
-                  <Button 
-                    onClick={onShowAdminDashboard}
-                    variant="ghost"
-                    size="sm"
-                    className="gap-2"
-                  >
-                    {isInDashboard ? <Home className="h-4 w-4" /> : <LayoutDashboard className="h-4 w-4" />}
-                    {isInDashboard ? 'Home' : 'Dashboard'}
-                  </Button>
-                )}
+                <Button 
+                  onClick={onShowAdminDashboard}
+                  variant="ghost"
+                  size="sm"
+                  className="gap-2"
+                >
+                  {isInDashboard ? <Home className="h-4 w-4" /> : <LayoutDashboard className="h-4 w-4" />}
+                  {isInDashboard ? 'Home' : 'Dashboard'}
+                </Button>
                 
                 <Button 
                   onClick={handleLogout}
