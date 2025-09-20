@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { StreamGrid } from './StreamGrid';
+import { StationManager } from './StationManager';
 import { MunicipalityManager } from './MunicipalityManager';
 import { UserManager } from './UserManager';
 import { Users, Settings, LogOut, MapPin, Database } from 'lucide-react';
@@ -224,7 +225,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         )}
 
         {activeTab === 'stations' && (
-          <StreamGrid />
+          <div className="space-y-6">
+            <StationManager />
+            <StreamGrid />
+          </div>
         )}
 
         {activeTab === 'municipalities' && (

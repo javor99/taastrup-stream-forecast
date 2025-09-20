@@ -45,6 +45,11 @@ export interface ApiPrediction {
   forecast_date: string;
 }
 
+export interface CreateStationRequest {
+  station_id: string;
+  municipality_id: number;
+}
+
 export interface ApiStationsResponse {
   success: boolean;
   count: number;
@@ -403,6 +408,34 @@ export async function updateStationMinMax(stationId: string, minLevelCm: number,
     return data;
   } catch (error) {
     console.error('Error updating station min/max:', error);
+    throw error;
+  }
+}
+
+// Create new station
+export async function createStation(stationData: CreateStationRequest, token: string): Promise<any> {
+  try {
+    const { data, error } = await withTimeout(
+      supabase.functions.invoke('stream-proxy', {
+        body: {
+          path: 'stations',
+          method: 'POST',
+          data: stationData,
+          headers: { 'Authorization': `Bearer ${token}` }
+        }
+      }),
+      INVOKE_TIMEOUT_MS,
+      'stream-proxy:stations'
+    );
+
+    if ((error as unknown)) {
+      console.error('Error creating station:', error);
+      throw error as unknown as Error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error creating station:', error);
     throw error;
   }
 }
