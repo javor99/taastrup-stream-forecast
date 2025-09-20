@@ -35,13 +35,31 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
     
     const mapStyle = 'mapbox://styles/javor99/cmdzty06m00vk01qs18v31qz0';
     
-    // Calculate map center and zoom based on municipality selection
+    // Calculate map center and zoom based on streams
     let center: [number, number];
     let zoom: number;
     
-    // Always show Denmark view to see all stations
-    center = [12.0, 56.0]; // Center of Denmark
-    zoom = 6.5;
+    if (streams.length === 0) {
+      // Default Denmark view when no streams
+      center = [12.0, 56.0];
+      zoom = 6.5;
+    } else if (streams.length === 1) {
+      // Zoom to single station
+      center = [streams[0].location.lng, streams[0].location.lat];
+      zoom = 12;
+    } else if (streams.length <= 5) {
+      // Calculate bounds for small number of stations
+      const lngs = streams.map(s => s.location.lng);
+      const lats = streams.map(s => s.location.lat);
+      const avgLng = lngs.reduce((a, b) => a + b, 0) / lngs.length;
+      const avgLat = lats.reduce((a, b) => a + b, 0) / lats.length;
+      center = [avgLng, avgLat];
+      zoom = 9;
+    } else {
+      // Default Denmark view for many stations
+      center = [12.0, 56.0];
+      zoom = 6.5;
+    }
     
     const newMap = new mapboxgl.Map({
       container: container,
