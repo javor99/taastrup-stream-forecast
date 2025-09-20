@@ -61,10 +61,6 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
             )}
           </div>
           <div className="flex items-center space-x-2 sm:space-x-4">
-            <div className="hidden md:flex items-center space-x-2 text-muted-foreground bg-muted/60 px-3 sm:px-4 py-2 sm:py-2.5 rounded-xl backdrop-blur-sm border border-border/30 hover:bg-muted/80 transition-all duration-300">
-              <MapPin className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">Høje-Taastrup, Denmark</span>
-            </div>
             
             {!isAuthenticated && onShowAdminLogin && (
               <Button 
