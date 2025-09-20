@@ -1,23 +1,46 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, AlertCircle, CheckCircle } from 'lucide-react';
-import { createStation, type CreateStationRequest } from '@/services/api';
+import { createStation, fetchMunicipalities, type CreateStationRequest, type Municipality } from '@/services/api';
 
 export const StationManager: React.FC = () => {
   const { getToken, isAdmin, isSuperAdmin } = useAuth();
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
+  const [loadingMunicipalities, setLoadingMunicipalities] = useState(false);
   const [stationData, setStationData] = useState<CreateStationRequest>({
     station_id: '',
-    municipality_id: 1
+    municipality_id: 0
   });
 
   const canCreateStation = isAdmin || isSuperAdmin;
+
+  useEffect(() => {
+    const loadMunicipalities = async () => {
+      if (!canCreateStation) return;
+      
+      setLoadingMunicipalities(true);
+      try {
+        const token = getToken();
+        const response = await fetchMunicipalities(token || undefined);
+        setMunicipalities(response.municipalities);
+      } catch (error) {
+        console.error('Failed to load municipalities:', error);
+        setMessage({ type: 'error', text: 'Failed to load municipalities' });
+      } finally {
+        setLoadingMunicipalities(false);
+      }
+    };
+
+    loadMunicipalities();
+  }, [canCreateStation, getToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,7 +62,7 @@ export const StationManager: React.FC = () => {
     }
 
     if (!stationData.municipality_id || stationData.municipality_id <= 0) {
-      setMessage({ type: 'error', text: 'Valid Municipality ID is required' });
+      setMessage({ type: 'error', text: 'Please select a municipality' });
       return;
     }
 
@@ -53,7 +76,7 @@ export const StationManager: React.FC = () => {
       // Reset form
       setStationData({
         station_id: '',
-        municipality_id: 1
+        municipality_id: 0
       });
     } catch (error: any) {
       console.error('Failed to create station:', error);
@@ -123,17 +146,23 @@ export const StationManager: React.FC = () => {
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="municipality_id">Municipality ID</Label>
-              <Input
-                id="municipality_id"
-                type="number"
-                min="1"
-                placeholder="e.g., 1"
-                value={stationData.municipality_id}
-                onChange={(e) => handleInputChange('municipality_id', parseInt(e.target.value) || 1)}
-                disabled={isLoading}
-                required
-              />
+              <Label htmlFor="municipality_id">Municipality</Label>
+              <Select
+                value={stationData.municipality_id > 0 ? stationData.municipality_id.toString() : ""}
+                onValueChange={(value) => handleInputChange('municipality_id', parseInt(value))}
+                disabled={isLoading || loadingMunicipalities}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={loadingMunicipalities ? "Loading municipalities..." : "Select a municipality"} />
+                </SelectTrigger>
+                <SelectContent>
+                  {municipalities.map((municipality) => (
+                    <SelectItem key={municipality.id} value={municipality.id.toString()}>
+                      {municipality.name} ({municipality.region})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
