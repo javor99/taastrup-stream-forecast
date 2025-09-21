@@ -337,16 +337,15 @@ export async function fetchStationWaterLevels(stationId: string): Promise<ApiSta
   // Fetch raw data from upstream
   const raw = await proxyGet<any>(`water-levels/${stationId}`);
 
-  // If the response already matches the expected shape, return it as-is
-  if (raw && (raw as any).last_30_days_historical) {
-    return raw as ApiStationWaterLevels;
-  }
+  // Choose source array: prefer last_30_days_historical if present, otherwise use history
+  const source = Array.isArray((raw as any)?.last_30_days_historical)
+    ? (raw as any).last_30_days_historical
+    : (Array.isArray((raw as any)?.history) ? (raw as any).history : []);
 
-  // Transform upstream { history: [...], station_id, station_name } into ApiStationWaterLevels
-  const history = Array.isArray(raw?.history) ? raw.history : [];
+  // Transform upstream data into ApiStationWaterLevels
 
   // Normalize and filter valid records
-  const normalized = history
+  const normalized = source
     .map((h: any) => ({
       date: h?.date,
       water_level_cm: Number(h?.water_level_cm),
