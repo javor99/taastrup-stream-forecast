@@ -16,14 +16,14 @@ interface Municipality {
   id: number;
   name: string;
   region: string;
-  population: number;
-  area_km2: number;
-  description: string;
+  population: number | null;
+  area_km2: number | null;
+  description: string | null;
   station_count: number;
   created_at: string;
-  updated_at?: string;
-  created_by: string;
-  updated_by?: string;
+  updated_at?: string | null;
+  created_by: string | null;
+  updated_by?: string | null;
 }
 
 interface MunicipalityManagerProps {
@@ -104,9 +104,9 @@ export const MunicipalityManager: React.FC<MunicipalityManagerProps> = ({ onMuni
       await createMunicipality({
         name: formData.name,
         region: formData.region,
-        population: parseInt(formData.population),
-        area_km2: parseFloat(formData.area_km2),
-        description: formData.description
+        population: formData.population ? parseInt(formData.population) : null,
+        area_km2: formData.area_km2 ? parseFloat(formData.area_km2) : null,
+        description: formData.description || null
       }, token || undefined);
 
       toast({
@@ -145,9 +145,9 @@ export const MunicipalityManager: React.FC<MunicipalityManagerProps> = ({ onMuni
       await updateMunicipality(editingMunicipality.id, {
         name: formData.name,
         region: formData.region,
-        population: parseInt(formData.population),
-        area_km2: parseFloat(formData.area_km2),
-        description: formData.description
+        population: formData.population ? parseInt(formData.population) : null,
+        area_km2: formData.area_km2 ? parseFloat(formData.area_km2) : null,
+        description: formData.description || null
       }, token || undefined);
 
       toast({
@@ -210,9 +210,9 @@ export const MunicipalityManager: React.FC<MunicipalityManagerProps> = ({ onMuni
     setFormData({
       name: municipality.name,
       region: municipality.region,
-      population: municipality.population.toString(),
-      area_km2: municipality.area_km2.toString(),
-      description: municipality.description
+      population: municipality.population ? municipality.population.toString() : '',
+      area_km2: municipality.area_km2 ? municipality.area_km2.toString() : '',
+      description: municipality.description || ''
     });
     setIsEditDialogOpen(true);
   };
@@ -384,11 +384,11 @@ export const MunicipalityManager: React.FC<MunicipalityManagerProps> = ({ onMuni
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <span className="font-medium">Population:</span>
-                  <div>{municipality.population.toLocaleString()}</div>
+                  <div>{municipality.population ? municipality.population.toLocaleString() : 'Not specified'}</div>
                 </div>
                 <div>
                   <span className="font-medium">Area:</span>
-                  <div>{municipality.area_km2} km²</div>
+                  <div>{municipality.area_km2 ? `${municipality.area_km2} km²` : 'Not specified'}</div>
                 </div>
                 <div>
                   <span className="font-medium">Created:</span>
