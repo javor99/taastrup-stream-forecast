@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings } from 'lucide-react';
 import { Stream } from '@/types/stream';
 import { WaterLevelIndicator } from './WaterLevelIndicator';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { updateStationMinMax } from '@/services/api';
+import { updateStationMinMax, fetchStationMinMax } from '@/services/api';
 
 interface StreamCardProps {
   stream: Stream;
@@ -21,8 +21,32 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const [minLevel, setMinLevel] = useState(stream.minLevel * 100); // Convert to cm
   const [maxLevel, setMaxLevel] = useState(stream.maxLevel * 100); // Convert to cm
   const [isUpdating, setIsUpdating] = useState(false);
+  const [stationMinMax, setStationMinMax] = useState<{last_updated?: string; updated_by?: string | null} | null>(null);
   const { toast } = useToast();
   const { isAdmin, isSuperAdmin, getToken } = useAuth();
+  
+  // Load station min/max info to show who last updated it
+  useEffect(() => {
+    const loadStationMinMax = async () => {
+      if (isAdmin || isSuperAdmin) {
+        try {
+          const token = getToken();
+          if (token) {
+            const data = await fetchStationMinMax(stream.id, token);
+            setStationMinMax({
+              last_updated: data.last_updated,
+              updated_by: data.updated_by
+            });
+          }
+        } catch (error) {
+          // Silently fail - this is just for additional info
+          console.log('Could not fetch station min/max info:', error);
+        }
+      }
+    };
+    
+    loadStationMinMax();
+  }, [stream.id, isAdmin, isSuperAdmin, getToken]);
   
   const nextPrediction = stream.predictions?.[0];
   const maxPrediction = stream.predictions?.length > 0 
@@ -250,6 +274,16 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
             <div className="text-sm text-muted-foreground">
               Current Range: {stream.minLevel.toFixed(2)}m - {stream.maxLevel.toFixed(2)}m
             </div>
+            {stationMinMax && (stationMinMax.last_updated || stationMinMax.updated_by) && (
+              <div className="text-xs text-muted-foreground border-t pt-2 mt-2">
+                {stationMinMax.last_updated && (
+                  <div>Last updated: {new Date(stationMinMax.last_updated).toLocaleDateString()}</div>
+                )}
+                {stationMinMax.updated_by && (
+                  <div>Updated by: {stationMinMax.updated_by}</div>
+                )}
+              </div>
+            )}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="minLevel">Minimum Level (cm)</Label>

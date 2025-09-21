@@ -22,6 +22,8 @@ interface Municipality {
   station_count: number;
   created_at: string;
   updated_at?: string;
+  created_by: string;
+  updated_by?: string;
 }
 
 interface MunicipalityManagerProps {
@@ -397,6 +399,18 @@ export const MunicipalityManager: React.FC<MunicipalityManagerProps> = ({ onMuni
                   <div>{municipality.updated_at ? new Date(municipality.updated_at).toLocaleDateString() : 'Not updated'}</div>
                 </div>
               </div>
+              {(municipality.created_by || municipality.updated_by) && (
+                <div className="mt-3 pt-3 border-t border-border text-xs text-muted-foreground">
+                  <div className="flex flex-col gap-1">
+                    {municipality.created_by && (
+                      <span>Created by: {municipality.created_by}</span>
+                    )}
+                    {municipality.updated_by && municipality.updated_by !== municipality.created_by && (
+                      <span>Last updated by: {municipality.updated_by}</span>
+                    )}
+                  </div>
+                </div>
+              )}
               {municipality.description && (
                 <p className="mt-4 text-sm text-muted-foreground">
                   {municipality.description}
