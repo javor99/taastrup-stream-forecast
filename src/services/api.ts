@@ -353,9 +353,10 @@ export async function fetchStationWaterLevels(stationId: string): Promise<ApiSta
     }))
     .filter((h: any) => h.date && !Number.isNaN(h.water_level_m));
 
-  // Sort by date ascending to ensure chronological order
-  normalized.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  // Sort by date DESCENDING (most recent first)
+  normalized.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  // Historical data in descending order (most recent first)
   const last_30_days_historical = normalized;
 
   const cmValues = normalized.map((h: any) => h.water_level_cm);
@@ -366,12 +367,8 @@ export async function fetchStationWaterLevels(stationId: string): Promise<ApiSta
   const min_m = mValues.length ? Math.min(...mValues) : 0;
   const max_m = mValues.length ? Math.max(...mValues) : 0;
 
-  // Pick the most recent (latest date) reading for current level
-  const latest = normalized.length
-    ? normalized.reduce((latest: any, curr: any) =>
-        new Date(curr.date) > new Date(latest.date) ? curr : latest,
-      normalized[0])
-    : null;
+  // Take the FIRST entry (most recent date) for current level
+  const latest = normalized.length > 0 ? normalized[0] : null;
 
   const current_water_level_cm = latest?.water_level_cm ?? 0;
   const current_water_level_m = latest?.water_level_m ?? 0;
