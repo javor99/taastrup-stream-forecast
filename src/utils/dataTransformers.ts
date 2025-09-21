@@ -78,9 +78,26 @@ export function transformApiDataToStreams(
 
     // Get current level from the most recent entry in 30-day historical (by date), fallback to API current level
     const historical = station.last_30_days_historical ?? [];
+    
+    // Debug logging for Kastbejrg A
+    if (station.name.includes('Kastbejrg A')) {
+      console.log('Kastbejrg A historical data:', historical);
+      console.log('API current level:', station.current_water_level_m);
+    }
+    
     const mostRecentReading = historical.length
-      ? historical.reduce((latest, curr) => (new Date(curr.date) > new Date(latest.date) ? curr : latest), historical[0])
+      ? historical.reduce((latest, curr) => {
+          const latestDate = new Date(latest.date);
+          const currDate = new Date(curr.date);
+          return currDate > latestDate ? curr : latest;
+        }, historical[0])
       : null;
+    
+    // Debug logging for Kastbejrg A
+    if (station.name.includes('Kastbejrg A')) {
+      console.log('Most recent reading:', mostRecentReading);
+    }
+    
     const currentLevel = mostRecentReading
       ? Number(mostRecentReading.water_level_m.toFixed(3))
       : Number(station.current_water_level_m.toFixed(3));
