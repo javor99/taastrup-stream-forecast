@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-const API_BASE_URL = 'https://782d28b0b4bc.ngrok-free.app';
+const API_BASE_URL = 'https://54d0aa2a6ec2.ngrok-free.app';
 
 // Add a client-side timeout to prevent infinite loading when the edge function/upstream hangs
 const INVOKE_TIMEOUT_MS = 8000; // 8s timeout for edge function calls
