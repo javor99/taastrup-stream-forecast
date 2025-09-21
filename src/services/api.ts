@@ -344,24 +344,39 @@ export async function fetchStationWaterLevels(stationId: string): Promise<ApiSta
 
   // Transform upstream { history: [...], station_id, station_name } into ApiStationWaterLevels
   const history = Array.isArray(raw?.history) ? raw.history : [];
-  const last_30_days_historical = history.map((h: any) => ({
-    date: h.date,
-    water_level_cm: h.water_level_cm,
-    water_level_m: h.water_level_m,
-  }));
 
-  const cmValues = history.map((h: any) => Number(h.water_level_cm)).filter((v: number) => !Number.isNaN(v));
-  const mValues = history.map((h: any) => Number(h.water_level_m)).filter((v: number) => !Number.isNaN(v));
+  // Normalize and filter valid records
+  const normalized = history
+    .map((h: any) => ({
+      date: h?.date,
+      water_level_cm: Number(h?.water_level_cm),
+      water_level_m: Number(h?.water_level_m),
+    }))
+    .filter((h: any) => h.date && !Number.isNaN(h.water_level_m));
+
+  // Sort by date ascending to ensure chronological order
+  normalized.sort((a: any, b: any) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const last_30_days_historical = normalized;
+
+  const cmValues = normalized.map((h: any) => h.water_level_cm);
+  const mValues = normalized.map((h: any) => h.water_level_m);
 
   const min_cm = cmValues.length ? Math.min(...cmValues) : 0;
   const max_cm = cmValues.length ? Math.max(...cmValues) : 0;
   const min_m = mValues.length ? Math.min(...mValues) : 0;
   const max_m = mValues.length ? Math.max(...mValues) : 0;
 
-  const last = history[history.length - 1] ?? null;
-  const current_water_level_cm = last?.water_level_cm ?? 0;
-  const current_water_level_m = last?.water_level_m ?? 0;
-  const measurement_date = last?.date ?? new Date().toISOString();
+  // Pick the most recent (latest date) reading for current level
+  const latest = normalized.length
+    ? normalized.reduce((latest: any, curr: any) =>
+        new Date(curr.date) > new Date(latest.date) ? curr : latest,
+      normalized[0])
+    : null;
+
+  const current_water_level_cm = latest?.water_level_cm ?? 0;
+  const current_water_level_m = latest?.water_level_m ?? 0;
+  const measurement_date = latest?.date ?? new Date().toISOString();
 
   const transformed: ApiStationWaterLevels = {
     station_id: raw?.station_id ?? stationId,
