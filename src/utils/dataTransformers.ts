@@ -76,11 +76,12 @@ export function transformApiDataToStreams(
     // Generate predictions from summary data
     const transformedPredictions = generatePredictionsFromSummary(station);
 
-    // Get current level from most recent 30-day historical data, fallback to API current level
-    const mostRecentReading = station.last_30_days_historical && station.last_30_days_historical.length > 0
-      ? station.last_30_days_historical[station.last_30_days_historical.length - 1]
+    // Get current level from the most recent entry in 30-day historical (by date), fallback to API current level
+    const historical = station.last_30_days_historical ?? [];
+    const mostRecentReading = historical.length
+      ? historical.reduce((latest, curr) => (new Date(curr.date) > new Date(latest.date) ? curr : latest), historical[0])
       : null;
-    const currentLevel = mostRecentReading 
+    const currentLevel = mostRecentReading
       ? Number(mostRecentReading.water_level_m.toFixed(3))
       : Number(station.current_water_level_m.toFixed(3));
     const minLevel = Number(station.min_level_m.toFixed(3));
