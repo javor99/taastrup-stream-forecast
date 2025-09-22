@@ -408,9 +408,13 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                         onChange={(e) => setThresholdPercentage(Number(e.target.value) / 100)}
                         placeholder="90"
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Alert when predictions reach {(thresholdPercentage * 100).toFixed(0)}% of the maximum historical level
-                      </p>
+                      <div className="text-xs text-muted-foreground space-y-1">
+                        <p>Alert when predictions reach {(thresholdPercentage * 100).toFixed(0)}% of the maximum historical level</p>
+                        <p className="font-medium">
+                          Threshold water level: {(thresholdPercentage * stream.maxLevel).toFixed(2)}m 
+                          <span className="text-muted-foreground"> (Max: {stream.maxLevel.toFixed(2)}m)</span>
+                        </p>
+                      </div>
                     </div>
                     <Button 
                       onClick={handleSubscribe}
