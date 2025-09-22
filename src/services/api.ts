@@ -855,3 +855,124 @@ export async function deleteStation(stationId: string, token?: string): Promise<
     throw error;
   }
 }
+
+// Subscription interfaces
+export interface Subscription {
+  station_id: string;
+  station_name: string;
+  threshold_percentage: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubscriptionsResponse {
+  subscriptions: Subscription[];
+}
+
+export interface SubscribeRequest {
+  threshold_percentage?: number;
+}
+
+export interface SubscribeResponse {
+  message: string;
+  subscription: {
+    user_email: string;
+    station_id: string;
+    station_name: string;
+    threshold_percentage: number;
+  };
+}
+
+// Subscribe to station alerts
+export async function subscribeToStation(stationId: string, thresholdPercentage: number = 0.9, token?: string): Promise<SubscribeResponse> {
+  try {
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `stations/${stationId}/subscribe`,
+        method: 'POST',
+        data: { threshold_percentage: thresholdPercentage },
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+    });
+    
+    if (error) {
+      console.error('Error subscribing to station:', error);
+      throw error;
+    }
+    
+    if (data && data.error) {
+      throw new Error(data.error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error subscribing to station:', error);
+    throw error;
+  }
+}
+
+// Unsubscribe from station alerts
+export async function unsubscribeFromStation(stationId: string, token?: string): Promise<any> {
+  try {
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `stations/${stationId}/unsubscribe`,
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+    });
+    
+    if (error) {
+      console.error('Error unsubscribing from station:', error);
+      throw error;
+    }
+    
+    if (data && data.error) {
+      throw new Error(data.error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error unsubscribing from station:', error);
+    throw error;
+  }
+}
+
+// Get user subscriptions
+export async function fetchUserSubscriptions(token?: string): Promise<SubscriptionsResponse> {
+  try {
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: 'subscriptions',
+        method: 'GET',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+    });
+    
+    if (error) {
+      console.error('Error fetching subscriptions:', error);
+      throw error;
+    }
+    
+    if (data && data.error) {
+      throw new Error(data.error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching subscriptions:', error);
+    throw error;
+  }
+}

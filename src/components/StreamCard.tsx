@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings, Trash2 } from 'lucide-react';
+import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings, Trash2, Bell, BellOff } from 'lucide-react';
 import { Stream } from '@/types/stream';
 import { WaterLevelIndicator } from './WaterLevelIndicator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { updateStationMinMax, fetchStationMinMax, deleteStation } from '@/services/api';
+import { updateStationMinMax, fetchStationMinMax, deleteStation, subscribeToStation, unsubscribeFromStation, fetchUserSubscriptions } from '@/services/api';
 
 interface StreamCardProps {
   stream: Stream;
@@ -22,6 +22,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const [maxLevel, setMaxLevel] = useState(stream.maxLevel * 100); // Convert to cm
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSubscribing, setIsSubscribing] = useState(false);
+  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [thresholdPercentage, setThresholdPercentage] = useState(0.9);
   const [stationMinMax, setStationMinMax] = useState<{last_updated?: string; updated_by?: string | null} | null>(null);
   const { toast } = useToast();
   const { isAdmin, isSuperAdmin, getToken } = useAuth();
@@ -135,6 +138,76 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       });
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const checkSubscriptionStatus = async () => {
+    try {
+      const token = getToken();
+      if (!token) return;
+
+      const response = await fetchUserSubscriptions(token);
+      const subscription = response.subscriptions.find(sub => sub.station_id === stream.id);
+      setIsSubscribed(!!subscription);
+      if (subscription) {
+        setThresholdPercentage(subscription.threshold_percentage);
+      }
+    } catch (error) {
+      console.error('Failed to check subscription status:', error);
+    }
+  };
+
+  const handleSubscribe = async () => {
+    setIsSubscribing(true);
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      await subscribeToStation(stream.id, thresholdPercentage, token);
+      setIsSubscribed(true);
+      
+      toast({
+        title: "Subscribed successfully",
+        description: `You will receive alerts for station "${stream.name}" when predictions exceed ${(thresholdPercentage * 100).toFixed(0)}% of max level.`,
+      });
+    } catch (error) {
+      console.error('Failed to subscribe:', error);
+      toast({
+        title: "Subscription failed",
+        description: error instanceof Error ? error.message : "Failed to subscribe to alerts",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubscribing(false);
+    }
+  };
+
+  const handleUnsubscribe = async () => {
+    setIsSubscribing(true);
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      await unsubscribeFromStation(stream.id, token);
+      setIsSubscribed(false);
+      
+      toast({
+        title: "Unsubscribed successfully",
+        description: `You will no longer receive alerts for station "${stream.name}".`,
+      });
+    } catch (error) {
+      console.error('Failed to unsubscribe:', error);
+      toast({
+        title: "Unsubscribe failed",
+        description: error instanceof Error ? error.message : "Failed to unsubscribe from alerts",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubscribing(false);
     }
   };
 
@@ -281,7 +354,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
         {(isAdmin || isSuperAdmin) && (
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button
               variant="outline"
               size="sm"
@@ -291,6 +364,66 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
               <Settings className="h-4 w-4" />
               Edit Min/Max
             </Button>
+            
+            {isSubscribed ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleUnsubscribe}
+                disabled={isSubscribing}
+                className="flex items-center gap-2"
+              >
+                <BellOff className="h-4 w-4" />
+                {isSubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
+              </Button>
+            ) : (
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Bell className="h-4 w-4" />
+                    Subscribe
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Subscribe to Water Level Alerts</DialogTitle>
+                  </DialogHeader>
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Get email alerts when water level predictions for "{stream.name}" exceed your threshold.
+                    </p>
+                    <div className="space-y-2">
+                      <Label htmlFor="threshold">Alert Threshold (%)</Label>
+                      <Input
+                        id="threshold"
+                        type="number"
+                        min="50"
+                        max="100"
+                        step="5"
+                        value={thresholdPercentage * 100}
+                        onChange={(e) => setThresholdPercentage(Number(e.target.value) / 100)}
+                        placeholder="90"
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Alert when predictions reach {(thresholdPercentage * 100).toFixed(0)}% of the maximum historical level
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={handleSubscribe}
+                      disabled={isSubscribing}
+                      className="w-full"
+                    >
+                      {isSubscribing ? 'Subscribing...' : 'Subscribe to Alerts'}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            )}
+            
             <Button
               variant="destructive"
               size="sm"
