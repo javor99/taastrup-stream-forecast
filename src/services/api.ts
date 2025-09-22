@@ -826,3 +826,32 @@ export async function fetchMunicipalityStations(municipalityIds?: number[], toke
     throw error;
   }
 }
+
+// Delete station function
+export async function deleteStation(stationId: string, token?: string): Promise<void> {
+  try {
+    if (!token) {
+      throw new Error('Authentication token required');
+    }
+
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `stations/${stationId}`,
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      }
+    });
+    
+    if (error) {
+      console.error('Error deleting station:', error);
+      throw error;
+    }
+    
+    if (data && data.error) {
+      throw new Error(data.error);
+    }
+  } catch (error) {
+    console.error('Error deleting station:', error);
+    throw error;
+  }
+}

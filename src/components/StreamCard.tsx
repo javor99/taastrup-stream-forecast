@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings } from 'lucide-react';
+import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings, Trash2 } from 'lucide-react';
 import { Stream } from '@/types/stream';
 import { WaterLevelIndicator } from './WaterLevelIndicator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
-import { updateStationMinMax, fetchStationMinMax } from '@/services/api';
+import { updateStationMinMax, fetchStationMinMax, deleteStation } from '@/services/api';
 
 interface StreamCardProps {
   stream: Stream;
@@ -21,6 +21,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const [minLevel, setMinLevel] = useState(stream.minLevel * 100); // Convert to cm
   const [maxLevel, setMaxLevel] = useState(stream.maxLevel * 100); // Convert to cm
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [stationMinMax, setStationMinMax] = useState<{last_updated?: string; updated_by?: string | null} | null>(null);
   const { toast } = useToast();
   const { isAdmin, isSuperAdmin, getToken } = useAuth();
@@ -137,6 +138,41 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
     }
   };
 
+  const handleDeleteStation = async () => {
+    if (!confirm(`Are you sure you want to delete station "${stream.name}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    setIsDeleting(true);
+    try {
+      const token = getToken();
+      if (!token) {
+        throw new Error('Authentication required');
+      }
+
+      await deleteStation(stream.id, token);
+      
+      toast({
+        title: "Station deleted",
+        description: `Station "${stream.name}" has been successfully deleted.`,
+      });
+      
+      // Call the onDataUpdate callback to refresh the data
+      if (onDataUpdate) {
+        onDataUpdate();
+      }
+    } catch (error) {
+      console.error('Failed to delete station:', error);
+      toast({
+        title: "Delete failed",
+        description: error instanceof Error ? error.message : "Failed to delete station",
+        variant: "destructive",
+      });
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className={`bg-card/90 backdrop-blur-sm rounded-xl shadow-lg border-2 ${getStatusColor()} p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:bg-card/95 hover:scale-105 animate-fade-in`}>
       {hasInsufficientData && (
@@ -245,15 +281,27 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
         {(isAdmin || isSuperAdmin) && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsEditingMinMax(true)}
-            className="flex items-center gap-2"
-          >
-            <Settings className="h-4 w-4" />
-            Edit Min/Max
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setIsEditingMinMax(true)}
+              className="flex items-center gap-2"
+            >
+              <Settings className="h-4 w-4" />
+              Edit Min/Max
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteStation}
+              disabled={isDeleting}
+              className="flex items-center gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              {isDeleting ? 'Deleting...' : 'Delete'}
+            </Button>
+          </div>
         )}
         
         <div className={`px-3 py-1 rounded-full text-xs font-bold font-display tracking-wide ${
