@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-const API_BASE_URL = 'https://vercel-deploy-three-umber.vercel.app';
+const API_BASE_URL = 'https://unfluctuating-kayleigh-retractively.ngrok-free.dev';
 
 // Add a client-side timeout to prevent infinite loading when the edge function/upstream hangs
 const INVOKE_TIMEOUT_MS = 8000; // 8s timeout for edge function calls

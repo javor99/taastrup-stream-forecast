@@ -20,7 +20,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = 'https://vercel-deploy-three-umber.vercel.app';
+const API_BASE_URL = 'https://unfluctuating-kayleigh-retractively.ngrok-free.dev';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
