@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Waves, MapPin, UserCog, LayoutDashboard, Home, LogOut, Info } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { Link, useLocation } from 'react-router-dom';
+import { AdminLogin } from '@/components/AdminLogin';
+import { AdminDashboard } from '@/components/AdminDashboard';
 
 interface HeaderProps {
   onShowAdminLogin?: () => void;
@@ -16,6 +18,8 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
   const { isAuthenticated, isAdmin, isSuperAdmin, logout } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
 
   const handleLogout = () => {
     logout();
@@ -24,6 +28,22 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
       description: "You have been successfully logged out.",
       variant: "default",
     });
+  };
+
+  const handleShowAdminLogin = () => {
+    if (onShowAdminLogin) {
+      onShowAdminLogin();
+    } else {
+      setShowAdminLogin(true);
+    }
+  };
+
+  const handleShowAdminDashboard = () => {
+    if (onShowAdminDashboard) {
+      onShowAdminDashboard();
+    } else {
+      setShowAdminDashboard(true);
+    }
   };
 
   return (
@@ -59,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
             
             {!isAuthenticated && (
               <Button 
-                onClick={onShowAdminLogin}
+                onClick={handleShowAdminLogin}
                 variant="ghost" 
                 size="sm"
                 className="gap-2"
@@ -77,7 +97,7 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
                 </div>
                 
                 <Button 
-                  onClick={onShowAdminDashboard}
+                  onClick={handleShowAdminDashboard}
                   variant="ghost"
                   size="sm"
                   className="gap-2"
@@ -102,6 +122,15 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
           </div>
         </div>
       </div>
+      
+      {/* Render modals when not using parent callbacks */}
+      {showAdminLogin && (
+        <AdminLogin onClose={() => setShowAdminLogin(false)} />
+      )}
+      
+      {showAdminDashboard && (
+        <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
+      )}
     </header>
   );
 };
