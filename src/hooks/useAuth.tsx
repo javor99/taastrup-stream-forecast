@@ -20,7 +20,7 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const API_BASE_URL = 'http://130.226.56.134/api';
+import { supabase } from '@/integrations/supabase/client';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -71,19 +71,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const verifyToken = async (token: string): Promise<{ user: User } | null> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/verify`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.valid === true) {
-          return { user: data.user };
+      const { data, error } = await supabase.functions.invoke('auth-proxy', {
+        body: {
+          path: 'auth/verify',
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
         }
+      });
+
+      if (error) {
+        throw error;
+      }
+      
+      if (data && data.valid === true) {
+        return { user: data.user };
       }
       return null;
     } catch (error) {
@@ -94,17 +97,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
+      const { data, error } = await supabase.functions.invoke('auth-proxy', {
+        body: {
+          path: 'auth/login',
+          method: 'POST',
+          data: { email, password }
+        }
       });
 
-      const data = await response.json();
+      if (error) {
+        throw error;
+      }
 
-      if (response.ok) {
+      if (data && !data.error) {
         setUser(data.user);
         setIsAuthenticated(true);
         
@@ -127,7 +132,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         return { success: true };
       } else {
-        return { success: false, error: data.message || 'Login failed' };
+        return { success: false, error: data?.error || 'Login failed' };
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -138,21 +143,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (email: string, password: string, role: 'user' | 'admin' | 'superadmin'): Promise<{ success: boolean; error?: string }> => {
     try {
       const token = localStorage.getItem('auth_token');
-      const response = await fetch(`${API_BASE_URL}/auth/register`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ email, password, role }),
+      const { data, error } = await supabase.functions.invoke('auth-proxy', {
+        body: {
+          path: 'auth/register',
+          method: 'POST',
+          data: { email, password, role },
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          }
+        }
       });
 
-      const data = await response.json();
+      if (error) {
+        throw error;
+      }
 
-      if (response.ok) {
+      if (data && !data.error) {
         return { success: true };
       } else {
-        return { success: false, error: data.message || 'Registration failed' };
+        return { success: false, error: data?.error || 'Registration failed' };
       }
     } catch (error) {
       console.error('Registration error:', error);

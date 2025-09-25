@@ -2,3 +2,6 @@ project_id = "zgrkmzgcuywexncucpqu"
 
 [functions.stream-proxy]
 verify_jwt = false
+
+[functions.auth-proxy]
+verify_jwt = false
