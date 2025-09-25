@@ -106,17 +106,19 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
                   {isInDashboard ? <Home className="h-4 w-4" /> : <LayoutDashboard className="h-4 w-4" />}
                   {isInDashboard ? 'Home' : 'Dashboard'}
                 </Button>
-                
-                <Button 
-                  onClick={handleLogout}
-                  variant="ghost"
-                  size="sm"
-                  className="gap-2"
-                >
-                  <LogOut className="h-4 w-4" />
-                  Logout
-                </Button>
               </>
+            )}
+
+            {isAuthenticated && (
+              <Button 
+                onClick={handleLogout}
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
             )}
             
             <ThemeToggle />
