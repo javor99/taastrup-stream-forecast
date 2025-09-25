@@ -9,7 +9,15 @@ import { Shield } from 'lucide-react';
 import { Stream } from '@/types/stream';
 
 const Index = () => {
-  const { isAdmin, isAuthenticated, isLoading } = useAuth();
+  const auth = useAuth();
+  
+  if (!auth) {
+    return <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="text-lg">Loading authentication...</div>
+    </div>;
+  }
+  
+  const { isAdmin, isAuthenticated, isLoading } = auth;
   const [showAdminLogin, setShowAdminLogin] = React.useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = React.useState(false);
 
