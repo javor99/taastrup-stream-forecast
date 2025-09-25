@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Waves, MapPin, UserCog, LayoutDashboard, Home, LogOut, Info } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
@@ -123,13 +124,15 @@ export const Header: React.FC<HeaderProps> = ({ onShowAdminLogin, onShowAdminDas
         </div>
       </div>
       
-      {/* Render modals when not using parent callbacks */}
-      {showAdminLogin && (
-        <AdminLogin onClose={() => setShowAdminLogin(false)} />
+      {/* Render modals using portal to document body */}
+      {showAdminLogin && createPortal(
+        <AdminLogin onClose={() => setShowAdminLogin(false)} />,
+        document.body
       )}
       
-      {showAdminDashboard && (
-        <AdminDashboard onClose={() => setShowAdminDashboard(false)} />
+      {showAdminDashboard && createPortal(
+        <AdminDashboard onClose={() => setShowAdminDashboard(false)} />,
+        document.body
       )}
     </header>
   );
