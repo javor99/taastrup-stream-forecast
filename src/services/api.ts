@@ -475,16 +475,21 @@ export async function fetchMunicipalities(token?: string): Promise<Municipalitie
 export async function createMunicipality(municipalityData: {
   name: string;
   region: string;
-  population: number;
-  area_km2: number;
-  description: string;
+  population?: number | null;
+  area_km2?: number | null;
+  description?: string | null;
 }, token?: string): Promise<Municipality> {
   try {
+    // Sanitize payload: drop null/undefined/empty values to avoid backend 500s
+    const payload = Object.fromEntries(
+      Object.entries(municipalityData).filter(([, v]) => v !== null && v !== undefined && v !== '')
+    );
+
     const { data, error } = await supabase.functions.invoke('stream-proxy', {
       body: {
         path: 'municipalities',
         method: 'POST',
-        data: municipalityData,
+        data: payload,
         headers: token ? { 'Authorization': `Bearer ${token}` } : undefined
       }
     });
