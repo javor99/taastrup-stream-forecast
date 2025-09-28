@@ -76,90 +76,72 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
       <div className="container mx-auto p-6">
         {activeTab === 'overview' && (
           <div className="space-y-8">
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">User Role</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    <Badge variant={isSuperAdmin ? 'default' : 'secondary'}>
-                      {user?.role}
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {isSuperAdmin ? 'Full system access' : 'Administrative access'}
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Municipality CRUD</CardTitle>
-                  <Database className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {isSuperAdmin ? 'Full CRUD' : 'View Only'}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {isSuperAdmin ? 'Create/Read/Update/Delete' : 'Read access only'}
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">User Management</CardTitle>
-                  <Users className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {isSuperAdmin ? 'Full CRUD' : 'Disabled'}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {isSuperAdmin ? 'Create/Read/Update/Delete' : 'No access'}
-                  </p>
-                </CardContent>
-              </Card>
-              
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Station Management</CardTitle>
-                  <MapPin className="h-4 w-4 text-muted-foreground" />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
-                    {isAdmin || isSuperAdmin ? 'Enabled' : 'Disabled'}
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {isAdmin || isSuperAdmin ? 'Update min/max values' : 'View only access'}
-                  </p>
-                </CardContent>
-              </Card>
+            <div className="mb-6">
+              <h2 className="text-xl font-semibold mb-2">Welcome to the Admin Dashboard</h2>
+              <p className="text-muted-foreground">
+                This dashboard allows you to manage the water monitoring system. Use the tabs above to navigate between different sections.
+              </p>
             </div>
-            
-            <div className="grid gap-6 md:grid-cols-2">
+
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5" />
+                    Stations
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    View and manage water monitoring stations across different municipalities.
+                  </p>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span>View all station data</span>
+                    </div>
+                    {(isAdmin || isSuperAdmin) && (
+                      <div className="flex items-center gap-2">
+                        <span className="text-green-500">✓</span>
+                        <span>Update warning levels</span>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+              
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Database className="h-5 w-5" />
-                    Municipality Operations
+                    Municipalities
                   </CardTitle>
-                  <CardDescription>Available municipality CRUD operations</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <Badge variant="outline">✓ List All Municipalities</Badge>
-                    <Badge variant="outline">✓ Get Specific Municipality</Badge>
-                    {isSuperAdmin && (
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Manage municipalities and their associated monitoring stations.
+                  </p>
+                  <div className="space-y-1 text-sm">
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span>View municipality information</span>
+                    </div>
+                    {isSuperAdmin ? (
                       <>
-                        <Badge variant="default">✓ Create New Municipality</Badge>
-                        <Badge variant="default">✓ Update Municipality</Badge>
-                        <Badge variant="default">✓ Delete Municipality</Badge>
-                        <Badge variant="default">✓ Assign Stations</Badge>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          <span>Add new municipalities</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          <span>Edit and delete municipalities</span>
+                        </div>
                       </>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className="text-red-500">✗</span>
+                        <span>Editing requires superadmin access</span>
+                      </div>
                     )}
                   </div>
                 </CardContent>
@@ -169,55 +151,82 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5" />
-                    User Operations
+                    Users
                   </CardTitle>
-                  <CardDescription>Available user CRUD operations</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Manage user accounts and their access permissions.
+                  </p>
+                  <div className="space-y-1 text-sm">
                     {isSuperAdmin ? (
                       <>
-                        <Badge variant="default">✓ List All Users</Badge>
-                        <Badge variant="default">✓ Create New User</Badge>
-                        <Badge variant="default">✓ Update User</Badge>
-                        <Badge variant="default">✓ Delete User</Badge>
-                        <Badge variant="default">✓ Activate/Deactivate</Badge>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          <span>Create new users</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          <span>Manage user roles</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          <span>Activate/deactivate accounts</span>
+                        </div>
                       </>
                     ) : (
-                      <Badge variant="secondary">❌ Superadmin Only</Badge>
+                      <div className="flex items-center gap-2">
+                        <span className="text-red-500">✗</span>
+                        <span>Only superadmins can manage users</span>
+                      </div>
                     )}
                   </div>
                 </CardContent>
               </Card>
             </div>
-            
+
             <Card>
               <CardHeader>
-                <CardTitle>API Status & Access</CardTitle>
-                <CardDescription>Current API endpoint accessibility</CardDescription>
+                <CardTitle>Your Access Level</CardTitle>
+                <CardDescription>What you can do with your current role</CardDescription>
               </CardHeader>
               <CardContent>
+                <div className="flex items-center gap-2 mb-4">
+                  <Badge variant={isSuperAdmin ? 'default' : 'secondary'} className="text-sm">
+                    {user?.role}
+                  </Badge>
+                  <span className="text-sm text-muted-foreground">
+                    {isSuperAdmin ? 'Full system access' : 'Administrative access with some restrictions'}
+                  </span>
+                </div>
+                
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <h4 className="font-semibold mb-2">✅ Public Endpoints</h4>
+                    <h4 className="font-medium mb-2 text-green-600">✓ You can:</h4>
                     <ul className="text-sm space-y-1 text-muted-foreground">
-                      <li>• GET /municipalities</li>
-                      <li>• GET /municipalities/:id</li>
-                      <li>• GET /municipalities/stations</li>
-                      <li>• GET /auth/users</li>
-                      <li>• POST /auth/login</li>
+                      <li>• View all monitoring stations</li>
+                      <li>• See municipality information</li>
+                      {(isAdmin || isSuperAdmin) && <li>• Update station warning levels</li>}
+                      {isSuperAdmin && (
+                        <>
+                          <li>• Create and edit municipalities</li>
+                          <li>• Manage user accounts</li>
+                          <li>• Full system administration</li>
+                        </>
+                      )}
                     </ul>
                   </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">🔒 Protected Operations</h4>
-                    <ul className="text-sm space-y-1 text-muted-foreground">
-                      <li>• POST /municipalities (Create)</li>
-                      <li>• PUT /municipalities/:id (Update)</li>
-                      <li>• DELETE /municipalities/:id (Delete)</li>
-                      <li>• POST /auth/register (Create User)</li>
-                      <li>• PUT/DELETE /auth/users (User CRUD)</li>
-                    </ul>
-                  </div>
+                  
+                  {!isSuperAdmin && (
+                    <div>
+                      <h4 className="font-medium mb-2 text-red-600">✗ You cannot:</h4>
+                      <ul className="text-sm space-y-1 text-muted-foreground">
+                        <li>• Create or delete municipalities</li>
+                        <li>• Manage user accounts</li>
+                        <li>• Access superadmin features</li>
+                      </ul>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
