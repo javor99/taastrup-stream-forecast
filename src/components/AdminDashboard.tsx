@@ -93,18 +93,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                 </CardHeader>
                 <CardContent>
                   <p className="text-sm text-muted-foreground mb-3">
-                    View and manage water monitoring stations across different municipalities.
+                    View and manage water monitoring stations across different municipalities. Monitor real-time data and receive updates.
                   </p>
                   <div className="space-y-1 text-sm">
                     <div className="flex items-center gap-2">
                       <span className="text-green-500">✓</span>
                       <span>View all station data</span>
                     </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-green-500">✓</span>
+                      <span>Subscribe to real-time updates</span>
+                    </div>
                     {(isAdmin || isSuperAdmin) && (
-                      <div className="flex items-center gap-2">
-                        <span className="text-green-500">✓</span>
-                        <span>Update warning levels</span>
-                      </div>
+                      <>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          <span>Add new monitoring stations</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-green-500">✓</span>
+                          <span>Update warning levels</span>
+                        </div>
+                      </>
                     )}
                   </div>
                 </CardContent>
@@ -205,8 +215,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
                     <h4 className="font-medium mb-2 text-green-600">✓ You can:</h4>
                     <ul className="text-sm space-y-1 text-muted-foreground">
                       <li>• View all monitoring stations</li>
+                      <li>• Subscribe to real-time station updates</li>
                       <li>• See municipality information</li>
-                      {(isAdmin || isSuperAdmin) && <li>• Update station warning levels</li>}
+                      {(isAdmin || isSuperAdmin) && (
+                        <>
+                          <li>• Add new monitoring stations</li>
+                          <li>• Update station warning levels</li>
+                        </>
+                      )}
                       {isSuperAdmin && (
                         <>
                           <li>• Create and edit municipalities</li>
