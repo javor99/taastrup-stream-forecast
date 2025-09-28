@@ -77,7 +77,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         {activeTab === 'overview' && (
           <div className="space-y-8">
             <div className="mb-6">
-              <h2 className="text-xl font-semibold mb-2">Welcome to the Admin Dashboard</h2>
+              <h2 className="text-xl font-semibold mb-2">Welcome to dashboard</h2>
               <p className="text-muted-foreground">
                 This dashboard allows you to manage the water monitoring system. Use the tabs above to navigate between different sections.
               </p>
