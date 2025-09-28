@@ -233,10 +233,12 @@ const About = () => {
                 <div className="flex gap-3">
                   <Database className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mt-0.5 flex-shrink-0" />
                   <div>
-                    <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Data Quality Requirements</h4>
+                    <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Minimum Data Requirements</h4>
                     <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                      Accuracy depends on the quality and completeness of the last 30 days of water table data. 
-                      Sensor malfunctions or data gaps can impact prediction reliability.
+                      <strong>Predictions are not generated if there are not 40 days of past data from today.</strong> 
+                      Without this minimum historical data, predictions would be so unreliable they're not worth displaying. 
+                      Predictions completely depend on past data consistency - the quality and completeness of historical water table data 
+                      is critical for any meaningful forecast. Sensor malfunctions or data gaps can severely impact prediction reliability.
                     </p>
                   </div>
                 </div>
