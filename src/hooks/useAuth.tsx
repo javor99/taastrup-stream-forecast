@@ -21,6 +21,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 import { supabase } from '@/integrations/supabase/client';
+import { getEdgeFunctionErrorMessage } from '@/utils/error';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
@@ -82,7 +83,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        throw error;
+        // Let caller treat invalid token as unauthenticated rather than a generic error
+        console.warn('Token verification error:', error);
+        return null;
       }
       
       if (data && data.valid === true) {
@@ -106,7 +109,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        throw error;
+        const message = getEdgeFunctionErrorMessage(error, 'Login failed');
+        return { success: false, error: message };
       }
 
       if (data && !data.error) {
@@ -135,8 +139,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: data?.error || 'Login failed' };
       }
     } catch (error) {
+      const message = getEdgeFunctionErrorMessage(error, 'Network error occurred');
       console.error('Login error:', error);
-      return { success: false, error: 'Network error occurred' };
+      return { success: false, error: message };
     }
   };
 
@@ -155,7 +160,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        throw error;
+        const message = getEdgeFunctionErrorMessage(error, 'Registration failed');
+        return { success: false, error: message };
       }
 
       if (data && !data.error) {
@@ -164,8 +170,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return { success: false, error: data?.error || 'Registration failed' };
       }
     } catch (error) {
+      const message = getEdgeFunctionErrorMessage(error, 'Network error occurred');
       console.error('Registration error:', error);
-      return { success: false, error: 'Network error occurred' };
+      return { success: false, error: message };
     }
   };
 

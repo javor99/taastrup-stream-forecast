@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { getEdgeFunctionErrorMessage } from '@/utils/error';
 const API_BASE_URL = 'http://130.226.56.134/api';
 
 // Add a client-side timeout to prevent infinite loading when the edge function/upstream hangs
@@ -162,14 +163,16 @@ async function proxyGet<T>(path: string): Promise<T> {
       INVOKE_TIMEOUT_MS,
       `stream-proxy:${path}`
     );
-    if ((error as unknown)) {
+    if (error) {
+      const message = getEdgeFunctionErrorMessage(error, `Request failed: ${path}`);
       console.error('Edge function error:', error);
-      throw error as unknown as Error;
+      throw new Error(message);
     }
-    return (data as T);
+    return data as T;
   } catch (err) {
+    const message = getEdgeFunctionErrorMessage(err, `Request failed: ${path}`);
     console.error('Edge function invocation failed:', err);
-    throw err;
+    throw new Error(message);
   }
 }
 
@@ -188,14 +191,16 @@ async function proxyAuthGet<T>(path: string, token: string): Promise<T> {
       INVOKE_TIMEOUT_MS,
       `stream-proxy:${path}`
     );
-    if ((error as unknown)) {
+    if (error) {
+      const message = getEdgeFunctionErrorMessage(error, `Request failed: ${path}`);
       console.error('Edge function error:', error);
-      throw error as unknown as Error;
+      throw new Error(message);
     }
-    return (data as T);
+    return data as T;
   } catch (err) {
+    const message = getEdgeFunctionErrorMessage(err, `Request failed: ${path}`);
     console.error('Edge function invocation failed:', err);
-    throw err;
+    throw new Error(message);
   }
 }
 
