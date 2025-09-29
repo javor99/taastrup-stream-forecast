@@ -3,7 +3,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const API_BASE_URL = 'https://unfluctuating-kayleigh-retractively.ngrok-free.dev/api';
+const API_BASE_URL = 'https://unfluctuating-kayleigh-retractively.ngrok-free.dev';
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
