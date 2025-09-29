@@ -106,7 +106,7 @@ export const StreamGrid = () => {
             .slice(0, 7)
             .map(p => ({
               date: new Date(p.prediction_date),
-              predictedLevel: Number(p.predicted_water_level_m.toFixed(3)),
+              predictedLevel: Number((p.predicted_water_level_m || p.predicted_water_level_cm / 100 || 0).toFixed(3)),
             }));
 
           // Trend determination - SAME logic as all stations
@@ -204,7 +204,7 @@ export const StreamGrid = () => {
             .slice(0, 7)
             .map(p => ({
               date: new Date(p.prediction_date),
-              predictedLevel: Number(p.predicted_water_level_m.toFixed(3)),
+              predictedLevel: Number((p.predicted_water_level_m || p.predicted_water_level_cm / 100 || 0).toFixed(3)),
             }));
 
           // Trend determination
@@ -249,6 +249,12 @@ export const StreamGrid = () => {
       }
     } catch (err) {
       console.error('Failed to load stream data:', err);
+      console.error('Error details:', {
+        message: err instanceof Error ? err.message : 'Unknown error',
+        stack: err instanceof Error ? err.stack : undefined,
+        viewMode,
+        selectedMunicipalities
+      });
       
       // Use dummy data as fallback
       setAllStreams(mockStreams);
