@@ -20,6 +20,7 @@ export const StreamGrid = () => {
   const [selectedMunicipalities, setSelectedMunicipalities] = useState<number[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [usingDummyData, setUsingDummyData] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'all' | 'municipalities'>('all');
   const { toast } = useToast();
@@ -29,6 +30,7 @@ export const StreamGrid = () => {
     try {
       setIsLoading(true);
       setUsingDummyData(false);
+      setApiError(null);
       // Clear any existing data to prevent mock data interference
       setAllStreams([]);
       setVisibleStreams([]);
@@ -249,12 +251,31 @@ export const StreamGrid = () => {
       }
     } catch (err) {
       console.error('Failed to load stream data:', err);
+      
+      // Extract specific error message
+      let errorMessage = 'Unknown error occurred';
+      if (err instanceof Error) {
+        errorMessage = err.message;
+      } else if (typeof err === 'object' && err !== null) {
+        const errorObj = err as any;
+        if (errorObj.message) {
+          errorMessage = errorObj.message;
+        } else if (errorObj.error) {
+          errorMessage = errorObj.error;
+        } else if (errorObj.status) {
+          errorMessage = `HTTP ${errorObj.status}: ${errorObj.statusText || 'Request failed'}`;
+        }
+      }
+      
       console.error('Error details:', {
-        message: err instanceof Error ? err.message : 'Unknown error',
-        stack: err instanceof Error ? err.stack : undefined,
+        message: errorMessage,
+        original: err,
         viewMode,
         selectedMunicipalities
       });
+      
+      // Set specific error message
+      setApiError(errorMessage);
       
       // Use dummy data as fallback
       setAllStreams(mockStreams);
@@ -263,11 +284,11 @@ export const StreamGrid = () => {
       setUsingDummyData(true);
       setLastUpdated(null);
       
-      // Show toast notification
+      // Show toast notification with specific error
       toast({
-        title: "Using Demo Data",
-        description: "Unable to connect to live data. Displaying demo stream monitoring data for demonstration purposes.",
-        variant: "default",
+        title: "API Error",
+        description: `${errorMessage}. Displaying demo data as fallback.`,
+        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -293,20 +314,21 @@ export const StreamGrid = () => {
   return (
     <div className="space-y-8">
       {usingDummyData && (
-        <div className="bg-amber-50 border-l-4 border-amber-400 p-6 rounded-lg shadow-sm">
+        <div className="bg-destructive/5 border-l-4 border-destructive p-6 rounded-lg shadow-sm">
           <div className="flex items-center">
             <div className="flex-shrink-0">
-              <svg className="h-6 w-6 text-amber-400" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+              <svg className="h-6 w-6 text-destructive" fill="currentColor" viewBox="0 0 20 20">
+                <circle cx="10" cy="10" r="9" fill="currentColor" opacity="0.1"/>
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-lg font-semibold text-amber-800">
-                Demo Mode Active
+              <h3 className="text-lg font-semibold text-destructive">
+                API Connection Error
               </h3>
-              <p className="text-amber-700 mt-1">
-                Currently displaying demonstration data with simulated water levels and monitoring stations. 
-                Live data from monitoring stations is temporarily unavailable.
+              <p className="text-destructive/80 mt-1">
+                {apiError ? `Error: ${apiError}` : 'Unable to connect to live data.'}
+                {' '}Currently displaying demonstration data as fallback.
               </p>
             </div>
           </div>
