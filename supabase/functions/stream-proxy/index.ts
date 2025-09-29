@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-const BASE_URL = 'http://130.226.56.134/api';
+const BASE_URL = 'https://unfluctuating-kayleigh-retractively.ngrok-free.dev/api';
 
 // deno-lint-ignore no-explicit-any
 function jsonResponse(body: any, status = 200) {
