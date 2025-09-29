@@ -6,7 +6,7 @@ import { AdminDashboard } from '@/components/AdminDashboard';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { Shield } from 'lucide-react';
-import { Stream } from '@/types/stream';
+
 
 const Index = () => {
   const auth = useAuth();
@@ -21,135 +21,6 @@ const Index = () => {
   const [showAdminLogin, setShowAdminLogin] = React.useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = React.useState(false);
 
-  // Stateful streams data 
-  const [streams, setStreams] = React.useState<Stream[]>([
-    {
-      id: '70000864',
-      name: 'Hove å, Tostholm bro',
-      location: { lat: 55.6810, lng: 12.2194, address: 'Tostholm bro' },
-      currentLevel: 1.2, minLevel: 0.5, maxLevel: 3.0, status: 'normal' as const,
-      lastUpdated: new Date('2025-01-04T10:30:00'), trend: 'rising' as const,
-      predictions: [
-        { date: new Date('2025-01-05'), predictedLevel: 1.6, confidence: 93 },
-        { date: new Date('2025-01-06'), predictedLevel: 1.7, confidence: 92 },
-        { date: new Date('2025-01-07'), predictedLevel: 1.9, confidence: 82 },
-        { date: new Date('2025-01-08'), predictedLevel: 2.1, confidence: 83 },
-        { date: new Date('2025-01-09'), predictedLevel: 2.5, confidence: 90 },
-        { date: new Date('2025-01-10'), predictedLevel: 2.6, confidence: 89 },
-        { date: new Date('2025-01-11'), predictedLevel: 2.8, confidence: 80 }
-      ],
-      last30DaysRange: { min_cm: 50, max_cm: 180, min_m: 0.5, max_m: 1.8 },
-      last30DaysHistorical: [],
-    },
-    {
-      id: '70000927',
-      name: 'Hakkemosegrøften, Ole Rømers Vej',
-      location: { lat: 55.6817, lng: 12.2812, address: 'Ole Rømers Vej' },
-      currentLevel: 0.8, minLevel: 0.3, maxLevel: 2.5, status: 'normal' as const,
-      lastUpdated: new Date('2025-01-04T10:25:00'), trend: 'stable' as const,
-      predictions: [
-        { date: new Date('2025-01-05'), predictedLevel: 0.8, confidence: 94 },
-        { date: new Date('2025-01-06'), predictedLevel: 0.8, confidence: 79 },
-        { date: new Date('2025-01-07'), predictedLevel: 0.8, confidence: 86 },
-        { date: new Date('2025-01-08'), predictedLevel: 0.8, confidence: 75 },
-        { date: new Date('2025-01-09'), predictedLevel: 0.8, confidence: 90 },
-        { date: new Date('2025-01-10'), predictedLevel: 0.8, confidence: 77 },
-        { date: new Date('2025-01-11'), predictedLevel: 0.8, confidence: 80 }
-      ],
-      last30DaysRange: { min_cm: 40, max_cm: 120, min_m: 0.4, max_m: 1.2 },
-      last30DaysHistorical: [],
-    },
-    {
-      id: '70000865',
-      name: 'Sengeløse å, Sengeløse mose',
-      location: { lat: 55.6898, lng: 12.2678, address: 'Sengeløse mose' },
-      currentLevel: 2.1, minLevel: 1.0, maxLevel: 3.2, status: 'warning' as const,
-      lastUpdated: new Date('2025-01-04T10:35:00'), trend: 'rising' as const,
-      predictions: [
-        { date: new Date('2025-01-05'), predictedLevel: 2.4, confidence: 80 },
-        { date: new Date('2025-01-06'), predictedLevel: 2.6, confidence: 76 },
-        { date: new Date('2025-01-07'), predictedLevel: 2.8, confidence: 75 },
-        { date: new Date('2025-01-08'), predictedLevel: 3.1, confidence: 86 },
-        { date: new Date('2025-01-09'), predictedLevel: 3.2, confidence: 90 },
-        { date: new Date('2025-01-10'), predictedLevel: 3.4, confidence: 93 },
-        { date: new Date('2025-01-11'), predictedLevel: 3.7, confidence: 76 }
-      ],
-      last30DaysRange: { min_cm: 150, max_cm: 280, min_m: 1.5, max_m: 2.8 },
-      last30DaysHistorical: [],
-    },
-    {
-      id: '70000940',
-      name: 'Nybølle Å, Ledøje Plantage',
-      location: { lat: 55.6940, lng: 12.3099, address: 'Ledøje Plantage' },
-      currentLevel: 0.6, minLevel: 0.2, maxLevel: 2.8, status: 'normal' as const,
-      lastUpdated: new Date('2025-01-04T10:20:00'), trend: 'rising' as const,
-      predictions: [
-        { date: new Date('2025-01-05'), predictedLevel: 0.8, confidence: 75 },
-        { date: new Date('2025-01-06'), predictedLevel: 1.1, confidence: 90 },
-        { date: new Date('2025-01-07'), predictedLevel: 1.4, confidence: 91 },
-        { date: new Date('2025-01-08'), predictedLevel: 1.6, confidence: 88 },
-        { date: new Date('2025-01-09'), predictedLevel: 1.9, confidence: 94 },
-        { date: new Date('2025-01-10'), predictedLevel: 2.2, confidence: 94 },
-        { date: new Date('2025-01-11'), predictedLevel: 2.4, confidence: 83 }
-      ],
-      last30DaysRange: { min_cm: 30, max_cm: 90, min_m: 0.3, max_m: 0.9 },
-      last30DaysHistorical: [],
-    },
-    {
-      id: '70000925',
-      name: 'Spangå, Ågesholmvej',
-      location: { lat: 55.6766, lng: 12.2391, address: 'Ågesholmvej' },
-      currentLevel: 2.8, minLevel: 1.5, maxLevel: 3.5, status: 'danger' as const,
-      lastUpdated: new Date('2025-01-04T10:40:00'), trend: 'rising' as const,
-      predictions: [
-        { date: new Date('2025-01-05'), predictedLevel: 3.0, confidence: 86 },
-        { date: new Date('2025-01-06'), predictedLevel: 3.3, confidence: 87 },
-        { date: new Date('2025-01-07'), predictedLevel: 3.5, confidence: 86 },
-        { date: new Date('2025-01-08'), predictedLevel: 3.9, confidence: 86 },
-        { date: new Date('2025-01-09'), predictedLevel: 4.1, confidence: 86 },
-        { date: new Date('2025-01-10'), predictedLevel: 4.4, confidence: 87 },
-        { date: new Date('2025-01-11'), predictedLevel: 4.7, confidence: 75 }
-      ],
-      last30DaysRange: { min_cm: 220, max_cm: 320, min_m: 2.2, max_m: 3.2 },
-      last30DaysHistorical: [],
-    },
-    {
-      id: '70000879',
-      name: 'Enghave Å, Rolandsvej 3',
-      location: { lat: 55.6879, lng: 12.2011, address: 'Rolandsvej 3' },
-      currentLevel: 1.5, minLevel: 0.8, maxLevel: 3.0, status: 'normal' as const,
-      lastUpdated: new Date('2025-01-04T10:15:00'), trend: 'falling' as const,
-      predictions: [
-        { date: new Date('2025-01-05'), predictedLevel: 1.3, confidence: 92 },
-        { date: new Date('2025-01-06'), predictedLevel: 1.2, confidence: 91 },
-        { date: new Date('2025-01-07'), predictedLevel: 1.0, confidence: 83 },
-        { date: new Date('2025-01-08'), predictedLevel: 0.9, confidence: 85 },
-        { date: new Date('2025-01-09'), predictedLevel: 0.8, confidence: 93 },
-        { date: new Date('2025-01-10'), predictedLevel: 0.6, confidence: 92 },
-        { date: new Date('2025-01-11'), predictedLevel: 0.4, confidence: 82 }
-      ],
-      last30DaysRange: { min_cm: 100, max_cm: 200, min_m: 1.0, max_m: 2.0 },
-      last30DaysHistorical: [],
-    },
-    {
-      id: '70000942',
-      name: 'Ll. Vejleå, Lille Solhøjvej 42',
-      location: { lat: 55.6823, lng: 12.2156, address: 'Lille Solhøjvej 42' },
-      currentLevel: 0.9, minLevel: 0.4, maxLevel: 2.2, status: 'normal' as const,
-      lastUpdated: new Date('2025-01-04T10:10:00'), trend: 'stable' as const,
-      predictions: [
-        { date: new Date('2025-01-05'), predictedLevel: 0.9, confidence: 88 },
-        { date: new Date('2025-01-06'), predictedLevel: 0.9, confidence: 85 },
-        { date: new Date('2025-01-07'), predictedLevel: 1.0, confidence: 82 },
-        { date: new Date('2025-01-08'), predictedLevel: 1.1, confidence: 79 },
-        { date: new Date('2025-01-09'), predictedLevel: 1.2, confidence: 83 },
-        { date: new Date('2025-01-10'), predictedLevel: 1.3, confidence: 81 },
-        { date: new Date('2025-01-11'), predictedLevel: 1.4, confidence: 78 }
-      ],
-      last30DaysRange: { min_cm: 60, max_cm: 150, min_m: 0.6, max_m: 1.5 },
-      last30DaysHistorical: [],
-    }
-  ]);
 
   // Auto-close admin login when authenticated
   React.useEffect(() => {
@@ -172,59 +43,6 @@ const Index = () => {
     }
   }, [showAdminDashboard]);
 
-  const generateDummyStation = (id: string): Stream => {
-    const locations = [
-      { lat: 55.680989, lng: 12.219433, name: 'Bro' },
-      { lat: 55.681673, lng: 12.281167, name: 'Vej' },
-      { lat: 55.689824, lng: 12.267812, name: 'Mose' },
-      { lat: 55.676561, lng: 12.239100, name: 'Holmvej' },
-      { lat: 55.675000, lng: 12.230000, name: 'Park' },
-      { lat: 55.690000, lng: 12.250000, name: 'Station' }
-    ];
-    
-    const waterNames = ['å', 'grøft', 'kanal', 'strøm', 'vandløb'];
-    const locationNames = ['bro', 'vej', 'mose', 'park', 'station', 'skov'];
-    const statuses: Array<'normal' | 'warning' | 'danger'> = ['normal', 'warning', 'danger'];
-    const trends: Array<'rising' | 'falling' | 'stable'> = ['rising', 'falling', 'stable'];
-    
-    const randomLocation = locations[Math.floor(Math.random() * locations.length)];
-    const randomWaterName = waterNames[Math.floor(Math.random() * waterNames.length)];
-    const randomLocationName = locationNames[Math.floor(Math.random() * locationNames.length)];
-    const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-    const randomTrend = trends[Math.floor(Math.random() * trends.length)];
-    
-    const maxLevel = 2 + Math.random() * 3; // 2-5m
-    const minLevel = 0.2 + Math.random() * 1; // 0.2-1.2m
-    const currentLevel = minLevel + Math.random() * (maxLevel - minLevel); // between min and max
-    
-    return {
-      id,
-      name: `${randomWaterName.charAt(0).toUpperCase() + randomWaterName.slice(1)}, ${randomLocationName}`,
-      location: { 
-        lat: randomLocation.lat + (Math.random() - 0.5) * 0.01, 
-        lng: randomLocation.lng + (Math.random() - 0.5) * 0.01, 
-        address: `${randomLocationName} ${Math.floor(Math.random() * 100) + 1}` 
-      },
-      currentLevel: Math.round(currentLevel * 10) / 10,
-      minLevel: Math.round(minLevel * 10) / 10,
-      maxLevel: Math.round(maxLevel * 10) / 10,
-      status: randomStatus,
-      lastUpdated: new Date(),
-      trend: randomTrend,
-      predictions: [],
-      last30DaysRange: { min_cm: 20, max_cm: 100, min_m: 0.2, max_m: 1.0 },
-      last30DaysHistorical: [],
-    };
-  };
-
-  const addNewStation = (id: string) => {
-    const newStation = generateDummyStation(id);
-    setStreams(prev => [...prev, newStation]);
-  };
-
-  const removeStation = (id: string) => {
-    setStreams(prev => prev.filter(stream => stream.id !== id));
-  };
 
   if (isLoading) {
     return <div className="min-h-screen bg-background flex items-center justify-center">

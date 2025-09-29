@@ -29,6 +29,10 @@ export const StreamGrid = () => {
     try {
       setIsLoading(true);
       setUsingDummyData(false);
+      // Clear any existing data to prevent mock data interference
+      setAllStreams([]);
+      setVisibleStreams([]);
+      setApiData([]);
       
       if (viewMode === 'municipalities' && selectedMunicipalities.length > 0) {
         // Load municipality-specific stations using SAME logic as all stations
