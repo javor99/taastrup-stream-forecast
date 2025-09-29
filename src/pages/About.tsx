@@ -77,7 +77,7 @@ const About = () => {
                   <Calendar className="h-8 w-8 text-primary mx-auto" />
                   <h4 className="font-semibold">Historical Analysis</h4>
                   <p className="text-sm text-muted-foreground">
-                    Analysis of the last 30 days of water table data combined with seasonal patterns and trends
+                    Analysis of the last 40 days of water table data combined with seasonal patterns and trends
                   </p>
                 </div>
                 <div className="text-center space-y-2">
@@ -176,7 +176,7 @@ const About = () => {
                 <div className="space-y-3">
                   <h4 className="font-semibold">Model Parameters</h4>
                   <ul className="text-sm text-muted-foreground space-y-1">
-                    <li>• 30-day historical data window</li>
+                    <li>• 40-day historical data window</li>
                     <li>• 7-day prediction horizon</li>
                     <li>• 15-minute data update intervals</li>
                     <li>• Multi-variable regression analysis</li>

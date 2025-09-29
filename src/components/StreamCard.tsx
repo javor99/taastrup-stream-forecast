@@ -59,7 +59,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       )
     : null;
 
-  // Check if station has insufficient 30-day historical data
+  // Check if station has insufficient 40-day historical data
   const hasInsufficientData = !stream.last30DaysHistorical || 
     stream.last30DaysHistorical.length < 25 || // Less than 25 days of data
     !stream.last30DaysRange ||
@@ -255,7 +255,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
             <span className="text-sm font-medium">Limited Historical Data</span>
           </div>
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-            This station has insufficient 30-day historical data. Predictions may be less accurate.
+            This station has insufficient 40-day historical data. Predictions may be less accurate.
           </p>
         </div>
       )}
@@ -310,7 +310,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                   : 'text-cyan-700 dark:text-cyan-300'
               }`}>
                 <Calendar className="h-3 w-3" />
-                Previous 30 Day Range
+                Previous 40 Day Range
                 {hasInsufficientData && <AlertTriangle className="h-3 w-3" />}
               </div>
               <div className="text-sm font-bold text-foreground font-display">
@@ -324,18 +324,18 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
         </DialogTrigger>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{stream.name} - 30 Day Historical Data</DialogTitle>
+            <DialogTitle>{stream.name} - 40 Day Historical Data</DialogTitle>
           </DialogHeader>
           {hasInsufficientData ? (
             <div className="text-center py-8">
               <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">Insufficient Historical Data</h3>
               <p className="text-muted-foreground">
-                This monitoring station does not have enough historical data for the previous 30 days. 
+                This monitoring station does not have enough historical data for the previous 40 days. 
                 This may be due to recent installation, maintenance periods, or data collection issues.
               </p>
               <p className="text-sm text-muted-foreground mt-2">
-                Available data points: {stream.last30DaysHistorical?.length || 0} out of 30 days
+                Available data points: {stream.last30DaysHistorical?.length || 0} out of 40 days
               </p>
             </div>
           ) : (
