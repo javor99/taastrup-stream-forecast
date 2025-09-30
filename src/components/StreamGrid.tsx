@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { mockStreams, mockApiData } from '@/data/mockStreams';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getEdgeFunctionErrorMessage } from '@/utils/error';
 
 export const StreamGrid = () => {
   const [allStreams, setAllStreams] = useState<Stream[]>([]);
@@ -252,20 +253,8 @@ export const StreamGrid = () => {
     } catch (err) {
       console.error('Failed to load stream data:', err);
       
-      // Extract specific error message
-      let errorMessage = 'Unknown error occurred';
-      if (err instanceof Error) {
-        errorMessage = err.message;
-      } else if (typeof err === 'object' && err !== null) {
-        const errorObj = err as any;
-        if (errorObj.message) {
-          errorMessage = errorObj.message;
-        } else if (errorObj.error) {
-          errorMessage = errorObj.error;
-        } else if (errorObj.status) {
-          errorMessage = `HTTP ${errorObj.status}: ${errorObj.statusText || 'Request failed'}`;
-        }
-      }
+      // Extract specific error message using utility
+      const errorMessage = getEdgeFunctionErrorMessage(err, 'Unknown error occurred');
       
       console.error('Error details:', {
         message: errorMessage,
