@@ -11,6 +11,20 @@ interface AdminLoginProps {
   onClose: () => void;
 }
 
+function cleanErrorMessage(msg?: string): string {
+  if (!msg) return 'Login failed. Please try again.';
+  let s = String(msg);
+  // Remove generic Supabase SDK phrase
+  s = s.replace(/Edge Function returned a non-2xx status code/gi, '').trim();
+  // Collapse whitespace
+  s = s.replace(/\s+/g, ' ').trim();
+  // If the message is only a status code, expand it
+  if (/^\d{3}$/.test(s)) return `${s} Authentication failed`;
+  // Truncate overly long blobs
+  if (s.length > 200) s = s.slice(0, 200) + '…';
+  return s || 'Login failed. Please try again.';
+}
+
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -34,16 +48,14 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
         });
         onClose();
       } else {
-        // Provide more specific error messages
-        let errorMessage = 'Login failed. Please try again.';
-        if (result.error?.includes('Invalid email or password')) {
+        // Provide more specific error messages using sanitized backend error
+        let errorMessage = cleanErrorMessage(result.error);
+        if (/Invalid email or password/i.test(errorMessage)) {
           errorMessage = 'Invalid email or password. Please check your credentials and try again.';
-        } else if (result.error?.includes('Network error')) {
+        } else if (/Network/i.test(errorMessage)) {
           errorMessage = 'Network connection failed. Please check your internet connection and try again.';
-        } else if (result.error?.includes('Account is deactivated')) {
+        } else if (/Account is deactivated/i.test(errorMessage)) {
           errorMessage = 'Your account has been deactivated. Please contact an administrator.';
-        } else if (result.error) {
-          errorMessage = result.error;
         }
         setError(errorMessage);
       }
