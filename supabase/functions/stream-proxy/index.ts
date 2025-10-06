@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-const BASE_URL = 'https://unfluctuating-kayleigh-retractively.ngrok-free.dev';
+const BASE_URL = 'http://130.226.56.134/api';
 
 // deno-lint-ignore no-explicit-any
 function jsonResponse(body: any, status = 200) {
@@ -67,7 +67,6 @@ Deno.serve(async (req) => {
       method: method,
       headers: { 
         'Accept': 'application/json',
-        'ngrok-skip-browser-warning': 'true',
         ...(extraHeaders || {})
       }
     };
