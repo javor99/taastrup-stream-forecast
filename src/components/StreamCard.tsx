@@ -59,11 +59,18 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       )
     : null;
 
-  // Check if station has insufficient historical data for predictions
+  // Check data availability for predictions
+  const totalDaysNeeded = 40;
+  const minDaysForPrediction = 37;
+  const availableDays = stream.last30DaysHistorical?.length || 0;
+  const missingDays = totalDaysNeeded - availableDays;
+  
   const hasInsufficientData = !stream.last30DaysHistorical || 
-    stream.last30DaysHistorical.length < 37 || // Less than 37 days of data
+    availableDays < minDaysForPrediction || 
     !stream.last30DaysRange ||
     stream.last30DaysRange.min_m === 0 && stream.last30DaysRange.max_m === 0;
+  
+  const hasPartialData = availableDays >= minDaysForPrediction && availableDays < totalDaysNeeded;
 
   const getTomorrowName = () => {
     const tomorrow = new Date();
@@ -249,13 +256,24 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   return (
     <div className={`bg-card/90 backdrop-blur-sm rounded-xl shadow-lg border-2 ${getStatusColor()} p-6 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 hover:bg-card/95 hover:scale-105 animate-fade-in`}>
       {hasInsufficientData && (
+        <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-lg">
+          <div className="flex items-center gap-2 text-rose-700 dark:text-rose-300">
+            <AlertTriangle className="h-4 w-4" />
+            <span className="text-sm font-medium">Predictions Unavailable</span>
+          </div>
+          <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
+            Predictions unavailable because of lack of data - {missingDays} missing days
+          </p>
+        </div>
+      )}
+      {!hasInsufficientData && hasPartialData && (
         <div className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg">
           <div className="flex items-center gap-2 text-amber-700 dark:text-amber-300">
             <AlertTriangle className="h-4 w-4" />
-            <span className="text-sm font-medium">Limited Historical Data</span>
+            <span className="text-sm font-medium">Predictions Worse</span>
           </div>
           <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
-            This station has insufficient 40-day historical data. Predictions may be less accurate.
+            Not full data - {missingDays} missing days. Predictions may be less accurate.
           </p>
         </div>
       )}
@@ -300,22 +318,28 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
         <DialogTrigger asChild>
           <div className={`mt-3 p-3 rounded-lg border cursor-pointer transition-colors ${
             hasInsufficientData 
+              ? 'bg-rose-100/50 dark:bg-rose-900/30 border-rose-200/50 dark:border-rose-700/50 hover:bg-rose-200/50 dark:hover:bg-rose-800/30'
+              : hasPartialData
               ? 'bg-amber-100/50 dark:bg-amber-900/30 border-amber-200/50 dark:border-amber-700/50 hover:bg-amber-200/50 dark:hover:bg-amber-800/30'
               : 'bg-cyan-100/50 dark:bg-cyan-900/30 border-cyan-200/50 dark:border-cyan-700/50 hover:bg-cyan-200/50 dark:hover:bg-cyan-800/30'
           }`}>
             <div className="text-center">
               <div className={`text-xs font-semibold font-display mb-1 flex items-center justify-center gap-1 ${
                 hasInsufficientData 
+                  ? 'text-rose-700 dark:text-rose-300'
+                  : hasPartialData
                   ? 'text-amber-700 dark:text-amber-300'
                   : 'text-cyan-700 dark:text-cyan-300'
               }`}>
                 <Calendar className="h-3 w-3" />
                 Previous 40 Day Range
-                {hasInsufficientData && <AlertTriangle className="h-3 w-3" />}
+                {(hasInsufficientData || hasPartialData) && <AlertTriangle className="h-3 w-3" />}
               </div>
               <div className="text-sm font-bold text-foreground font-display">
                 {hasInsufficientData 
-                  ? 'Insufficient Data' 
+                  ? `Insufficient Data (${availableDays}/40 days)` 
+                  : hasPartialData
+                  ? `Partial Data (${availableDays}/40 days)`
                   : `${stream.last30DaysRange.min_m.toFixed(3)}m - ${stream.last30DaysRange.max_m.toFixed(3)}m`
                 }
               </div>
@@ -326,16 +350,13 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
           <DialogHeader>
             <DialogTitle>{stream.name} - 40 Day Historical Data</DialogTitle>
           </DialogHeader>
-          {hasInsufficientData ? (
+          {availableDays === 0 ? (
             <div className="text-center py-8">
-              <AlertTriangle className="h-12 w-12 text-amber-500 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Insufficient Historical Data</h3>
+              <AlertTriangle className="h-12 w-12 text-rose-500 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Historical Data</h3>
               <p className="text-muted-foreground">
-                This monitoring station does not have enough historical data for the previous 40 days. 
+                This monitoring station does not have any historical data available. 
                 This may be due to recent installation, maintenance periods, or data collection issues.
-              </p>
-              <p className="text-sm text-muted-foreground mt-2">
-                Available data points: {stream.last30DaysHistorical?.length || 0} out of 40 days
               </p>
             </div>
           ) : (
