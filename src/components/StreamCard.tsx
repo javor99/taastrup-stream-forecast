@@ -60,8 +60,8 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
     : null;
 
   // Check data availability for predictions
-  const totalDaysNeeded = 40;
-  const minDaysForPrediction = 37;
+  const totalDaysNeeded = 41; // Today + 40 days in past
+  const minDaysForPrediction = 38;
   const availableDays = stream.last30DaysHistorical?.length || 0;
   
   // Calculate actual missing days by checking date gaps
@@ -87,7 +87,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
     !stream.last30DaysRange ||
     stream.last30DaysRange.min_m === 0 && stream.last30DaysRange.max_m === 0;
   
-  const hasPartialData = availableDays >= minDaysForPrediction && missingDays > 0;
+  const hasPartialData = availableDays >= minDaysForPrediction && availableDays < totalDaysNeeded;
 
   const getTomorrowName = () => {
     const tomorrow = new Date();
@@ -349,14 +349,14 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                   : 'text-cyan-700 dark:text-cyan-300'
               }`}>
                 <Calendar className="h-3 w-3" />
-                Previous 40 Day Range
+                Previous 41 Day Range
                 {(hasInsufficientData || hasPartialData) && <AlertTriangle className="h-3 w-3" />}
               </div>
               <div className="text-sm font-bold text-foreground font-display">
                 {hasInsufficientData 
-                  ? `Insufficient Data (${availableDays}/40 days)` 
+                  ? `Insufficient Data (${availableDays}/41 days)` 
                   : hasPartialData
-                  ? `Partial Data (${availableDays}/40 days)`
+                  ? `Partial Data (${availableDays}/41 days)`
                   : `${stream.last30DaysRange.min_m.toFixed(3)}m - ${stream.last30DaysRange.max_m.toFixed(3)}m`
                 }
               </div>
@@ -365,7 +365,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
         </DialogTrigger>
         <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{stream.name} - 40 Day Historical Data</DialogTitle>
+            <DialogTitle>{stream.name} - 41 Day Historical Data</DialogTitle>
           </DialogHeader>
           {availableDays === 0 ? (
             <div className="text-center py-8">
