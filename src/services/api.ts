@@ -46,6 +46,23 @@ export interface ApiPrediction {
   forecast_date: string;
 }
 
+export interface ApiPastPrediction {
+  predicted_water_level_cm: number;
+  predicted_water_level_m: number;
+  prediction_date: string;
+  change_from_last_cm: number | null;
+  created_at: string;
+  forecast_created_at: string;
+}
+
+export interface ApiPastPredictionsResponse {
+  success: boolean;
+  station_id: string;
+  station_name: string;
+  count: number;
+  past_predictions: ApiPastPrediction[];
+}
+
 export interface CreateStationRequest {
   station_id: string;
   municipality_id: number;
@@ -108,6 +125,10 @@ export interface ApiPredictionsResponse {
   forecast_date: string;
   count: number;
   predictions: ApiPrediction[];
+}
+
+export async function fetchPastPredictions(stationId: string): Promise<ApiPastPredictionsResponse> {
+  return proxyGet<ApiPastPredictionsResponse>(`past-predictions/${stationId}`);
 }
 
 // Municipality interfaces

@@ -5,6 +5,13 @@ export interface DailyPrediction {
   confidence?: number; // percentage 0-100 (optional)
 }
 
+export interface PastPrediction {
+  predicted_water_level_m: number;
+  prediction_date: string;
+  created_at: string;
+  forecast_created_at: string;
+}
+
 export interface Stream {
   id: string;
   name: string;
@@ -31,4 +38,5 @@ export interface Stream {
     water_level_cm: number;
     water_level_m: number;
   }[];
+  pastPredictions?: PastPrediction[];
 }

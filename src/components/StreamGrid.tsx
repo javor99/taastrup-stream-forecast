@@ -5,7 +5,7 @@ import { StreamMap } from './StreamMap';
 import { StreamGridSkeleton } from './StreamGridSkeleton';
 import { MunicipalityFilter } from './MunicipalityFilter';
 import { Stream } from '@/types/stream';
-import { fetchStations, fetchWaterLevels, fetchAllPredictions, fetchMunicipalityStations, fetchStationMinMax, fetchStationWaterLevels, ApiSummaryStation, MunicipalityStation } from '@/services/api';
+import { fetchStations, fetchWaterLevels, fetchAllPredictions, fetchMunicipalityStations, fetchStationMinMax, fetchStationWaterLevels, fetchPastPredictions, ApiSummaryStation, MunicipalityStation } from '@/services/api';
 // Removed unused import - now using same processing logic for both all stations and municipalities
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
@@ -62,15 +62,27 @@ export const StreamGrid = () => {
         const wlMap = new Map(waterLevels.map(wl => [wl.station_id, wl]));
         const muniMap = new Map(municipalityStations.map(ms => [ms.station_id, ms]));
 
-        // Fetch detailed historical data for each station
+        // Fetch detailed historical data and past predictions for each station
         const stationHistoricalData = new Map();
+        const stationPastPredictions = new Map();
         const historicalPromises = stations.map(s => 
           fetchStationWaterLevels(s.station_id).catch(() => null)
         );
-        const historicalResults = await Promise.all(historicalPromises);
+        const pastPredictionPromises = stations.map(s =>
+          fetchPastPredictions(s.station_id).catch(() => null)
+        );
+        const [historicalResults, pastPredictionResults] = await Promise.all([
+          Promise.all(historicalPromises),
+          Promise.all(pastPredictionPromises)
+        ]);
         historicalResults.forEach((data, index) => {
           if (data) {
             stationHistoricalData.set(stations[index].station_id, data);
+          }
+        });
+        pastPredictionResults.forEach((data, index) => {
+          if (data?.success && data.past_predictions) {
+            stationPastPredictions.set(stations[index].station_id, data.past_predictions);
           }
         });
 
@@ -90,6 +102,7 @@ export const StreamGrid = () => {
           const wl = wlMap.get(station.station_id);
           const muni = muniMap.get(station.station_id);
           const historical = stationHistoricalData.get(station.station_id);
+          const pastPreds = stationPastPredictions.get(station.station_id);
           
           // Use historical data if available, otherwise fallback to current water level
           const currentLevel = Number((historical?.current_water_level_m ?? wl?.water_level_m ?? 0).toFixed(3));
@@ -140,6 +153,7 @@ export const StreamGrid = () => {
               max_m: historical?.last_30_days_range?.max_m ?? muni?.last_30_days_max_m ?? 0,
             },
             last30DaysHistorical: historical?.last_30_days_historical ?? [],
+            pastPredictions: pastPreds,
           };
         });
 
@@ -161,15 +175,27 @@ export const StreamGrid = () => {
         const wlMap = new Map(waterLevels.map(wl => [wl.station_id, wl]));
         const muniMap = new Map(muniStations.map(ms => [ms.station_id, ms]));
 
-        // Fetch detailed historical data for each station
+        // Fetch detailed historical data and past predictions for each station
         const stationHistoricalData = new Map();
+        const stationPastPredictions = new Map();
         const historicalPromises = stations.map(s => 
           fetchStationWaterLevels(s.station_id).catch(() => null)
         );
-        const historicalResults = await Promise.all(historicalPromises);
+        const pastPredictionPromises = stations.map(s =>
+          fetchPastPredictions(s.station_id).catch(() => null)
+        );
+        const [historicalResults, pastPredictionResults] = await Promise.all([
+          Promise.all(historicalPromises),
+          Promise.all(pastPredictionPromises)
+        ]);
         historicalResults.forEach((data, index) => {
           if (data) {
             stationHistoricalData.set(stations[index].station_id, data);
+          }
+        });
+        pastPredictionResults.forEach((data, index) => {
+          if (data?.success && data.past_predictions) {
+            stationPastPredictions.set(stations[index].station_id, data.past_predictions);
           }
         });
 
@@ -188,6 +214,7 @@ export const StreamGrid = () => {
           const wl = wlMap.get(station.station_id);
           const muni = muniMap.get(station.station_id);
           const historical = stationHistoricalData.get(station.station_id);
+          const pastPreds = stationPastPredictions.get(station.station_id);
           
           // Use historical data if available, otherwise fallback to current water level
           const currentLevel = Number((historical?.current_water_level_m ?? wl?.water_level_m ?? 0).toFixed(3));
@@ -238,6 +265,7 @@ export const StreamGrid = () => {
               max_m: historical?.last_30_days_range?.max_m ?? muni?.last_30_days_max_m ?? 0,
             },
             last30DaysHistorical: historical?.last_30_days_historical ?? [],
+            pastPredictions: pastPreds,
           };
         });
 
