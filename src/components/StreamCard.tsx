@@ -374,6 +374,44 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
         </DialogContent>
       </Dialog>
 
+      {stream.pastPredictions && stream.pastPredictions.length > 0 && (
+        <Dialog>
+          <DialogTrigger asChild>
+            <div className="mt-3 p-3 rounded-lg border cursor-pointer transition-colors bg-indigo-100/50 dark:bg-indigo-900/30 border-indigo-200/50 dark:border-indigo-700/50 hover:bg-indigo-200/50 dark:hover:bg-indigo-800/30">
+              <div className="text-center">
+                <div className="text-xs font-semibold font-display mb-1 flex items-center justify-center gap-1 text-indigo-700 dark:text-indigo-300">
+                  <Calendar className="h-3 w-3" />
+                  Past Predictions ({stream.pastPredictions.length} forecasts)
+                </div>
+                <div className="text-sm font-bold text-foreground font-display">
+                  {stream.pastPredictions[0].prediction_date} - {stream.pastPredictions[stream.pastPredictions.length - 1].prediction_date}
+                </div>
+              </div>
+            </div>
+          </DialogTrigger>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>{stream.name} - Past Predictions</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-2">
+              {stream.pastPredictions.map((prediction, index) => (
+                <div key={index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
+                  <div className="flex flex-col">
+                    <span className="text-sm font-medium">{prediction.prediction_date}</span>
+                    <span className="text-xs text-muted-foreground">
+                      Created: {new Date(prediction.created_at).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-mono font-bold">{prediction.predicted_water_level_m.toFixed(3)}m</div>
+                    <div className="text-xs text-muted-foreground">{prediction.predicted_water_level_cm.toFixed(1)}cm</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
         {(isAdmin || isSuperAdmin) && (

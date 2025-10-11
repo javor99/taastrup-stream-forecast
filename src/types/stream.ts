@@ -7,9 +7,11 @@ export interface DailyPrediction {
 
 export interface PastPrediction {
   predicted_water_level_m: number;
+  predicted_water_level_cm: number;
   prediction_date: string;
   created_at: string;
   forecast_created_at: string;
+  change_from_last_cm: number | null;
 }
 
 export interface Stream {
