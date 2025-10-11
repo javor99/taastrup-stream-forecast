@@ -64,23 +64,8 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const minDaysForPrediction = 38;
   const availableDays = stream.last30DaysHistorical?.length || 0;
   
-  // Calculate actual missing days by checking date gaps
-  const calculateMissingDays = () => {
-    if (!stream.last30DaysHistorical || stream.last30DaysHistorical.length === 0) {
-      return totalDaysNeeded;
-    }
-    
-    // Get the date range span
-    const dates = stream.last30DaysHistorical.map(d => new Date(d.date).getTime()).sort((a, b) => b - a);
-    const mostRecent = dates[0];
-    const oldest = dates[dates.length - 1];
-    const daySpan = Math.floor((mostRecent - oldest) / (1000 * 60 * 60 * 24)) + 1;
-    
-    // Missing days = total days in span - actual data points
-    return daySpan - availableDays;
-  };
-  
-  const missingDays = calculateMissingDays();
+  // Missing days = how many more days needed to reach 41
+  const missingDays = Math.max(0, totalDaysNeeded - availableDays);
   
   const hasInsufficientData = !stream.last30DaysHistorical || 
     availableDays < minDaysForPrediction || 
