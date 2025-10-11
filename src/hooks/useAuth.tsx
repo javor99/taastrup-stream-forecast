@@ -37,21 +37,25 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     if (token) {
       verifyToken(token)
         .then((verificationData) => {
-          if (verificationData) {
-            setUser(verificationData.user);
-            setIsAuthenticated(true);
-            
-            // Set admin status based on role from API
+      if (verificationData) {
             const role = verificationData.user.role;
-            if (role === 'superadmin') {
-              setIsSuperAdmin(true);
-              setIsAdmin(true);
-            } else if (role === 'admin') {
-              setIsAdmin(true);
-              setIsSuperAdmin(false);
+            
+            // Only allow admin and superadmin users
+            if (role === 'superadmin' || role === 'admin') {
+              setUser(verificationData.user);
+              setIsAuthenticated(true);
+              
+              if (role === 'superadmin') {
+                setIsSuperAdmin(true);
+                setIsAdmin(true);
+              } else {
+                setIsAdmin(true);
+                setIsSuperAdmin(false);
+              }
             } else {
-              setIsAdmin(false);
-              setIsSuperAdmin(false);
+              // Non-admin user - log them out
+              localStorage.removeItem('auth_token');
+              localStorage.removeItem('auth_user');
             }
           } else {
             // Token is invalid, clear stored data
@@ -114,27 +118,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
 
       if (data && !data.error) {
-        setUser(data.user);
-        setIsAuthenticated(true);
-        
-        // Store token and user data
-        localStorage.setItem('auth_token', data.token);
-        localStorage.setItem('auth_user', JSON.stringify(data.user));
-        
-        // Set admin status based on role from API response
         const role = data.user.role;
-        if (role === 'superadmin') {
-          setIsSuperAdmin(true);
-          setIsAdmin(true);
-        } else if (role === 'admin') {
-          setIsAdmin(true);
-          setIsSuperAdmin(false);
-        } else {
-          setIsAdmin(false);
-          setIsSuperAdmin(false);
-        }
         
-        return { success: true };
+        // Only allow admin and superadmin users to login
+        if (role === 'superadmin' || role === 'admin') {
+          setUser(data.user);
+          setIsAuthenticated(true);
+          
+          // Store token and user data
+          localStorage.setItem('auth_token', data.token);
+          localStorage.setItem('auth_user', JSON.stringify(data.user));
+          
+          if (role === 'superadmin') {
+            setIsSuperAdmin(true);
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(true);
+            setIsSuperAdmin(false);
+          }
+          
+          return { success: true };
+        } else {
+          return { success: false, error: 'Access denied. Admin privileges required.' };
+        }
       } else {
         return { success: false, error: data?.error || 'Login failed' };
       }
