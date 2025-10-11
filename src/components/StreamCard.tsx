@@ -59,9 +59,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       )
     : null;
 
-  // Check if station has insufficient 40-day historical data
+  // Check if station has insufficient historical data for predictions
   const hasInsufficientData = !stream.last30DaysHistorical || 
-    stream.last30DaysHistorical.length < 25 || // Less than 25 days of data
+    stream.last30DaysHistorical.length < 37 || // Less than 37 days of data
     !stream.last30DaysRange ||
     stream.last30DaysRange.min_m === 0 && stream.last30DaysRange.max_m === 0;
 
