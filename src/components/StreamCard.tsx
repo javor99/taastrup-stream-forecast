@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings, Trash2, Bell, BellOff } from 'lucide-react';
+import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings, Trash2, Bell, BellOff, ChevronDown } from 'lucide-react';
 import { Stream } from '@/types/stream';
 import { WaterLevelIndicator } from './WaterLevelIndicator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -393,21 +394,46 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
             <DialogHeader>
               <DialogTitle>{stream.name} - Past Predictions</DialogTitle>
             </DialogHeader>
-            <div className="space-y-2">
-              {stream.pastPredictions.map((prediction, index) => (
-                <div key={index} className="flex justify-between items-center p-3 bg-muted/50 rounded-lg">
-                  <div className="flex flex-col">
-                    <span className="text-sm font-medium">{prediction.prediction_date}</span>
-                    <span className="text-xs text-muted-foreground">
-                      Created: {new Date(prediction.created_at).toLocaleString()}
-                    </span>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm font-mono font-bold">{prediction.predicted_water_level_m.toFixed(3)}m</div>
-                    <div className="text-xs text-muted-foreground">{prediction.predicted_water_level_cm.toFixed(1)}cm</div>
-                  </div>
-                </div>
-              ))}
+            <div className="space-y-3">
+              {(() => {
+                // Group predictions by forecast_created_at date
+                const groupedPredictions = stream.pastPredictions.reduce((groups, prediction) => {
+                  const forecastDate = new Date(prediction.forecast_created_at).toLocaleDateString();
+                  if (!groups[forecastDate]) {
+                    groups[forecastDate] = [];
+                  }
+                  groups[forecastDate].push(prediction);
+                  return groups;
+                }, {} as Record<string, typeof stream.pastPredictions>);
+
+                return Object.entries(groupedPredictions).map(([forecastDate, predictions]) => (
+                  <Collapsible key={forecastDate} className="border rounded-lg">
+                    <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted/30 hover:bg-muted/50 transition-colors rounded-lg">
+                      <div className="flex flex-col items-start">
+                        <span className="text-sm font-semibold">Forecast created: {forecastDate}</span>
+                        <span className="text-xs text-muted-foreground">{predictions.length} predictions</span>
+                      </div>
+                      <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="px-3 pb-3 pt-2 space-y-2">
+                      {predictions.map((prediction, index) => (
+                        <div key={index} className="flex justify-between items-center p-2 bg-muted/20 rounded-lg">
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">For: {prediction.prediction_date}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {new Date(prediction.forecast_created_at).toLocaleTimeString()}
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-mono font-bold">{prediction.predicted_water_level_m.toFixed(3)}m</div>
+                            <div className="text-xs text-muted-foreground">{prediction.predicted_water_level_cm.toFixed(1)}cm</div>
+                          </div>
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
+                ));
+              })()}
             </div>
           </DialogContent>
         </Dialog>
