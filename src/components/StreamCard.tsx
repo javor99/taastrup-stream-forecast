@@ -334,7 +334,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                   : 'text-cyan-700 dark:text-cyan-300'
               }`}>
                 <Calendar className="h-3 w-3" />
-                Previous 41 Day Range
+                Previous 40 Day Range
                 {(hasInsufficientData || hasPartialData) && <AlertTriangle className="h-3 w-3" />}
               </div>
               <div className="text-sm font-bold text-foreground font-display">
