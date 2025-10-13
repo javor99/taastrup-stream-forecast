@@ -235,10 +235,12 @@ const About = () => {
                   <div>
                     <h4 className="font-semibold text-yellow-800 dark:text-yellow-200">Minimum Data Requirements</h4>
                     <p className="text-sm text-yellow-700 dark:text-yellow-300">
-                      <strong>Predictions are not generated if there are not 40 days of past data from today.</strong> 
-                      Without this minimum historical data, predictions would be so unreliable they're not worth displaying. 
-                      Predictions completely depend on past data consistency - the quality and completeness of historical water table data 
-                      is critical for any meaningful forecast. Sensor malfunctions or data gaps can severely impact prediction reliability.
+                      <strong>Predictions are not generated if there are fewer than 37 days of historical data.</strong> 
+                      Without this minimum threshold, the model cannot generate reliable forecasts. Missing data points 
+                      (1, 2, or 3 consecutive days) are automatically interpolated to fill gaps, but this interpolation 
+                      degrades prediction quality. The more missing days that require interpolation, the less accurate 
+                      the predictions become. Continuous sensor operation and complete historical datasets are essential 
+                      for maintaining forecast reliability.
                     </p>
                   </div>
                 </div>
