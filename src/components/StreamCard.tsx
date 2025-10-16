@@ -433,11 +433,14 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                         {Object.entries(byTimestamp).map(([timestamp, predictions]) => {
                           const time = new Date(timestamp).toLocaleTimeString();
                           return (
-                            <div key={timestamp} className="border-l-2 border-indigo-300 dark:border-indigo-700 pl-3">
-                              <div className="text-xs font-semibold text-indigo-700 dark:text-indigo-300 mb-2">
-                                Created at {time} ({predictions.length} predictions)
-                              </div>
-                              <div className="space-y-2">
+                            <Collapsible key={timestamp} className="border-l-2 border-indigo-300 dark:border-indigo-700 pl-3">
+                              <CollapsibleTrigger className="flex items-center justify-between w-full p-2 hover:bg-muted/30 transition-colors rounded-lg">
+                                <div className="text-xs font-semibold text-indigo-700 dark:text-indigo-300">
+                                  Created at {time} ({predictions.length} predictions)
+                                </div>
+                                <ChevronDown className="h-3 w-3 transition-transform duration-200" />
+                              </CollapsibleTrigger>
+                              <CollapsibleContent className="pt-2 space-y-2">
                                 {predictions.map((prediction, index) => (
                                   <div key={index} className="flex justify-between items-center p-2 bg-muted/20 rounded-lg">
                                     <div className="flex flex-col">
@@ -449,8 +452,8 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                                     </div>
                                   </div>
                                 ))}
-                              </div>
-                            </div>
+                              </CollapsibleContent>
+                            </Collapsible>
                           );
                         })}
                       </CollapsibleContent>
