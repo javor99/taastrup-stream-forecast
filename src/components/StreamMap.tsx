@@ -41,8 +41,8 @@ export const StreamMap: React.FC<StreamMapProps> = ({ streams, apiData, municipa
     
     if (!selectedMunicipalities || selectedMunicipalities.length === 0 || selectedMunicipalities.length > 1) {
       // Show whole Denmark for all stations or multiple municipalities
-      center = [12.0, 56.0];
-      zoom = 6.5;
+      center = [10.5, 56.0];
+      zoom = 6.2;
     } else if (selectedMunicipalities.length === 1) {
       // Zoom to single municipality - calculate bounds of all stations in that municipality
       if (streams.length > 0) {
