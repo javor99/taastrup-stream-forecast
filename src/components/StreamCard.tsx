@@ -385,7 +385,12 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                   Past Predictions ({stream.pastPredictions.length} forecasts)
                 </div>
                 <div className="text-sm font-bold text-foreground font-display">
-                  {stream.pastPredictions[0].prediction_date} - {stream.pastPredictions[stream.pastPredictions.length - 1].prediction_date}
+                  {(() => {
+                    const dates = stream.pastPredictions.map(p => new Date(p.forecast_created_at));
+                    const firstDate = new Date(Math.min(...dates.map(d => d.getTime())));
+                    const lastDate = new Date(Math.max(...dates.map(d => d.getTime())));
+                    return `${firstDate.toLocaleDateString()} - ${lastDate.toLocaleDateString()}`;
+                  })()}
                 </div>
               </div>
             </div>
