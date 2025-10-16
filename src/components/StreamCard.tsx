@@ -396,43 +396,45 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
             </DialogHeader>
             <div className="space-y-3">
               {(() => {
-                // Group predictions by forecast_created_at date
+                // Group predictions by full forecast_created_at timestamp
                 const groupedPredictions = stream.pastPredictions.reduce((groups, prediction) => {
-                  const forecastDate = new Date(prediction.forecast_created_at).toLocaleDateString();
-                  if (!groups[forecastDate]) {
-                    groups[forecastDate] = [];
+                  const forecastTimestamp = prediction.forecast_created_at;
+                  if (!groups[forecastTimestamp]) {
+                    groups[forecastTimestamp] = [];
                   }
-                  groups[forecastDate].push(prediction);
+                  groups[forecastTimestamp].push(prediction);
                   return groups;
                 }, {} as Record<string, typeof stream.pastPredictions>);
 
-                return Object.entries(groupedPredictions).map(([forecastDate, predictions]) => (
-                  <Collapsible key={forecastDate} className="border rounded-lg">
-                    <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted/30 hover:bg-muted/50 transition-colors rounded-lg">
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-semibold">Forecast created: {forecastDate}</span>
-                        <span className="text-xs text-muted-foreground">{predictions.length} predictions</span>
-                      </div>
-                      <ChevronDown className="h-4 w-4 transition-transform duration-200" />
-                    </CollapsibleTrigger>
-                    <CollapsibleContent className="px-3 pb-3 pt-2 space-y-2">
-                      {predictions.map((prediction, index) => (
-                        <div key={index} className="flex justify-between items-center p-2 bg-muted/20 rounded-lg">
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">For: {prediction.prediction_date}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {new Date(prediction.forecast_created_at).toLocaleTimeString()}
-                            </span>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-sm font-mono font-bold">{prediction.predicted_water_level_m.toFixed(3)}m</div>
-                            <div className="text-xs text-muted-foreground">{prediction.predicted_water_level_cm.toFixed(1)}cm</div>
-                          </div>
+                return Object.entries(groupedPredictions).map(([forecastTimestamp, predictions]) => {
+                  const forecastDate = new Date(forecastTimestamp);
+                  return (
+                    <Collapsible key={forecastTimestamp} className="border rounded-lg">
+                      <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-muted/30 hover:bg-muted/50 transition-colors rounded-lg">
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-semibold">
+                            Forecast created: {forecastDate.toLocaleDateString()} at {forecastDate.toLocaleTimeString()}
+                          </span>
+                          <span className="text-xs text-muted-foreground">{predictions.length} predictions</span>
                         </div>
-                      ))}
-                    </CollapsibleContent>
-                  </Collapsible>
-                ));
+                        <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="px-3 pb-3 pt-2 space-y-2">
+                        {predictions.map((prediction, index) => (
+                          <div key={index} className="flex justify-between items-center p-2 bg-muted/20 rounded-lg">
+                            <div className="flex flex-col">
+                              <span className="text-sm font-medium">For: {prediction.prediction_date}</span>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-mono font-bold">{prediction.predicted_water_level_m.toFixed(3)}m</div>
+                              <div className="text-xs text-muted-foreground">{prediction.predicted_water_level_cm.toFixed(1)}cm</div>
+                            </div>
+                          </div>
+                        ))}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  );
+                });
               })()}
             </div>
           </DialogContent>
