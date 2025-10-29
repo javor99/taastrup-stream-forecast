@@ -27,11 +27,13 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     role: 'admin' as 'admin' | 'superadmin'
   });
   const [editFormData, setEditFormData] = useState({
     email: '',
     password: '',
+    confirmPassword: '',
     role: 'admin' as 'user' | 'admin' | 'superadmin',
     is_active: true
   });
@@ -78,6 +80,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     setFormData({
       email: '',
       password: '',
+      confirmPassword: '',
       role: 'admin'
     });
   };
@@ -86,6 +89,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     setEditFormData({
       email: '',
       password: '',
+      confirmPassword: '',
       role: 'admin' as 'user' | 'admin' | 'superadmin',
       is_active: true
     });
@@ -96,6 +100,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     setEditFormData({
       email: user.email,
       password: '',
+      confirmPassword: '',
       role: user.role === 'user' ? 'admin' : user.role, // Convert existing 'user' roles to 'admin'
       is_active: user.is_active
     });
@@ -109,6 +114,16 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       toast({
         title: "Access Denied",
         description: "Only superadmins can create users",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate password confirmation
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match. Please try again.",
         variant: "destructive",
       });
       return;
@@ -158,6 +173,16 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       toast({
         title: "Access Denied",
         description: "Only superadmins can edit users",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate password confirmation if password is being changed
+    if (editFormData.password.trim() && editFormData.password !== editFormData.confirmPassword) {
+      toast({
+        title: "Password Mismatch",
+        description: "Passwords do not match. Please try again.",
         variant: "destructive",
       });
       return;
@@ -432,6 +457,18 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
                 />
               </div>
               <div>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  id="confirmPassword"
+                  type="password"
+                  value={formData.confirmPassword}
+                  onChange={(e) => setFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  placeholder="Re-enter password"
+                  minLength={8}
+                  required
+                />
+              </div>
+              <div>
                 <Label htmlFor="role">User Role</Label>
                 <Select value={formData.role} onValueChange={(value: 'admin' | 'superadmin') => setFormData(prev => ({ ...prev, role: value }))}>
                   <SelectTrigger>
@@ -662,6 +699,17 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
                 value={editFormData.password}
                 onChange={(e) => setEditFormData(prev => ({ ...prev, password: e.target.value }))}
                 placeholder="Leave blank to keep current password"
+                minLength={8}
+              />
+            </div>
+            <div>
+              <Label htmlFor="edit-confirmPassword">Confirm New Password</Label>
+              <Input
+                id="edit-confirmPassword"
+                type="password"
+                value={editFormData.confirmPassword}
+                onChange={(e) => setEditFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                placeholder="Re-enter new password"
                 minLength={8}
               />
             </div>
