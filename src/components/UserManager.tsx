@@ -122,11 +122,11 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     }
 
     // Validate password strength
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d\s]).{8,}$/;
     if (!passwordRegex.test(formData.password)) {
       toast({
         title: "Weak Password",
-        description: "Password must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character (@$!%*?&).",
+        description: "Password must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character.",
         variant: "destructive",
       });
       return;
@@ -193,11 +193,11 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
 
     // Validate password strength if password is being changed
     if (editFormData.password.trim()) {
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z\d\s]).{8,}$/;
       if (!passwordRegex.test(editFormData.password)) {
         toast({
           title: "Weak Password",
-          description: "Password must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character (@$!%*?&).",
+          description: "Password must contain at least 8 characters, one uppercase, one lowercase, one number, and one special character.",
           variant: "destructive",
         });
         return;
