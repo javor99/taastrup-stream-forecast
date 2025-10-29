@@ -117,12 +117,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
               {isLoading ? 'Logging in...' : 'Login'}
             </Button>
           </form>
-          <div className="mt-4 p-3 bg-muted rounded-lg">
-            <p className="text-xs text-muted-foreground">
-              Admin: <code>admin@admin.com</code> / <code>12345678</code><br />
-              Superadmin: <code>superadmin@superadmin.com</code> / <code>12345678</code>
-            </p>
-          </div>
         </CardContent>
       </Card>
     </div>
