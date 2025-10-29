@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Users, UserCheck, UserCog, Edit, Trash2, UserX, UserPlus, Shield, ShieldCheck } from 'lucide-react';
+import { Plus, Users, UserCheck, UserCog, Edit, Trash2, UserX, UserPlus, Shield, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
 interface UserManagerProps {
   onUserUpdate?: () => void;
@@ -37,6 +37,8 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     role: 'admin' as 'user' | 'admin' | 'superadmin',
     is_active: true
   });
+  const [showEditPassword, setShowEditPassword] = useState(false);
+  const [showEditConfirmPassword, setShowEditConfirmPassword] = useState(false);
 
   const { isSuperAdmin, getToken, user: currentUser } = useAuth();
   const { toast } = useToast();
@@ -717,25 +719,57 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
             </div>
             <div>
               <Label htmlFor="edit-password">New Password (leave blank to keep current)</Label>
-              <Input
-                id="edit-password"
-                type="password"
-                value={editFormData.password}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, password: e.target.value }))}
-                placeholder="Min 8 chars, uppercase, number, special char"
-                minLength={8}
-              />
+              <div className="relative">
+                <Input
+                  id="edit-password"
+                  type={showEditPassword ? "text" : "password"}
+                  value={editFormData.password}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, password: e.target.value }))}
+                  placeholder="Min 8 chars, uppercase, number, special char"
+                  minLength={8}
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowEditPassword(!showEditPassword)}
+                >
+                  {showEditPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
             <div>
               <Label htmlFor="edit-confirmPassword">Confirm New Password</Label>
-              <Input
-                id="edit-confirmPassword"
-                type="password"
-                value={editFormData.confirmPassword}
-                onChange={(e) => setEditFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
-                placeholder="Re-enter new password"
-                minLength={8}
-              />
+              <div className="relative">
+                <Input
+                  id="edit-confirmPassword"
+                  type={showEditConfirmPassword ? "text" : "password"}
+                  value={editFormData.confirmPassword}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  placeholder="Re-enter new password"
+                  minLength={8}
+                  className="pr-10"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  onClick={() => setShowEditConfirmPassword(!showEditConfirmPassword)}
+                >
+                  {showEditConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
             </div>
             <div>
               <Label htmlFor="edit-role">User Role</Label>
