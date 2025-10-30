@@ -76,6 +76,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const verifyToken = async (token: string): Promise<{ user: User } | null> => {
     try {
+      console.log('[useAuth] Verifying token...');
       const { data, error } = await supabase.functions.invoke('auth-proxy', {
         body: {
           path: 'auth/verify',
@@ -87,17 +88,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
 
       if (error) {
-        // Let caller treat invalid token as unauthenticated rather than a generic error
-        console.warn('Token verification error:', error);
+        console.error('[useAuth] Token verification error:', error);
         return null;
       }
       
+      console.log('[useAuth] Token verification response:', data);
+      
       if (data && data.valid === true) {
+        console.log('[useAuth] Token is valid, user:', data.user);
         return { user: data.user };
       }
+      
+      console.warn('[useAuth] Token is invalid or expired');
       return null;
     } catch (error) {
-      console.error('Token verification failed:', error);
+      console.error('[useAuth] Token verification exception:', error);
       return null;
     }
   };
