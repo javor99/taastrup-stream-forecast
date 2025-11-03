@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { fetchUsers, createUser, updateUser, deleteUser, deactivateUser, activateUser, User } from '@/services/api';
+import { fetchUsers, createUser, updateUser, deleteUser, deactivateUser, activateUser, User, fetchMunicipalities, Municipality } from '@/services/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -20,6 +20,7 @@ interface UserManagerProps {
 
 export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
   const [users, setUsers] = useState<User[]>([]);
+  const [municipalities, setMunicipalities] = useState<Municipality[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -28,7 +29,8 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'admin' as 'admin' | 'superadmin'
+    role: 'admin' as 'admin' | 'superadmin',
+    municipality_id: undefined as number | undefined
   });
   const [editFormData, setEditFormData] = useState({
     email: '',
@@ -72,9 +74,20 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     }
   };
 
+  const loadMunicipalities = async () => {
+    const token = getToken();
+    try {
+      const data = await fetchMunicipalities(token);
+      setMunicipalities(data.municipalities);
+    } catch (error: any) {
+      console.error('Failed to load municipalities:', error);
+    }
+  };
+
   useEffect(() => {
     if (isSuperAdmin) {
       loadUsers();
+      loadMunicipalities();
     }
   }, [isSuperAdmin]);
 
@@ -83,7 +96,8 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       email: '',
       password: '',
       confirmPassword: '',
-      role: 'admin'
+      role: 'admin',
+      municipality_id: undefined
     });
   };
 
@@ -153,11 +167,18 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     }
 
     try {
-      await createUser({
+      const userData: any = {
         email: formData.email,
         password: formData.password,
         role: formData.role
-      }, token);
+      };
+      
+      // Add municipality_id if role is admin and municipality is selected
+      if (formData.role === 'admin' && formData.municipality_id) {
+        userData.municipality_id = formData.municipality_id;
+      }
+      
+      await createUser(userData, token);
 
       toast({
         title: "Success",
@@ -496,7 +517,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
               </div>
               <div>
                 <Label htmlFor="role">User Role</Label>
-                <Select value={formData.role} onValueChange={(value: 'admin' | 'superadmin') => setFormData(prev => ({ ...prev, role: value }))}>
+                <Select value={formData.role} onValueChange={(value: 'admin' | 'superadmin') => setFormData(prev => ({ ...prev, role: value, municipality_id: value === 'superadmin' ? undefined : prev.municipality_id }))}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a role" />
                   </SelectTrigger>
@@ -506,6 +527,26 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
                   </SelectContent>
                 </Select>
               </div>
+              {formData.role === 'admin' && (
+                <div>
+                  <Label htmlFor="municipality">Municipality</Label>
+                  <Select 
+                    value={formData.municipality_id?.toString()} 
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, municipality_id: parseInt(value) }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select municipality (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {municipalities.map((municipality) => (
+                        <SelectItem key={municipality.id} value={municipality.id.toString()}>
+                          {municipality.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <div className="flex justify-end space-x-2">
                 <Button type="button" variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                   Cancel

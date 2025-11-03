@@ -677,6 +677,7 @@ export async function createUser(userData: {
   email: string;
   password: string;
   role: 'user' | 'admin' | 'superadmin';
+  municipality_id?: number;
 }, token?: string): Promise<User> {
   try {
     if (!token) {
