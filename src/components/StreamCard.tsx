@@ -8,6 +8,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { updateStationMinMax, fetchStationMinMax, deleteStation, subscribeToStation, unsubscribeFromStation, fetchUserSubscriptions } from '@/services/api';
@@ -26,6 +27,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const [isSubscribing, setIsSubscribing] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [thresholdPercentage, setThresholdPercentage] = useState(0.9);
+  const [alertType, setAlertType] = useState<'above' | 'below'>('above');
   const [stationMinMax, setStationMinMax] = useState<{last_updated?: string; updated_by?: string | null} | null>(null);
   const { toast } = useToast();
   const { isAdmin, isSuperAdmin, getToken } = useAuth();
@@ -52,6 +54,14 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
     
     loadStationMinMax();
   }, [stream.id, isAdmin, isSuperAdmin, getToken]);
+
+  // Update suggested threshold when alert type changes
+  useEffect(() => {
+    if (!isSubscribed) {
+      // Only auto-adjust if user is not already subscribed
+      setThresholdPercentage(alertType === 'above' ? 0.9 : 0.2);
+    }
+  }, [alertType, isSubscribed]);
   
   const nextPrediction = stream.predictions?.[0];
   const maxPrediction = stream.predictions?.length > 0 
@@ -160,7 +170,8 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       const subscription = response.subscriptions.find(sub => sub.station_id === stream.id);
       setIsSubscribed(!!subscription);
       if (subscription) {
-        setThresholdPercentage(subscription.threshold_percentage);
+        setThresholdPercentage(subscription.threshold_percentage || 0.9);
+        setAlertType((subscription.alert_type as 'above' | 'below') || 'above');
       }
     } catch (error) {
       console.error('Failed to check subscription status:', error);
@@ -175,12 +186,16 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
         throw new Error('Authentication required');
       }
 
-      await subscribeToStation(stream.id, thresholdPercentage, token);
+      await subscribeToStation(stream.id, thresholdPercentage, token, alertType);
       setIsSubscribed(true);
+      
+      const alertDescription = alertType === 'above' 
+        ? `when water level exceeds ${(thresholdPercentage * 100).toFixed(0)}% of max level (flooding risk)`
+        : `when water level falls below ${(thresholdPercentage * 100).toFixed(0)}% of max level (drying out)`;
       
       toast({
         title: "Subscribed successfully",
-        description: `You will receive alerts for station "${stream.name}" when predictions exceed ${(thresholdPercentage * 100).toFixed(0)}% of max level.`,
+        description: `You will receive alerts for station "${stream.name}" ${alertDescription}.`,
       });
     } catch (error) {
       console.error('Failed to subscribe:', error);
@@ -513,22 +528,41 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                   </DialogHeader>
                   <div className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Get email alerts when water level predictions for "{stream.name}" exceed your threshold.
+                      Get email alerts when water level predictions for "{stream.name}" meet your criteria.
                     </p>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="alert-type">Alert Type</Label>
+                      <Select value={alertType} onValueChange={(value: 'above' | 'below') => setAlertType(value)}>
+                        <SelectTrigger id="alert-type">
+                          <SelectValue placeholder="Select alert type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="above">High Water Alert (Flooding Risk)</SelectItem>
+                          <SelectItem value="below">Low Water Alert (Drying Out)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <p className="text-xs text-muted-foreground">
+                        {alertType === 'above' 
+                          ? 'Alert when water level exceeds threshold (flooding/high water events)' 
+                          : 'Alert when water level falls below threshold (drought/low water conditions)'}
+                      </p>
+                    </div>
+
                     <div className="space-y-2">
                       <Label htmlFor="threshold">Alert Threshold (%)</Label>
                       <Input
                         id="threshold"
                         type="number"
-                        min="50"
+                        min="10"
                         max="100"
                         step="5"
                         value={thresholdPercentage * 100}
                         onChange={(e) => setThresholdPercentage(Number(e.target.value) / 100)}
-                        placeholder="90"
+                        placeholder={alertType === 'above' ? '90' : '20'}
                       />
                       <div className="text-xs text-muted-foreground space-y-1">
-                        <p>Alert when predictions reach {(thresholdPercentage * 100).toFixed(0)}% of the maximum historical level</p>
+                        <p>Alert when predictions {alertType === 'above' ? 'exceed' : 'fall below'} {(thresholdPercentage * 100).toFixed(0)}% of the maximum historical level</p>
                         <p className="font-medium">
                           Threshold water level: {(thresholdPercentage * stream.maxLevel).toFixed(2)}m 
                           <span className="text-muted-foreground"> (Max: {stream.maxLevel.toFixed(2)}m)</span>

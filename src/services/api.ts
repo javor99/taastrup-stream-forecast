@@ -903,6 +903,8 @@ export interface Subscription {
   station_id: string;
   station_name: string;
   threshold_percentage: number;
+  alert_type?: string;
+  description?: string;
   created_at: string;
   updated_at: string;
 }
@@ -922,11 +924,18 @@ export interface SubscribeResponse {
     station_id: string;
     station_name: string;
     threshold_percentage: number;
+    alert_type?: string;
+    description?: string;
   };
 }
 
 // Subscribe to station alerts
-export async function subscribeToStation(stationId: string, thresholdPercentage: number = 0.9, token?: string): Promise<SubscribeResponse> {
+export async function subscribeToStation(
+  stationId: string, 
+  thresholdPercentage: number = 0.9, 
+  token?: string, 
+  alertType: 'above' | 'below' = 'above'
+): Promise<SubscribeResponse> {
   try {
     if (!token) {
       throw new Error('Authentication token required');
@@ -936,7 +945,10 @@ export async function subscribeToStation(stationId: string, thresholdPercentage:
       body: {
         path: `stations/${stationId}/subscribe`,
         method: 'POST',
-        data: { threshold_percentage: thresholdPercentage },
+        data: { 
+          threshold_percentage: thresholdPercentage,
+          alert_type: alertType
+        },
         headers: { 'Authorization': `Bearer ${token}` }
       }
     });
