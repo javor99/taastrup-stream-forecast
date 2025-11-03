@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, AlertCircle, CheckCircle } from 'lucide-react';
-import { createStation, fetchMunicipalities, type CreateStationRequest, type Municipality } from '@/services/api';
+import { createStation, fetchUserMunicipalities, type CreateStationRequest, type Municipality } from '@/services/api';
 
 export const StationManager: React.FC = () => {
   const { getToken, isAdmin, isSuperAdmin } = useAuth();
@@ -29,8 +29,22 @@ export const StationManager: React.FC = () => {
       setLoadingMunicipalities(true);
       try {
         const token = getToken();
-        const response = await fetchMunicipalities(token || undefined);
-        setMunicipalities(response.municipalities);
+        if (!token) {
+          setMessage({ type: 'error', text: 'Please login to view municipalities' });
+          return;
+        }
+        
+        const response = await fetchUserMunicipalities(token);
+        
+        // Superadmin gets all municipalities, regular admin gets their assigned municipality
+        if (response.municipalities) {
+          setMunicipalities(response.municipalities);
+        } else if (response.municipality) {
+          setMunicipalities([response.municipality]);
+        } else {
+          setMunicipalities([]);
+          setMessage({ type: 'error', text: 'No municipality assigned to your account' });
+        }
       } catch (error) {
         console.error('Failed to load municipalities:', error);
         setMessage({ type: 'error', text: 'Failed to load municipalities' });

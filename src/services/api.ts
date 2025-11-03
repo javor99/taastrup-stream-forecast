@@ -498,6 +498,16 @@ export async function fetchMunicipalities(token?: string): Promise<Municipalitie
   }
 }
 
+export async function fetchUserMunicipalities(token: string): Promise<{ municipalities?: Municipality[]; municipality?: Municipality | null }> {
+  try {
+    const data = await proxyAuthGet<any>('auth/user/municipality', token);
+    return data;
+  } catch (error) {
+    console.error('Error fetching user municipalities:', error);
+    throw error;
+  }
+}
+
 export async function createMunicipality(municipalityData: {
   name: string;
   region: string;
