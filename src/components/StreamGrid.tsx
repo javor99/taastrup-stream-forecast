@@ -13,7 +13,11 @@ import { mockStreams, mockApiData } from '@/data/mockStreams';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getEdgeFunctionErrorMessage } from '@/utils/error';
 
-export const StreamGrid = () => {
+interface StreamGridProps {
+  userMunicipalityId?: number | null;
+}
+
+export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId }) => {
   const [allStreams, setAllStreams] = useState<Stream[]>([]);
   const [visibleStreams, setVisibleStreams] = useState<Stream[]>([]);
   const [apiData, setApiData] = useState<ApiSummaryStation[]>([]);
@@ -23,9 +27,16 @@ export const StreamGrid = () => {
   const [usingDummyData, setUsingDummyData] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'all' | 'municipalities'>('all');
+  const [viewMode, setViewMode] = useState<'all' | 'municipalities'>(userMunicipalityId ? 'municipalities' : 'all');
   const { toast } = useToast();
   const { isAuthenticated, getToken, isAdmin, isSuperAdmin } = useAuth();
+
+  // Initialize selected municipalities when userMunicipalityId is provided
+  useEffect(() => {
+    if (userMunicipalityId && selectedMunicipalities.length === 0) {
+      setSelectedMunicipalities([userMunicipalityId]);
+    }
+  }, [userMunicipalityId]);
 
   const loadStreams = async () => {
     try {

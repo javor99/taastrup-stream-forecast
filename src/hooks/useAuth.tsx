@@ -4,6 +4,7 @@ interface User {
   id: number;
   email: string;
   role: 'user' | 'admin' | 'superadmin';
+  municipalityId?: number;
 }
 
 interface AuthContextType {
@@ -11,6 +12,7 @@ interface AuthContextType {
   isSuperAdmin: boolean;
   isAuthenticated: boolean;
   user: User | null;
+  userMunicipalityId: number | null;
   login: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
   register: (email: string, password: string, role: 'user' | 'admin' | 'superadmin') => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
@@ -22,12 +24,14 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 import { supabase } from '@/integrations/supabase/client';
 import { getEdgeFunctionErrorMessage } from '@/utils/error';
+import { fetchUserMunicipalities } from '@/services/api';
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [isSuperAdmin, setIsSuperAdmin] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [userMunicipalityId, setUserMunicipalityId] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -96,6 +100,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (data && data.valid === true) {
         console.log('[useAuth] Token is valid, user:', data.user);
+        
+        // Fetch user's municipality
+        try {
+          const muniData = await fetchUserMunicipalities(token);
+          const municipalityId = muniData.municipality?.id || muniData.municipalities?.[0]?.id;
+          if (municipalityId) {
+            setUserMunicipalityId(municipalityId);
+          }
+        } catch (muniError) {
+          console.warn('[useAuth] Failed to fetch user municipality:', muniError);
+        }
+        
         return { user: data.user };
       }
       
@@ -140,6 +156,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           } else {
             setIsAdmin(true);
             setIsSuperAdmin(false);
+          }
+          
+          // Fetch user's municipality
+          try {
+            const muniData = await fetchUserMunicipalities(data.token);
+            const municipalityId = muniData.municipality?.id || muniData.municipalities?.[0]?.id;
+            if (municipalityId) {
+              setUserMunicipalityId(municipalityId);
+            }
+          } catch (muniError) {
+            console.warn('[useAuth] Failed to fetch user municipality:', muniError);
           }
           
           return { success: true };
@@ -192,6 +219,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsSuperAdmin(false);
     setIsAuthenticated(false);
     setUser(null);
+    setUserMunicipalityId(null);
     localStorage.removeItem('auth_token');
     localStorage.removeItem('auth_user');
   };
@@ -201,7 +229,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ isAdmin, isSuperAdmin, isAuthenticated, user, login, register, logout, isLoading, getToken }}>
+    <AuthContext.Provider value={{ isAdmin, isSuperAdmin, isAuthenticated, user, userMunicipalityId, login, register, logout, isLoading, getToken }}>
       {children}
     </AuthContext.Provider>
   );

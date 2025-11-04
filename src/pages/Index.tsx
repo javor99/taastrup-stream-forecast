@@ -17,7 +17,7 @@ const Index = () => {
     </div>;
   }
   
-  const { isAdmin, isAuthenticated, isLoading } = auth;
+  const { isAdmin, isAuthenticated, isLoading, userMunicipalityId } = auth;
   const [showAdminLogin, setShowAdminLogin] = React.useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = React.useState(false);
 
@@ -75,7 +75,7 @@ const Index = () => {
             </h2>
             
           </div>
-          <StreamGrid />
+          <StreamGrid userMunicipalityId={userMunicipalityId} />
         </main>
       </div>
 
