@@ -27,14 +27,17 @@ export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId }) =>
   const [usingDummyData, setUsingDummyData] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
-  const [viewMode, setViewMode] = useState<'all' | 'municipalities'>(userMunicipalityId ? 'municipalities' : 'all');
+  const [viewMode, setViewMode] = useState<'all' | 'municipalities'>('all');
   const { toast } = useToast();
   const { isAuthenticated, getToken, isAdmin, isSuperAdmin } = useAuth();
 
-  // Initialize selected municipalities when userMunicipalityId is provided
+  // Initialize view mode and selected municipalities when userMunicipalityId is provided
   useEffect(() => {
-    if (userMunicipalityId && selectedMunicipalities.length === 0) {
-      setSelectedMunicipalities([userMunicipalityId]);
+    if (userMunicipalityId) {
+      setViewMode('municipalities');
+      if (selectedMunicipalities.length === 0) {
+        setSelectedMunicipalities([userMunicipalityId]);
+      }
     }
   }, [userMunicipalityId]);
 
