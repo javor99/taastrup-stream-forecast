@@ -3,10 +3,11 @@ import { Municipality, fetchMunicipalities } from '@/services/api';
 import { useAuth } from '@/hooks/useAuth';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Users, Square } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { MapPin, Users, Square, Filter } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface MunicipalityFilterProps {
   selectedMunicipalities: number[];
@@ -63,23 +64,35 @@ export const MunicipalityFilter: React.FC<MunicipalityFilterProps> = ({
 
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <MapPin className="h-5 w-5" />
+    <Dialog>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="gap-2">
+          <Filter className="h-4 w-4" />
           Municipality Filter
-        </CardTitle>
-        <CardDescription>
-          Select municipalities to filter stations on the map
-        </CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
+          {selectedMunicipalities.length > 0 && (
+            <Badge variant="secondary" className="ml-1">
+              {selectedMunicipalities.length}
+            </Badge>
+          )}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-2xl max-h-[80vh]">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <MapPin className="h-5 w-5" />
+            Municipality Filter
+          </DialogTitle>
+          <DialogDescription>
+            Select municipalities to filter stations on the map
+          </DialogDescription>
+        </DialogHeader>
+        
         {isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading municipalities...</div>
+          <div className="text-sm text-muted-foreground py-8 text-center">Loading municipalities...</div>
         ) : municipalities.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No municipalities available</div>
+          <div className="text-sm text-muted-foreground py-8 text-center">No municipalities available</div>
         ) : (
-          <>
+          <div className="space-y-4">
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
@@ -99,53 +112,55 @@ export const MunicipalityFilter: React.FC<MunicipalityFilterProps> = ({
               </Button>
             </div>
             
-            <div className="space-y-3">
-              {municipalities.map((municipality) => (
-                <div key={municipality.id} className="flex items-start space-x-3 p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors">
-                  <Checkbox
-                    id={`municipality-${municipality.id}`}
-                    checked={selectedMunicipalities.includes(municipality.id)}
-                    onCheckedChange={(checked) => 
-                      handleMunicipalityToggle(municipality.id, checked as boolean)
-                    }
-                  />
-                  <div className="flex-1 min-w-0">
-                    <label 
-                      htmlFor={`municipality-${municipality.id}`}
-                      className="block text-sm font-medium cursor-pointer"
-                    >
-                      {municipality.name}
-                    </label>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      {municipality.region}
-                    </p>
-                    {municipality.description && (
-                      <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                        {municipality.description}
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="space-y-3">
+                {municipalities.map((municipality) => (
+                  <div key={municipality.id} className="flex items-start space-x-3 p-3 border border-border rounded-lg hover:bg-accent/50 transition-colors">
+                    <Checkbox
+                      id={`municipality-${municipality.id}`}
+                      checked={selectedMunicipalities.includes(municipality.id)}
+                      onCheckedChange={(checked) => 
+                        handleMunicipalityToggle(municipality.id, checked as boolean)
+                      }
+                    />
+                    <div className="flex-1 min-w-0">
+                      <label 
+                        htmlFor={`municipality-${municipality.id}`}
+                        className="block text-sm font-medium cursor-pointer"
+                      >
+                        {municipality.name}
+                      </label>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {municipality.region}
                       </p>
-                    )}
-                    <div className="flex items-center gap-4 mt-2">
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Users className="h-3 w-3" />
-                        {municipality.population?.toLocaleString()}
-                      </div>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <Square className="h-3 w-3" />
-                        {municipality.area_km2} km²
-                      </div>
-                      {municipality.station_count !== undefined && (
-                        <Badge variant="secondary" className="text-xs">
-                          {municipality.station_count} stations
-                        </Badge>
+                      {municipality.description && (
+                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                          {municipality.description}
+                        </p>
                       )}
+                      <div className="flex items-center gap-4 mt-2">
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Users className="h-3 w-3" />
+                          {municipality.population?.toLocaleString()}
+                        </div>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                          <Square className="h-3 w-3" />
+                          {municipality.area_km2} km²
+                        </div>
+                        {municipality.station_count !== undefined && (
+                          <Badge variant="secondary" className="text-xs">
+                            {municipality.station_count} stations
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </>
+                ))}
+              </div>
+            </ScrollArea>
+          </div>
         )}
-      </CardContent>
-    </Card>
+      </DialogContent>
+    </Dialog>
   );
 };
