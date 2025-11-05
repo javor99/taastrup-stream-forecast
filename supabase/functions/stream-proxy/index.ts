@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS'
 };
 
-const BASE_URL = 'https://unfluctuating-kayleigh-retractively.ngrok-free.dev';
+const BASE_URL = 'https://aquamonitor.eu/api';
 
 // deno-lint-ignore no-explicit-any
 function jsonResponse(body: any, status = 200) {
