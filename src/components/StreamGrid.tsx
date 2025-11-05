@@ -42,6 +42,14 @@ export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId }) =>
     }
   }, [userMunicipalityId, isSuperAdmin]);
 
+  // Reset to 'all' view when superadmin logs in
+  useEffect(() => {
+    if (isSuperAdmin) {
+      setViewMode('all');
+      setSelectedMunicipalities([]);
+    }
+  }, [isSuperAdmin]);
+
   const loadStreams = async () => {
     try {
       setIsLoading(true);
