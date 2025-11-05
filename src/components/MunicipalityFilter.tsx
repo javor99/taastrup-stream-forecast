@@ -23,6 +23,10 @@ export const MunicipalityFilter: React.FC<MunicipalityFilterProps> = ({
   const { isAuthenticated, getToken } = useAuth();
   const { toast } = useToast();
 
+  const selectedMunicipalityNames = municipalities
+    .filter(m => selectedMunicipalities.includes(m.id))
+    .map(m => m.name);
+
   const loadMunicipalities = async () => {
     try {
       setIsLoading(true);
@@ -64,18 +68,19 @@ export const MunicipalityFilter: React.FC<MunicipalityFilterProps> = ({
 
 
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Button variant="outline" className="gap-2">
-          <Filter className="h-4 w-4" />
-          Municipality Filter
-          {selectedMunicipalities.length > 0 && (
-            <Badge variant="secondary" className="ml-1">
-              {selectedMunicipalities.length}
-            </Badge>
-          )}
-        </Button>
-      </DialogTrigger>
+    <div className="space-y-3">
+      <Dialog>
+        <DialogTrigger asChild>
+          <Button variant="outline" className="gap-2">
+            <Filter className="h-4 w-4" />
+            Municipality Filter
+            {selectedMunicipalities.length > 0 && (
+              <Badge variant="secondary" className="ml-1">
+                {selectedMunicipalities.length}
+              </Badge>
+            )}
+          </Button>
+        </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
@@ -162,5 +167,16 @@ export const MunicipalityFilter: React.FC<MunicipalityFilterProps> = ({
         )}
       </DialogContent>
     </Dialog>
+    
+    {selectedMunicipalityNames.length > 0 && (
+      <div className="flex flex-wrap gap-2">
+        {selectedMunicipalityNames.map((name, index) => (
+          <Badge key={index} variant="secondary" className="px-3 py-1">
+            {name}
+          </Badge>
+        ))}
+      </div>
+    )}
+  </div>
   );
 };

@@ -392,31 +392,27 @@ export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId }) =>
         </TabsContent>
         
         <TabsContent value="municipalities" className="space-y-8">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div className="lg:col-span-1">
-              <MunicipalityFilter
+          <div className="space-y-6">
+            <MunicipalityFilter
+              selectedMunicipalities={selectedMunicipalities}
+              onMunicipalityChange={handleMunicipalityChange}
+            />
+            {selectedMunicipalities.length > 0 ? (
+              <StreamMap 
+                streams={allStreams} 
+                apiData={apiData}
+                municipalityData={municipalityData}
+                onVisibleStreamsChange={handleVisibleStreamsChange}
                 selectedMunicipalities={selectedMunicipalities}
-                onMunicipalityChange={handleMunicipalityChange}
               />
-            </div>
-            <div className="lg:col-span-3">
-              {selectedMunicipalities.length > 0 ? (
-                <StreamMap 
-                  streams={allStreams} 
-                  apiData={apiData}
-                  municipalityData={municipalityData}
-                  onVisibleStreamsChange={handleVisibleStreamsChange}
-                  selectedMunicipalities={selectedMunicipalities}
-                />
-              ) : (
-                <div className="bg-muted/50 border-2 border-dashed border-border rounded-lg p-12 text-center">
-                  <div className="text-muted-foreground">
-                    <h3 className="text-lg font-semibold mb-2">Select Municipalities</h3>
-                    <p>Choose one or more municipalities from the filter to view their monitoring stations on the map.</p>
-                  </div>
+            ) : (
+              <div className="bg-muted/50 border-2 border-dashed border-border rounded-lg p-12 text-center">
+                <div className="text-muted-foreground">
+                  <h3 className="text-lg font-semibold mb-2">Select Municipalities</h3>
+                  <p>Choose one or more municipalities from the filter to view their monitoring stations on the map.</p>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         </TabsContent>
       </Tabs>
