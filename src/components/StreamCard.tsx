@@ -434,7 +434,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
               <div className="text-center">
                 <div className="text-xs font-semibold font-display mb-1 flex items-center justify-center gap-1 text-indigo-700 dark:text-indigo-300">
                   <Calendar className="h-3 w-3" />
-                  Past Predictions ({stream.pastPredictions.length} forecasts)
+                  Past Predictions
                 </div>
                 <div className="text-sm font-bold text-foreground font-display">
                   {(() => {
