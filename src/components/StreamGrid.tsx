@@ -32,23 +32,21 @@ export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId }) =>
   const { isAuthenticated, getToken, isAdmin, isSuperAdmin } = useAuth();
 
   // Initialize view mode and selected municipalities when userMunicipalityId is provided
-  // Only for regular admins, not superadmins
+  // Only for authenticated regular admins, not superadmins
   useEffect(() => {
-    if (userMunicipalityId && !isSuperAdmin) {
+    if (isAuthenticated && userMunicipalityId && !isSuperAdmin) {
       setViewMode('municipalities');
-      if (selectedMunicipalities.length === 0) {
-        setSelectedMunicipalities([userMunicipalityId]);
-      }
-    }
-  }, [userMunicipalityId, isSuperAdmin]);
-
-  // Reset to 'all' view when superadmin logs in
-  useEffect(() => {
-    if (isSuperAdmin) {
+      setSelectedMunicipalities([userMunicipalityId]);
+    } else if (isSuperAdmin) {
+      // Superadmin should see all stations
+      setViewMode('all');
+      setSelectedMunicipalities([]);
+    } else if (!isAuthenticated) {
+      // Not authenticated, default to all view
       setViewMode('all');
       setSelectedMunicipalities([]);
     }
-  }, [isSuperAdmin]);
+  }, [userMunicipalityId, isSuperAdmin, isAuthenticated]);
 
   const loadStreams = async () => {
     try {

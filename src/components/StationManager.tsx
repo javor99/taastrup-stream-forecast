@@ -88,7 +88,7 @@ export const StationManager: React.FC = () => {
       const stationName = response?.station?.name || stationData.station_id;
       setMessage({ 
         type: 'success', 
-        text: `Station ${stationName} successfully added! The station is updating with data. Please refresh the page after 20 seconds to see all station information.` 
+        text: `Station ${stationName} successfully added! The station is updating with data. Refresh the page after 20 seconds to see all station information.` 
       });
       
       // Reset form
@@ -96,11 +96,6 @@ export const StationManager: React.FC = () => {
         station_id: '',
         municipality_id: 0
       });
-
-      // Refresh the page after 3 seconds
-      setTimeout(() => {
-        window.location.reload();
-      }, 3000);
     } catch (error: any) {
       console.error('Failed to create station:', error);
       setMessage({ 
