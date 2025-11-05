@@ -30,7 +30,14 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const [alertType, setAlertType] = useState<'above' | 'below'>('above');
   const [stationMinMax, setStationMinMax] = useState<{last_updated?: string; updated_by?: string | null} | null>(null);
   const { toast } = useToast();
-  const { isAdmin, isSuperAdmin, getToken } = useAuth();
+  const { isAdmin, isSuperAdmin, getToken, userMunicipalityId } = useAuth();
+  
+  // Check if the current user can edit this station
+  const canEditStation = () => {
+    if (isSuperAdmin) return true;
+    if (!isAdmin) return false;
+    return stream.municipalityId === userMunicipalityId;
+  };
   
   // Load station min/max info to show who last updated it
   useEffect(() => {
@@ -131,6 +138,15 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   };
 
   const handleUpdateMinMax = async () => {
+    if (!canEditStation()) {
+      toast({
+        title: "Permission Denied",
+        description: "You can only edit stations in your municipality.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (minLevel >= maxLevel) {
       toast({
         title: "Invalid Values",
@@ -237,6 +253,15 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   };
 
   const handleDeleteStation = async () => {
+    if (!canEditStation()) {
+      toast({
+        title: "Permission Denied",
+        description: "You can only delete stations in your municipality.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!confirm(`Are you sure you want to delete station "${stream.name}"? This action cannot be undone.`)) {
       return;
     }
@@ -489,15 +514,17 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
         {(isAdmin || isSuperAdmin) && (
           <div className="flex gap-2 flex-wrap">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setIsEditingMinMax(true)}
-              className="flex items-center gap-2"
-            >
-              <Settings className="h-4 w-4" />
-              Edit Min/Max
-            </Button>
+            {canEditStation() && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsEditingMinMax(true)}
+                className="flex items-center gap-2"
+              >
+                <Settings className="h-4 w-4" />
+                Edit Min/Max
+              </Button>
+            )}
             
             {isSubscribed ? (
               <Button
@@ -581,16 +608,18 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
               </Dialog>
             )}
             
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={handleDeleteStation}
-              disabled={isDeleting}
-              className="flex items-center gap-2"
-            >
-              <Trash2 className="h-4 w-4" />
-              {isDeleting ? 'Deleting...' : 'Delete'}
-            </Button>
+            {canEditStation() && (
+              <Button
+                variant="destructive"
+                size="sm"
+                onClick={handleDeleteStation}
+                disabled={isDeleting}
+                className="flex items-center gap-2"
+              >
+                <Trash2 className="h-4 w-4" />
+                {isDeleting ? 'Deleting...' : 'Delete'}
+              </Button>
+            )}
           </div>
         )}
         

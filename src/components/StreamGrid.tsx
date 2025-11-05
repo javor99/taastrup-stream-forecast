@@ -175,6 +175,7 @@ export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId }) =>
             },
             last30DaysHistorical: historical?.last_30_days_historical ?? [],
             pastPredictions: pastPreds,
+            municipalityId: muni?.municipality_id,
           };
         });
 
@@ -287,6 +288,7 @@ export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId }) =>
             },
             last30DaysHistorical: historical?.last_30_days_historical ?? [],
             pastPredictions: pastPreds,
+            municipalityId: muni?.municipality_id,
           };
         });
 

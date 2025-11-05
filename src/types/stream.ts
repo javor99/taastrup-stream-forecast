@@ -41,4 +41,5 @@ export interface Stream {
     water_level_m: number;
   }[];
   pastPredictions?: PastPrediction[];
+  municipalityId?: number;
 }
