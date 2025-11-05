@@ -139,21 +139,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('[useAuth] Token verification response:', data);
       
-      if (data && data.valid === true) {
-        console.log('[useAuth] Token is valid, user:', data.user);
+      // Backend returns user object directly, not wrapped in {valid, user}
+      if (data && (data.email || data.id)) {
+        console.log('[useAuth] Token is valid, user:', data);
         
-        // Fetch user's municipality
-        try {
-          const muniData = await fetchUserMunicipalities(token);
-          const municipalityId = muniData.municipality?.id || muniData.municipalities?.[0]?.id;
-          if (municipalityId) {
-            setUserMunicipalityId(municipalityId);
-          }
-        } catch (muniError) {
-          console.warn('[useAuth] Failed to fetch user municipality:', muniError);
+        // Map backend response to User interface
+        const user: User = {
+          id: data.id || data.user_id,
+          email: data.email,
+          role: data.role,
+          municipalityId: data.municipality_id
+        };
+        
+        // Set municipality ID from response
+        if (data.municipality_id) {
+          setUserMunicipalityId(data.municipality_id);
         }
         
-        return { user: data.user };
+        return { user };
       }
       
       console.warn('[useAuth] Token is invalid or expired');
