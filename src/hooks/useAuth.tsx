@@ -35,11 +35,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // On mount, try to restore from storage and then verify with backend
-    const token = localStorage.getItem('auth_token');
+    // Simple persistence: restore from localStorage only. No backend verification.
     const storedUser = localStorage.getItem('auth_user');
 
-    // 1) Instant UI restore if we have a stored user (does not decide final auth)
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -54,68 +52,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             setIsAdmin(true);
             setIsSuperAdmin(false);
           }
+          const muniId = parsedUser.municipalityId ?? parsedUser.municipality_id ?? null;
+          if (muniId) setUserMunicipalityId(muniId);
         }
       } catch (e) {
         console.error('[useAuth] Failed to parse stored user:', e);
       }
     }
 
-    // 2) Always verify if we have a token (even if storedUser is missing)
-    if (token) {
-      verifyToken(token)
-        .then((verificationData) => {
-          if (verificationData) {
-            const role = verificationData.user.role;
-            // Only allow admin and superadmin users
-            if (role === 'superadmin' || role === 'admin') {
-              // Update with verified data from backend
-              const verifiedUser = verificationData.user;
-              setUser(verifiedUser);
-              setIsAuthenticated(true);
-              localStorage.setItem('auth_user', JSON.stringify(verifiedUser));
-              if (role === 'superadmin') {
-                setIsSuperAdmin(true);
-                setIsAdmin(true);
-              } else {
-                setIsAdmin(true);
-                setIsSuperAdmin(false);
-              }
-            } else {
-              // Role mismatch or non-admin - log them out
-              console.warn('[useAuth] User role mismatch or insufficient permissions:', role);
-              localStorage.removeItem('auth_token');
-              localStorage.removeItem('auth_user');
-              setIsAuthenticated(false);
-              setUser(null);
-              setIsAdmin(false);
-              setIsSuperAdmin(false);
-            }
-          } else {
-            // Token is invalid, clear stored data
-            console.warn('[useAuth] Token verification failed');
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('auth_user');
-            setIsAuthenticated(false);
-            setUser(null);
-            setIsAdmin(false);
-            setIsSuperAdmin(false);
-          }
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error('[useAuth] Token verification error:', error);
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('auth_user');
-          setIsAuthenticated(false);
-          setUser(null);
-          setIsAdmin(false);
-          setIsSuperAdmin(false);
-          setIsLoading(false);
-        });
-    } else {
-      // No token at all -> not authenticated
-      setIsLoading(false);
-    }
+    setIsLoading(false);
   }, []);
 
   const verifyToken = async (token: string): Promise<{ user: User } | null> => {
