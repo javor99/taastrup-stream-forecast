@@ -37,11 +37,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     // Check if user is already logged in by verifying stored token
     const token = localStorage.getItem('auth_token');
+    const storedUser = localStorage.getItem('auth_user');
     
-    if (token) {
+    if (token && storedUser) {
+      // Immediately restore user state from localStorage for instant UI update
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        const role = parsedUser.role;
+        
+        if (role === 'superadmin' || role === 'admin') {
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+          
+          if (role === 'superadmin') {
+            setIsSuperAdmin(true);
+            setIsAdmin(true);
+          } else {
+            setIsAdmin(true);
+            setIsSuperAdmin(false);
+          }
+        }
+      } catch (e) {
+        console.error('[useAuth] Failed to parse stored user:', e);
+      }
+      
+      // Verify token in background to ensure it's still valid
       verifyToken(token)
         .then((verificationData) => {
-      if (verificationData) {
+          if (verificationData) {
             const role = verificationData.user.role;
             
             // Only allow admin and superadmin users
@@ -60,17 +83,29 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               // Non-admin user - log them out
               localStorage.removeItem('auth_token');
               localStorage.removeItem('auth_user');
+              setIsAuthenticated(false);
+              setUser(null);
+              setIsAdmin(false);
+              setIsSuperAdmin(false);
             }
           } else {
             // Token is invalid, clear stored data
             localStorage.removeItem('auth_token');
             localStorage.removeItem('auth_user');
+            setIsAuthenticated(false);
+            setUser(null);
+            setIsAdmin(false);
+            setIsSuperAdmin(false);
           }
           setIsLoading(false);
         })
         .catch(() => {
           localStorage.removeItem('auth_token');
           localStorage.removeItem('auth_user');
+          setIsAuthenticated(false);
+          setUser(null);
+          setIsAdmin(false);
+          setIsSuperAdmin(false);
           setIsLoading(false);
         });
     } else {
