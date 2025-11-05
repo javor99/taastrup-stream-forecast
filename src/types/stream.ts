@@ -42,4 +42,5 @@ export interface Stream {
   }[];
   pastPredictions?: PastPrediction[];
   municipalityId?: number;
+  municipalityName?: string;
 }

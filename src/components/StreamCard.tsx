@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings, Trash2, Bell, BellOff, ChevronDown } from 'lucide-react';
+import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings, Trash2, Bell, BellOff, ChevronDown, Building2 } from 'lucide-react';
 import { Stream } from '@/types/stream';
 import { WaterLevelIndicator } from './WaterLevelIndicator';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { updateStationMinMax, fetchStationMinMax, deleteStation, subscribeToStation, unsubscribeFromStation, fetchUserSubscriptions } from '@/services/api';
@@ -321,8 +322,19 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
         </div>
       )}
       <div className="flex items-start justify-between mb-4">
-        <div>
-          <h3 className="text-xl font-display font-bold text-foreground mb-1 tracking-tight">{stream.name}</h3>
+        <div className="flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="text-xl font-display font-bold text-foreground tracking-tight">{stream.name}</h3>
+            {stream.municipalityName && (isAdmin || isSuperAdmin) && (
+              <Badge 
+                variant={canEditStation() ? "default" : "secondary"}
+                className="flex items-center gap-1"
+              >
+                <Building2 className="h-3 w-3" />
+                {stream.municipalityName}
+              </Badge>
+            )}
+          </div>
           <div className="flex items-center text-sm text-muted-foreground mb-2 font-medium">
             <MapPin className="h-4 w-4 mr-1" />
             <span>{stream.location.address}</span>
