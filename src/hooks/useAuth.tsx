@@ -35,20 +35,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is already logged in by verifying stored token
+    // On mount, try to restore from storage and then verify with backend
     const token = localStorage.getItem('auth_token');
     const storedUser = localStorage.getItem('auth_user');
-    
-    if (token && storedUser) {
-      // Immediately restore user state from localStorage for instant UI update
+
+    // 1) Instant UI restore if we have a stored user (does not decide final auth)
+    if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
         const role = parsedUser.role;
-        
         if (role === 'superadmin' || role === 'admin') {
           setUser(parsedUser);
           setIsAuthenticated(true);
-          
           if (role === 'superadmin') {
             setIsSuperAdmin(true);
             setIsAdmin(true);
@@ -60,13 +58,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (e) {
         console.error('[useAuth] Failed to parse stored user:', e);
       }
-      
-      // Verify token in background to ensure it's still valid
+    }
+
+    // 2) Always verify if we have a token (even if storedUser is missing)
+    if (token) {
       verifyToken(token)
         .then((verificationData) => {
           if (verificationData) {
             const role = verificationData.user.role;
-            
             // Only allow admin and superadmin users
             if (role === 'superadmin' || role === 'admin') {
               // Update with verified data from backend
@@ -74,7 +73,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setUser(verifiedUser);
               setIsAuthenticated(true);
               localStorage.setItem('auth_user', JSON.stringify(verifiedUser));
-              
               if (role === 'superadmin') {
                 setIsSuperAdmin(true);
                 setIsAdmin(true);
@@ -115,6 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setIsLoading(false);
         });
     } else {
+      // No token at all -> not authenticated
       setIsLoading(false);
     }
   }, []);
@@ -139,23 +138,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       console.log('[useAuth] Token verification response:', data);
       
-      // Backend returns user object directly, not wrapped in {valid, user}
-      if (data && (data.email || data.id)) {
-        console.log('[useAuth] Token is valid, user:', data);
-        
-        // Map backend response to User interface
+      // Support both shapes:
+      // 1) { valid: true, user: {...} }
+      // 2) { email, role, municipality_id, ... }
+      let rawUser: any | null = null;
+      if (data && data.valid === true && data.user) {
+        rawUser = data.user;
+      } else if (data && (data.email || data.id || data.user_id)) {
+        rawUser = data;
+      }
+
+      if (rawUser) {
         const user: User = {
-          id: data.id || data.user_id,
-          email: data.email,
-          role: data.role,
-          municipalityId: data.municipality_id
+          id: rawUser.id ?? rawUser.user_id,
+          email: rawUser.email,
+          role: rawUser.role,
+          municipalityId: rawUser.municipality_id ?? rawUser.municipalityId
         };
-        
-        // Set municipality ID from response
-        if (data.municipality_id) {
-          setUserMunicipalityId(data.municipality_id);
+
+        // Prefer municipality from response, otherwise try fetch API
+        if (user.municipalityId) {
+          setUserMunicipalityId(user.municipalityId);
+        } else {
+          try {
+            const muniData = await fetchUserMunicipalities(token);
+            const municipalityId = muniData.municipality?.id || muniData.municipalities?.[0]?.id;
+            if (municipalityId) setUserMunicipalityId(municipalityId);
+          } catch (muniError) {
+            console.warn('[useAuth] Failed to fetch user municipality:', muniError);
+          }
         }
-        
         return { user };
       }
       
