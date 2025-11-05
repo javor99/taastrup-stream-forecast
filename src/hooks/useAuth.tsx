@@ -69,8 +69,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             
             // Only allow admin and superadmin users
             if (role === 'superadmin' || role === 'admin') {
-              setUser(verificationData.user);
+              // Update with verified data from backend
+              const verifiedUser = verificationData.user;
+              setUser(verifiedUser);
               setIsAuthenticated(true);
+              localStorage.setItem('auth_user', JSON.stringify(verifiedUser));
               
               if (role === 'superadmin') {
                 setIsSuperAdmin(true);
@@ -80,7 +83,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setIsSuperAdmin(false);
               }
             } else {
-              // Non-admin user - log them out
+              // Role mismatch or non-admin - log them out
+              console.warn('[useAuth] User role mismatch or insufficient permissions:', role);
               localStorage.removeItem('auth_token');
               localStorage.removeItem('auth_user');
               setIsAuthenticated(false);
@@ -90,6 +94,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
           } else {
             // Token is invalid, clear stored data
+            console.warn('[useAuth] Token verification failed');
             localStorage.removeItem('auth_token');
             localStorage.removeItem('auth_user');
             setIsAuthenticated(false);
@@ -99,7 +104,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           }
           setIsLoading(false);
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error('[useAuth] Token verification error:', error);
           localStorage.removeItem('auth_token');
           localStorage.removeItem('auth_user');
           setIsAuthenticated(false);
