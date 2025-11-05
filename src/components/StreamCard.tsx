@@ -325,9 +325,9 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
         <div className="flex-1">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-xl font-display font-bold text-foreground tracking-tight">{stream.name}</h3>
-            {stream.municipalityName && (isAdmin || isSuperAdmin) && (
+            {stream.municipalityName && (
               <Badge 
-                variant={canEditStation() ? "default" : "secondary"}
+                variant="secondary"
                 className="flex items-center gap-1"
               >
                 <Building2 className="h-3 w-3" />
