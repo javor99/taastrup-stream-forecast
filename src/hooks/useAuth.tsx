@@ -35,32 +35,41 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simple persistence: restore from localStorage only. No backend verification.
-    const storedUser = localStorage.getItem('auth_user');
+    const initializeAuth = async () => {
+      const storedToken = localStorage.getItem('auth_token');
+      const storedUser = localStorage.getItem('auth_user');
 
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        const role = parsedUser.role;
-        if (role === 'superadmin' || role === 'admin') {
-          setUser(parsedUser);
-          setIsAuthenticated(true);
-          if (role === 'superadmin') {
-            setIsSuperAdmin(true);
-            setIsAdmin(true);
+      if (storedToken && storedUser) {
+        // Validate token with backend
+        const result = await verifyToken(storedToken);
+        
+        if (result?.user) {
+          const role = result.user.role;
+          if (role === 'superadmin' || role === 'admin') {
+            setUser(result.user);
+            setIsAuthenticated(true);
+            if (role === 'superadmin') {
+              setIsSuperAdmin(true);
+              setIsAdmin(true);
+            } else {
+              setIsAdmin(true);
+              setIsSuperAdmin(false);
+            }
           } else {
-            setIsAdmin(true);
-            setIsSuperAdmin(false);
+            // User doesn't have admin privileges, clear auth
+            logout();
           }
-          const muniId = parsedUser.municipalityId ?? parsedUser.municipality_id ?? null;
-          if (muniId) setUserMunicipalityId(muniId);
+        } else {
+          // Token is invalid or expired, clear auth
+          console.warn('[useAuth] Token validation failed, clearing auth state');
+          logout();
         }
-      } catch (e) {
-        console.error('[useAuth] Failed to parse stored user:', e);
       }
-    }
 
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+
+    initializeAuth();
   }, []);
 
   const verifyToken = async (token: string): Promise<{ user: User } | null> => {
