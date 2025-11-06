@@ -215,12 +215,29 @@ async function proxyAuthGet<T>(path: string, token: string): Promise<T> {
     if (error) {
       const message = getEdgeFunctionErrorMessage(error, `Request failed: ${path}`);
       console.error('Edge function error:', error);
+      
+      // Check if it's a 401 Unauthorized error
+      if (message.includes('401') || message.includes('Invalid or expired token') || message.includes('Unauthorized')) {
+        // Clear auth and reload
+        localStorage.removeItem('auth_token');
+        localStorage.removeItem('auth_user');
+        window.location.reload();
+      }
+      
       throw new Error(message);
     }
     return data as T;
   } catch (err) {
     const message = getEdgeFunctionErrorMessage(err, `Request failed: ${path}`);
     console.error('Edge function invocation failed:', err);
+    
+    // Check if it's a 401 Unauthorized error
+    if (message.includes('401') || message.includes('Invalid or expired token') || message.includes('Unauthorized')) {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+      window.location.reload();
+    }
+    
     throw new Error(message);
   }
 }

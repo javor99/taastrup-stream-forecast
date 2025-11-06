@@ -35,97 +35,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const initializeAuth = async () => {
-      const storedToken = localStorage.getItem('auth_token');
-      const storedUser = localStorage.getItem('auth_user');
+    const storedUser = localStorage.getItem('auth_user');
 
-      if (storedToken && storedUser) {
-        // Validate token with backend
-        const result = await verifyToken(storedToken);
-        
-        if (result?.user) {
-          const role = result.user.role;
-          if (role === 'superadmin' || role === 'admin') {
-            setUser(result.user);
-            setIsAuthenticated(true);
-            if (role === 'superadmin') {
-              setIsSuperAdmin(true);
-              setIsAdmin(true);
-            } else {
-              setIsAdmin(true);
-              setIsSuperAdmin(false);
-            }
-            // Prefer municipality from stored user to avoid protected call during init
-            try {
-              const parsedStored = JSON.parse(storedUser);
-              const muniId = parsedStored?.municipalityId ?? parsedStored?.municipality_id ?? null;
-              if (muniId) setUserMunicipalityId(muniId);
-            } catch {}
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        const role = parsedUser.role;
+        if (role === 'superadmin' || role === 'admin') {
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+          if (role === 'superadmin') {
+            setIsSuperAdmin(true);
+            setIsAdmin(true);
           } else {
-            // User doesn't have admin privileges, clear auth
-            logout();
+            setIsAdmin(true);
+            setIsSuperAdmin(false);
           }
-        } else {
-          // Token is invalid or expired, clear auth
-          console.warn('[useAuth] Token validation failed, clearing auth state');
-          logout();
+          const muniId = parsedUser.municipalityId ?? parsedUser.municipality_id ?? null;
+          if (muniId) setUserMunicipalityId(muniId);
         }
+      } catch (e) {
+        console.error('[useAuth] Failed to parse stored user:', e);
       }
-
-      setIsLoading(false);
-    };
-
-    initializeAuth();
-  }, []);
-
-  const verifyToken = async (token: string): Promise<{ user: User } | null> => {
-    try {
-      console.log('[useAuth] Verifying token...');
-      const { data, error } = await supabase.functions.invoke('auth-proxy', {
-        body: {
-          path: 'auth/verify',
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-          }
-        }
-      });
-
-      if (error) {
-        console.error('[useAuth] Token verification error:', error);
-        return null;
-      }
-      
-      console.log('[useAuth] Token verification response:', data);
-      
-      // Support both shapes:
-      // 1) { valid: true, user: {...} }
-      // 2) { email, role, municipality_id, ... }
-      let rawUser: any | null = null;
-      if (data && data.valid === true && data.user) {
-        rawUser = data.user;
-      } else if (data && (data.email || data.id || data.user_id)) {
-        rawUser = data;
-      }
-
-      if (rawUser) {
-        const user: User = {
-          id: rawUser.id ?? rawUser.user_id,
-          email: rawUser.email,
-          role: rawUser.role,
-          municipalityId: rawUser.municipality_id ?? rawUser.municipalityId
-        };
-
-        return { user };
-      }
-      
-      console.warn('[useAuth] Token is invalid or expired');
-      return null;
-    } catch (error) {
-      console.error('[useAuth] Token verification exception:', error);
-      return null;
     }
-  };
+
+    setIsLoading(false);
+  }, []);
 
   const login = async (email: string, password: string): Promise<{ success: boolean; error?: string }> => {
     try {
