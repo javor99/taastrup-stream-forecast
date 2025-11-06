@@ -144,12 +144,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         // Only allow admin and superadmin users to login
         if (role === 'superadmin' || role === 'admin') {
-          setUser(data.user);
-          setIsAuthenticated(true);
+          // Clear old auth data first to ensure fresh token
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('auth_user');
           
-          // Store token and user data
+          // Store fresh token and user data
           localStorage.setItem('auth_token', data.token);
           localStorage.setItem('auth_user', JSON.stringify(data.user));
+          
+          setUser(data.user);
+          setIsAuthenticated(true);
           
           if (role === 'superadmin') {
             setIsSuperAdmin(true);
