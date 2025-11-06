@@ -55,6 +55,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               setIsAdmin(true);
               setIsSuperAdmin(false);
             }
+            // Prefer municipality from stored user to avoid protected call during init
+            try {
+              const parsedStored = JSON.parse(storedUser);
+              const muniId = parsedStored?.municipalityId ?? parsedStored?.municipality_id ?? null;
+              if (muniId) setUserMunicipalityId(muniId);
+            } catch {}
           } else {
             // User doesn't have admin privileges, clear auth
             logout();
@@ -110,18 +116,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           municipalityId: rawUser.municipality_id ?? rawUser.municipalityId
         };
 
-        // Prefer municipality from response, otherwise try fetch API
-        if (user.municipalityId) {
-          setUserMunicipalityId(user.municipalityId);
-        } else {
-          try {
-            const muniData = await fetchUserMunicipalities(token);
-            const municipalityId = muniData.municipality?.id || muniData.municipalities?.[0]?.id;
-            if (municipalityId) setUserMunicipalityId(municipalityId);
-          } catch (muniError) {
-            console.warn('[useAuth] Failed to fetch user municipality:', muniError);
-          }
-        }
         return { user };
       }
       
