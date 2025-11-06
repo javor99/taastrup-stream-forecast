@@ -68,6 +68,7 @@ Deno.serve(async (req) => {
       method: method,
       headers: { 
         'Accept': 'application/json',
+        'ngrok-skip-browser-warning': 'true',
         ...(extraHeaders || {})
       }
     };
