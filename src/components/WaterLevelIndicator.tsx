@@ -7,16 +7,11 @@ interface WaterLevelIndicatorProps {
 }
 
 export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream }) => {
-  // Adjust min/max range to include current level and all forecasts
-  const allLevels = [
-    stream.currentLevel,
-    ...stream.predictions.map(p => p.predictedLevel)
-  ];
+  // Use fixed min/max levels without adjustment
+  const minLevel = stream.minLevel;
+  const maxLevel = stream.maxLevel;
   
-  const adjustedMinLevel = Math.min(stream.minLevel, ...allLevels);
-  const adjustedMaxLevel = Math.max(stream.maxLevel, ...allLevels);
-  
-  const currentPercentage = ((stream.currentLevel - adjustedMinLevel) / (adjustedMaxLevel - adjustedMinLevel)) * 100;
+  const currentPercentage = ((stream.currentLevel - minLevel) / (maxLevel - minLevel)) * 100;
 
   const getBarColor = (percentage: number) => {
     if (percentage >= 80) return 'bg-red-500';
@@ -34,7 +29,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <span className="text-sm font-medium text-foreground">Water Level (meters)</span>
-        <span className="text-sm text-muted-foreground">Range: {adjustedMinLevel}m - {adjustedMaxLevel}m</span>
+        <span className="text-sm text-muted-foreground">Range: {minLevel}m - {maxLevel}m</span>
       </div>
       
       {/* Current Level Bar */}
@@ -46,7 +41,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
         <div className="w-full bg-muted rounded-full h-3">
           <div 
             className={`h-3 rounded-full transition-all duration-500 ${getBarColor(currentPercentage)}`}
-            style={{ width: `${Math.min(currentPercentage, 100)}%` }}
+            style={{ width: `${Math.max(0, Math.min(currentPercentage, 100))}%` }}
           />
         </div>
       </div>
@@ -56,7 +51,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
         <h4 className="text-sm font-medium text-foreground">7-Day Forecast</h4>
         <div className="space-y-2">
           {stream.predictions.map((prediction, index) => {
-            const predictedPercentage = ((prediction.predictedLevel - adjustedMinLevel) / (adjustedMaxLevel - adjustedMinLevel)) * 100;
+            const predictedPercentage = ((prediction.predictedLevel - minLevel) / (maxLevel - minLevel)) * 100;
             const dayName = getWeekdayName(index);
             
             return (
@@ -70,7 +65,7 @@ export const WaterLevelIndicator: React.FC<WaterLevelIndicatorProps> = ({ stream
                 <div className="w-full bg-muted rounded-full h-2">
                   <div 
                     className={`h-2 rounded-full transition-all duration-500 opacity-70 ${getBarColor(predictedPercentage)}`}
-                    style={{ width: `${Math.min(predictedPercentage, 100)}%` }}
+                    style={{ width: `${Math.max(0, Math.min(predictedPercentage, 100))}%` }}
                   />
                 </div>
               </div>
