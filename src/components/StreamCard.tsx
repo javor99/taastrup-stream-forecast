@@ -66,6 +66,13 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
     loadStationMinMax();
   }, [stream.id, isAdmin, isSuperAdmin, getToken]);
 
+  // Load subscription status on mount and when stream changes
+  useEffect(() => {
+    if (isAdmin || isSuperAdmin) {
+      checkSubscriptionStatus();
+    }
+  }, [stream.id, isAdmin, isSuperAdmin]);
+
   // Update suggested threshold when alert type changes
   useEffect(() => {
     // Auto-adjust threshold based on alert type
@@ -570,7 +577,6 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                   size="sm"
                   disabled={!isAdmin && !isSuperAdmin}
                   className="flex items-center gap-2"
-                  onClick={checkSubscriptionStatus}
                 >
                   <Bell className="h-4 w-4" />
                   {(aboveSubscription || belowSubscription) ? 'Subscribed' : 'Subscribe to Alerts'}
