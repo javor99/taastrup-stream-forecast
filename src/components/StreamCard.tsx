@@ -3,7 +3,9 @@ import React, { useState, useEffect } from 'react';
 import { MapPin, TrendingUp, TrendingDown, Minus, AlertTriangle, CheckCircle, XCircle, Calendar, Settings, Trash2, Bell, BellOff, ChevronDown, Building2 } from 'lucide-react';
 import { Stream } from '@/types/stream';
 import { WaterLevelIndicator } from './WaterLevelIndicator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Slider } from '@/components/ui/slider';
+import { DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +28,8 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
   const [isUpdating, setIsUpdating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSubscribing, setIsSubscribing] = useState(false);
-  const [isSubscribed, setIsSubscribed] = useState(false);
+  const [aboveSubscription, setAboveSubscription] = useState<{ threshold: number } | null>(null);
+  const [belowSubscription, setBelowSubscription] = useState<{ threshold: number } | null>(null);
   const [thresholdPercentage, setThresholdPercentage] = useState(0.9);
   const [alertType, setAlertType] = useState<'above' | 'below'>('above');
   const [stationMinMax, setStationMinMax] = useState<{last_updated?: string; updated_by?: string | null} | null>(null);
@@ -65,11 +68,13 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
 
   // Update suggested threshold when alert type changes
   useEffect(() => {
-    if (!isSubscribed) {
-      // Only auto-adjust if user is not already subscribed
-      setThresholdPercentage(alertType === 'above' ? 0.9 : 0.2);
+    // Auto-adjust threshold based on alert type
+    if (alertType === 'above' && !aboveSubscription) {
+      setThresholdPercentage(0.9);
+    } else if (alertType === 'below' && !belowSubscription) {
+      setThresholdPercentage(0.2);
     }
-  }, [alertType, isSubscribed]);
+  }, [alertType, aboveSubscription, belowSubscription]);
   
   const nextPrediction = stream.predictions?.[0];
   const maxPrediction = stream.predictions?.length > 0 
@@ -184,11 +189,24 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       if (!token) return;
 
       const response = await fetchUserSubscriptions(token);
-      const subscription = response.subscriptions.find(sub => sub.station_id === stream.id);
-      setIsSubscribed(!!subscription);
-      if (subscription) {
-        setThresholdPercentage(subscription.threshold_percentage || 0.9);
-        setAlertType((subscription.alert_type as 'above' | 'below') || 'above');
+      const subscriptions = response.subscriptions.filter(sub => sub.station_id === stream.id);
+      
+      const above = subscriptions.find(sub => sub.alert_type === 'above');
+      const below = subscriptions.find(sub => sub.alert_type === 'below');
+      
+      setAboveSubscription(above ? { threshold: above.threshold_percentage } : null);
+      setBelowSubscription(below ? { threshold: below.threshold_percentage } : null);
+      
+      // Set default values for the dialog based on existing subscriptions or defaults
+      if (above) {
+        setThresholdPercentage(above.threshold_percentage);
+        setAlertType('above');
+      } else if (below) {
+        setThresholdPercentage(below.threshold_percentage);
+        setAlertType('below');
+      } else {
+        setThresholdPercentage(0.9);
+        setAlertType('above');
       }
     } catch (error) {
       console.error('Failed to check subscription status:', error);
@@ -204,7 +222,13 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       }
 
       await subscribeToStation(stream.id, thresholdPercentage, token, alertType);
-      setIsSubscribed(true);
+      
+      // Update the appropriate subscription state
+      if (alertType === 'above') {
+        setAboveSubscription({ threshold: thresholdPercentage });
+      } else {
+        setBelowSubscription({ threshold: thresholdPercentage });
+      }
       
       const alertDescription = alertType === 'above' 
         ? `when water level exceeds ${(thresholdPercentage * 100).toFixed(0)}% of max level (flooding risk)`
@@ -235,11 +259,12 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       }
 
       await unsubscribeFromStation(stream.id, token);
-      setIsSubscribed(false);
+      setAboveSubscription(null);
+      setBelowSubscription(null);
       
       toast({
         title: "Unsubscribed successfully",
-        description: `You will no longer receive alerts for station "${stream.name}".`,
+        description: `You will no longer receive any alerts for station "${stream.name}".`,
       });
     } catch (error) {
       console.error('Failed to unsubscribe:', error);
@@ -538,87 +563,143 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
               </Button>
             )}
             
-            {isSubscribed ? (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleUnsubscribe}
-                disabled={isSubscribing}
-                className="flex items-center gap-2"
-              >
-                <BellOff className="h-4 w-4" />
-                {isSubscribing ? 'Unsubscribing...' : 'Unsubscribe'}
-              </Button>
-            ) : (
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <Bell className="h-4 w-4" />
-                    Subscribe
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Subscribe to Water Level Alerts</DialogTitle>
-                  </DialogHeader>
-                  <div className="space-y-4">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={!isAdmin && !isSuperAdmin}
+                  className="flex items-center gap-2"
+                >
+                  <Bell className="h-4 w-4" />
+                  {(aboveSubscription || belowSubscription) ? 'Manage Alerts' : 'Subscribe to Alerts'}
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Manage Alerts - {stream.name}</DialogTitle>
+                  <DialogDescription>
+                    You can subscribe to both flood alerts (water too high) and drain alerts (water too low).
+                  </DialogDescription>
+                </DialogHeader>
+                
+                <div className="space-y-4">
+                  {/* Current Subscriptions Status */}
+                  {(aboveSubscription || belowSubscription) && (
+                    <div className="rounded-lg border bg-muted/50 p-4 space-y-2">
+                      <p className="text-sm font-medium">Current Subscriptions:</p>
+                      {aboveSubscription && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <AlertTriangle className="h-4 w-4 text-rose-500" />
+                          <span>Flood alert at {(aboveSubscription.threshold * 100).toFixed(0)}%</span>
+                        </div>
+                      )}
+                      {belowSubscription && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <TrendingDown className="h-4 w-4 text-blue-500" />
+                          <span>Drain alert at {(belowSubscription.threshold * 100).toFixed(0)}%</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  <div className="space-y-2">
+                    <Label>Alert Type</Label>
+                    <Select value={alertType} onValueChange={(value: 'above' | 'below') => {
+                      setAlertType(value);
+                      // Auto-adjust threshold based on alert type and existing subscriptions
+                      if (value === 'above') {
+                        setThresholdPercentage(aboveSubscription?.threshold ?? 0.9);
+                      } else {
+                        setThresholdPercentage(belowSubscription?.threshold ?? 0.1);
+                      }
+                    }}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="above">
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="h-4 w-4 text-rose-500" />
+                            <span>Flood Alert (Above Threshold)</span>
+                            {aboveSubscription && <span className="text-xs text-muted-foreground ml-2">✓ Active</span>}
+                          </div>
+                        </SelectItem>
+                        <SelectItem value="below">
+                          <div className="flex items-center gap-2">
+                            <TrendingDown className="h-4 w-4 text-blue-500" />
+                            <span>Drain Alert (Below Threshold)</span>
+                            {belowSubscription && <span className="text-xs text-muted-foreground ml-2">✓ Active</span>}
+                          </div>
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
                     <p className="text-sm text-muted-foreground">
-                      Get email alerts when water level predictions for "{stream.name}" meet your criteria.
+                      {alertType === 'above' 
+                        ? '🌊 Get alerted when water level is too HIGH (flooding risk)'
+                        : '💧 Get alerted when water level is too LOW (drying out)'
+                      }
                     </p>
-                    
-                    <div className="space-y-2">
-                      <Label htmlFor="alert-type">Alert Type</Label>
-                      <Select value={alertType} onValueChange={(value: 'above' | 'below') => setAlertType(value)}>
-                        <SelectTrigger id="alert-type">
-                          <SelectValue placeholder="Select alert type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="above">High Water Alert (Flooding Risk)</SelectItem>
-                          <SelectItem value="below">Low Water Alert (Drying Out)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <p className="text-xs text-muted-foreground">
-                        {alertType === 'above' 
-                          ? 'Alert when water level exceeds threshold (flooding/high water events)' 
-                          : 'Alert when water level falls below threshold (drought/low water conditions)'}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label>
+                      Threshold: {(thresholdPercentage * 100).toFixed(0)}% of max level
+                    </Label>
+                    <Slider
+                      value={[thresholdPercentage]}
+                      onValueChange={(values) => setThresholdPercentage(values[0])}
+                      min={0.05}
+                      max={0.95}
+                      step={0.05}
+                      className="w-full"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>5%</span>
+                      <span>95%</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {alertType === 'above' 
+                        ? `Alert when water exceeds ${(thresholdPercentage * 100).toFixed(0)}% of max level`
+                        : `Alert when water falls below ${(thresholdPercentage * 100).toFixed(0)}% of max level`
+                      }
+                    </p>
+                  </div>
+
+                  {((alertType === 'above' && aboveSubscription) || (alertType === 'below' && belowSubscription)) && (
+                    <div className="rounded-lg bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 p-3 text-sm">
+                      <p className="text-amber-900 dark:text-amber-100">
+                        You already have a {alertType === 'above' ? 'flood' : 'drain'} alert. Subscribing again will update the threshold.
                       </p>
                     </div>
+                  )}
+                </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="threshold">Alert Threshold (%)</Label>
-                      <Input
-                        id="threshold"
-                        type="number"
-                        min="10"
-                        max="100"
-                        step="5"
-                        value={thresholdPercentage * 100}
-                        onChange={(e) => setThresholdPercentage(Number(e.target.value) / 100)}
-                        placeholder={alertType === 'above' ? '90' : '20'}
-                      />
-                      <div className="text-xs text-muted-foreground space-y-1">
-                        <p>Alert when predictions {alertType === 'above' ? 'exceed' : 'fall below'} {(thresholdPercentage * 100).toFixed(0)}% of the maximum historical level</p>
-                        <p className="font-medium">
-                          Threshold water level: {(thresholdPercentage * stream.maxLevel).toFixed(2)}m 
-                          <span className="text-muted-foreground"> (Max: {stream.maxLevel.toFixed(2)}m)</span>
-                        </p>
-                      </div>
-                    </div>
-                    <Button 
-                      onClick={handleSubscribe}
+                <DialogFooter className="gap-2 flex-col sm:flex-row">
+                  {(aboveSubscription || belowSubscription) && (
+                    <Button
+                      variant="destructive"
+                      onClick={handleUnsubscribe}
                       disabled={isSubscribing}
-                      className="w-full"
+                      className="w-full sm:w-auto"
                     >
-                      {isSubscribing ? 'Subscribing...' : 'Subscribe to Alerts'}
+                      {isSubscribing ? 'Processing...' : 'Unsubscribe from All'}
                     </Button>
-                  </div>
-                </DialogContent>
-              </Dialog>
-            )}
+                  )}
+                  <Button
+                    onClick={handleSubscribe}
+                    disabled={isSubscribing}
+                    className="w-full sm:w-auto"
+                  >
+                    {isSubscribing ? 'Subscribing...' : (
+                      (alertType === 'above' && aboveSubscription) || (alertType === 'below' && belowSubscription)
+                        ? 'Update Alert'
+                        : 'Subscribe'
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
             
             {canEditStation() && (
               <Button
