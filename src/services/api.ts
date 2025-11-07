@@ -1,6 +1,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import { getEdgeFunctionErrorMessage } from '@/utils/error';
-const API_BASE_URL = 'http://130.226.56.134/api';
+const API_BASE_URL = 'https://aquamonitor.eu/api';
 
 // Add a client-side timeout to prevent infinite loading when the edge function/upstream hangs
 const INVOKE_TIMEOUT_MS = 8000; // 8s timeout for edge function calls
