@@ -570,9 +570,10 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
                   size="sm"
                   disabled={!isAdmin && !isSuperAdmin}
                   className="flex items-center gap-2"
+                  onClick={checkSubscriptionStatus}
                 >
                   <Bell className="h-4 w-4" />
-                  {(aboveSubscription || belowSubscription) ? 'Manage Alerts' : 'Subscribe to Alerts'}
+                  {(aboveSubscription || belowSubscription) ? 'Subscribed' : 'Subscribe to Alerts'}
                 </Button>
               </DialogTrigger>
               <DialogContent className="max-w-md">

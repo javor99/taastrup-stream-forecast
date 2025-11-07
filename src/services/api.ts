@@ -1047,3 +1047,30 @@ export async function fetchUserSubscriptions(token?: string): Promise<Subscripti
     throw error;
   }
 }
+
+// Get subscriptions for a specific user by email
+export async function fetchUserSubscriptionsByEmail(email: string, token?: string): Promise<SubscriptionsResponse> {
+  try {
+    const { data, error } = await supabase.functions.invoke('stream-proxy', {
+      body: {
+        path: `subscriptions/user/${email}`,
+        method: 'GET',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+      }
+    });
+    
+    if (error) {
+      console.error('Error fetching user subscriptions:', error);
+      throw error;
+    }
+    
+    if (data && data.error) {
+      throw new Error(data.error);
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching user subscriptions:', error);
+    throw error;
+  }
+}
