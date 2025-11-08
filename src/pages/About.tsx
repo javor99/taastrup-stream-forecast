@@ -2,7 +2,7 @@ import React from 'react';
 import { Header } from '@/components/Header';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Waves, AlertTriangle, BarChart3, Database, MapPin, Calendar } from 'lucide-react';
+import { Waves, AlertTriangle, BarChart3, Database, MapPin, Calendar, Bell } from 'lucide-react';
 
 const About = () => {
   return (
@@ -56,35 +56,132 @@ const About = () => {
             </CardContent>
           </Card>
 
+          {/* Key Features */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Waves className="h-6 w-6 text-primary" />
+                Key Features
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {/* Alert Subscriptions */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-lg flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-primary" />
+                  Alert Subscriptions
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Stay informed about critical water level changes with our intelligent alert system. 
+                  Administrators and authorized users can subscribe to individual monitoring stations to receive notifications.
+                </p>
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <div>
+                    <h5 className="font-medium text-sm mb-2">Two Alert Types:</h5>
+                    <ul className="text-sm text-muted-foreground space-y-2 ml-4">
+                      <li>• <strong>Above Threshold Alerts (Flooding Risk):</strong> Get notified when water levels exceed a specified percentage (e.g., 90% of max level), indicating potential flooding conditions</li>
+                      <li>• <strong>Below Threshold Alerts (Drought Risk):</strong> Receive alerts when water levels fall below a specified percentage (e.g., 20% of max level), indicating drying out or drought conditions</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-sm mb-2">How to Subscribe:</h5>
+                    <ol className="text-sm text-muted-foreground space-y-1 ml-4">
+                      <li>1. Navigate to any station card on the main page</li>
+                      <li>2. Click the bell icon (🔔) to open the subscription dialog</li>
+                      <li>3. Select alert type (Above or Below threshold)</li>
+                      <li>4. Set your desired threshold percentage using the slider</li>
+                      <li>5. Click "Subscribe" to activate alerts for that station</li>
+                    </ol>
+                  </div>
+                  <div className="bg-background/50 rounded p-3">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Note:</strong> You can subscribe to multiple alert types per station and manage all subscriptions from individual station cards. Click the bell icon again to modify or remove subscriptions.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Admin Min/Max Management */}
+              <div className="space-y-3">
+                <h4 className="font-semibold text-lg flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-primary" />
+                  Min/Max Level Management (Admin Feature)
+                </h4>
+                <p className="text-sm text-muted-foreground">
+                  Administrators can calibrate the minimum and maximum reference levels for each monitoring station. 
+                  These values are critical as they define the baseline for all percentile calculations and status indicators.
+                </p>
+                <div className="bg-muted/50 rounded-lg p-4 space-y-3">
+                  <div>
+                    <h5 className="font-medium text-sm mb-2">What Min/Max Values Represent:</h5>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      By default, min/max values represent the historical extremes recorded at each station over the past 5 years:
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1 ml-4">
+                      <li>• <strong>Minimum Level:</strong> The lowest water level recorded in the last 5 years</li>
+                      <li>• <strong>Maximum Level:</strong> The highest water level recorded in the last 5 years</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-sm mb-2">How to Edit Min/Max Values:</h5>
+                    <ol className="text-sm text-muted-foreground space-y-1 ml-4">
+                      <li>1. Click the settings icon (⚙️) on any station card</li>
+                      <li>2. Adjust the minimum and maximum sliders (values in centimeters)</li>
+                      <li>3. Ensure minimum is always less than maximum</li>
+                      <li>4. Click "Update Min/Max" to save changes</li>
+                    </ol>
+                  </div>
+                  <div>
+                    <h5 className="font-medium text-sm mb-2">Why Adjust Min/Max?</h5>
+                    <p className="text-sm text-muted-foreground">
+                      While historical values work well in most cases, manual adjustment may be needed when:
+                    </p>
+                    <ul className="text-sm text-muted-foreground space-y-1 ml-4 mt-1">
+                      <li>• New infrastructure changes expected water level ranges</li>
+                      <li>• Sensor calibration reveals historical data inaccuracies</li>
+                      <li>• Climate patterns shift beyond historical norms</li>
+                      <li>• Local geological changes affect typical water levels</li>
+                    </ul>
+                  </div>
+                  <div className="bg-background/50 rounded p-3">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Permission Note:</strong> Only administrators can edit min/max values. Municipality admins can only edit stations within their assigned municipality. Super admins can edit any station.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* How It Works */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <BarChart3 className="h-6 w-6 text-primary" />
-                How Our Predictions Work
+                How Our System Works
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="text-center space-y-2">
                   <Database className="h-8 w-8 text-primary mx-auto" />
-                  <h4 className="font-semibold">Data Collection</h4>
+                  <h4 className="font-semibold">Real-Time Data Collection</h4>
                   <p className="text-sm text-muted-foreground">
-                    Continuous monitoring from network sensors collecting water level, precipitation, and environmental data
+                    Continuous monitoring from Vandah sensor network collecting water level measurements every 15 minutes
                   </p>
                 </div>
                 <div className="text-center space-y-2">
                   <Calendar className="h-8 w-8 text-primary mx-auto" />
-                  <h4 className="font-semibold">Historical Analysis</h4>
+                  <h4 className="font-semibold">40-Day Historical Analysis</h4>
                   <p className="text-sm text-muted-foreground">
-                    Analysis of the last 40 days of water table data combined with seasonal patterns and trends
+                    System analyzes the last 40 days of water level data to identify trends and patterns
                   </p>
                 </div>
                 <div className="text-center space-y-2">
                   <BarChart3 className="h-8 w-8 text-primary mx-auto" />
-                  <h4 className="font-semibold">Predictive Modeling</h4>
+                  <h4 className="font-semibold">7-Day Predictive Forecasts</h4>
                   <p className="text-sm text-muted-foreground">
-                    Generalized water table model generates 7-day forecasts based on historical patterns and trends
+                    Generalized water table model generates day-by-day predictions based on historical patterns
                   </p>
                 </div>
               </div>
