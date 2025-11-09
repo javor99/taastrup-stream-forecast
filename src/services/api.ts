@@ -662,6 +662,7 @@ export interface User {
   is_active: boolean;
   created_by?: string;
   updated_by?: string;
+  municipality_id?: number;
 }
 
 export interface UsersResponse {

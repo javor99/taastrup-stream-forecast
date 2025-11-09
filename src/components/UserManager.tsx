@@ -37,7 +37,8 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
     password: '',
     confirmPassword: '',
     role: 'admin' as 'user' | 'admin' | 'superadmin',
-    is_active: true
+    is_active: true,
+    municipality_id: undefined as number | undefined
   });
   const [showEditPassword, setShowEditPassword] = useState(false);
   const [showEditConfirmPassword, setShowEditConfirmPassword] = useState(false);
@@ -107,7 +108,8 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       password: '',
       confirmPassword: '',
       role: 'admin' as 'user' | 'admin' | 'superadmin',
-      is_active: true
+      is_active: true,
+      municipality_id: undefined
     });
   };
 
@@ -118,7 +120,8 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       password: '',
       confirmPassword: '',
       role: user.role === 'user' ? 'admin' : user.role, // Convert existing 'user' roles to 'admin'
-      is_active: user.is_active
+      is_active: user.is_active,
+      municipality_id: user.municipality_id
     });
     setIsEditDialogOpen(true);
   };
@@ -255,6 +258,14 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
       // Only include password if it's provided
       if (editFormData.password.trim()) {
         updateData.password = editFormData.password;
+      }
+
+      // Add municipality_id if role is admin and municipality is selected
+      if (editFormData.role === 'admin' && editFormData.municipality_id) {
+        updateData.municipality_id = editFormData.municipality_id;
+      } else if (editFormData.role === 'superadmin') {
+        // Remove municipality_id if changing to superadmin
+        updateData.municipality_id = null;
       }
 
       await updateUser(editingUser.id, updateData, token);
@@ -725,6 +736,14 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
                   </div>
                 </div>
               </div>
+              {user.role === 'admin' && user.municipality_id && (
+                <div className="mt-3 pt-3 border-t">
+                  <span className="font-medium text-sm">Municipality:</span>
+                  <div className="text-sm text-muted-foreground">
+                    {municipalities.find(m => m.id === user.municipality_id)?.name || `ID: ${user.municipality_id}`}
+                  </div>
+                </div>
+              )}
               {user.created_by && (
                 <div className="mt-2 text-xs text-muted-foreground">
                   Created by: {user.created_by}
@@ -814,7 +833,7 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
             </div>
             <div>
               <Label htmlFor="edit-role">User Role</Label>
-              <Select value={editFormData.role} onValueChange={(value: 'admin' | 'superadmin') => setEditFormData(prev => ({ ...prev, role: value }))}>
+              <Select value={editFormData.role} onValueChange={(value: 'admin' | 'superadmin') => setEditFormData(prev => ({ ...prev, role: value, municipality_id: value === 'superadmin' ? undefined : prev.municipality_id }))}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a role" />
                 </SelectTrigger>
@@ -824,6 +843,26 @@ export const UserManager: React.FC<UserManagerProps> = ({ onUserUpdate }) => {
                 </SelectContent>
               </Select>
             </div>
+            {editFormData.role === 'admin' && (
+              <div>
+                <Label htmlFor="edit-municipality">Municipality</Label>
+                <Select 
+                  value={editFormData.municipality_id?.toString()} 
+                  onValueChange={(value) => setEditFormData(prev => ({ ...prev, municipality_id: parseInt(value) }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select municipality (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {municipalities.map((municipality) => (
+                      <SelectItem key={municipality.id} value={municipality.id.toString()}>
+                        {municipality.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div className="flex items-center space-x-2">
               <Switch
                 id="edit-active"
