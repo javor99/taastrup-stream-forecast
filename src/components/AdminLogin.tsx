@@ -95,7 +95,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@admin.com"
                 required
               />
             </div>
@@ -106,7 +105,6 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onClose }) => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="12345678"
                 required
               />
             </div>
