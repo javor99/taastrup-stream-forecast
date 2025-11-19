@@ -3,7 +3,7 @@ import { getEdgeFunctionErrorMessage } from '@/utils/error';
 const API_BASE_URL = 'https://aquamonitor.eu/api';
 
 // Add a client-side timeout to prevent infinite loading when the edge function/upstream hangs
-const INVOKE_TIMEOUT_MS = 8000; // 8s timeout for edge function calls
+const INVOKE_TIMEOUT_MS = 20000; // 20s timeout for edge function calls
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label = 'request'): Promise<T> {
   let timeoutId: number | undefined;
