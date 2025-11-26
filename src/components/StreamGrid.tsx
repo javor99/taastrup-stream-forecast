@@ -15,9 +15,10 @@ import { getEdgeFunctionErrorMessage } from '@/utils/error';
 
 interface StreamGridProps {
   userMunicipalityId?: number | null;
+  isAdminView?: boolean;
 }
 
-export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId }) => {
+export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId, isAdminView = false }) => {
   const [allStreams, setAllStreams] = useState<Stream[]>([]);
   const [visibleStreams, setVisibleStreams] = useState<Stream[]>([]);
   const [apiData, setApiData] = useState<ApiSummaryStation[]>([]);
@@ -450,7 +451,7 @@ export const StreamGrid: React.FC<StreamGridProps> = ({ userMunicipalityId }) =>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {visibleStreams.map((stream) => (
-            <StreamCard key={stream.id} stream={stream} onDataUpdate={loadStreams} />
+            <StreamCard key={stream.id} stream={stream} onDataUpdate={loadStreams} isAdminView={isAdminView} />
           ))}
         </div>
       </div>

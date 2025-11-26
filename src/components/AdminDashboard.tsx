@@ -252,7 +252,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ onClose }) => {
         {activeTab === 'stations' && (
           <div className="space-y-6">
             <StationManager />
-            <StreamGrid />
+            <StreamGrid isAdminView={true} />
           </div>
         )}
 

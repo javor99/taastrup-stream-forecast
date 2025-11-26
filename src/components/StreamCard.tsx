@@ -19,9 +19,10 @@ import { updateStationMinMax, fetchStationMinMax, deleteStation, subscribeToStat
 interface StreamCardProps {
   stream: Stream;
   onDataUpdate?: () => void;
+  isAdminView?: boolean;
 }
 
-export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) => {
+export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate, isAdminView = false }) => {
   const [isEditingMinMax, setIsEditingMinMax] = useState(false);
   const [minLevel, setMinLevel] = useState(stream.minLevel * 100); // Convert to cm
   const [maxLevel, setMaxLevel] = useState(stream.maxLevel * 100); // Convert to cm
@@ -556,7 +557,7 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate }) 
       )}
 
       <div className="flex items-center justify-between mt-4 pt-4 border-t border-border">
-        {(isAdmin || isSuperAdmin) && (
+        {isAdminView && (isAdmin || isSuperAdmin) && (
           <div className="flex gap-2 flex-wrap">
             {canEditStation() && (
               <Button
