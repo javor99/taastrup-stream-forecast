@@ -99,18 +99,8 @@ export const StreamCard: React.FC<StreamCardProps> = ({ stream, onDataUpdate, is
   // Missing days = how many more days needed to reach 41
   const missingDays = Math.max(0, totalDaysNeeded - availableDays);
   
-  // Debug logging for Hove and Nybolle stations
-  if (stream.name.includes('Hove') || stream.name.includes('Nybolle')) {
-    console.log(`${stream.name} Data Check:`, {
-      availableDays,
-      missingDays,
-      hasHistorical: !!stream.last30DaysHistorical,
-      hasRange: !!stream.last30DaysRange,
-      rangeMinM: stream.last30DaysRange?.min_m,
-      rangeMaxM: stream.last30DaysRange?.max_m,
-      historicalDates: stream.last30DaysHistorical?.slice(0, 3).map(h => h.date)
-    });
-  }
+  // Debug ALL stations
+  console.log(`[${stream.name}] availableDays=${availableDays}, missingDays=${missingDays}, hasRange=${!!stream.last30DaysRange}`);
   
   const hasInsufficientData = !stream.last30DaysHistorical || 
     availableDays < minDaysForPrediction || 
