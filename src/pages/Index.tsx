@@ -75,7 +75,7 @@ const Index = () => {
             </h2>
             
           </div>
-          <StreamGrid userMunicipalityId={userMunicipalityId} />
+          <StreamGrid userMunicipalityId={userMunicipalityId} isAdminView={false} />
         </main>
       </div>
 
