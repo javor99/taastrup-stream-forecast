@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2025 Your Name
+// Part of AquaMonitor/InnoTech-TaskForce. See LICENSE for license terms.
+
 import { Stream } from '@/types/stream';
 
 // Generate 7-day predictions for a stream

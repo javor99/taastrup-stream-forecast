@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2025 Your Name
+// Part of AquaMonitor/InnoTech-TaskForce. See LICENSE for license terms.
+
 // Utility to extract meaningful error messages from Supabase Edge Function errors
 // Always return the most helpful text we can find so UI can render it to users
 export function getEdgeFunctionErrorMessage(err: unknown, fallback = 'Request failed'): string {
