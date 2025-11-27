@@ -1,3 +1,7 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Copyright (c) 2025 Your Name
+// Part of AquaMonitor/InnoTech-TaskForce. See LICENSE for license terms.
+
 import { supabase } from '@/integrations/supabase/client';
 import { getEdgeFunctionErrorMessage } from '@/utils/error';
 const API_BASE_URL = 'https://aquamonitor.eu/api';
